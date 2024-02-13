@@ -1,3 +1,5 @@
+import 'package:exercise_app/chat.dart';
+import 'package:exercise_app/settings.dart';
 import 'package:flutter/material.dart';
 
 
@@ -29,7 +31,7 @@ MySquare({required this.child});
           Expanded(
             flex:90,
             child: InkWell(
-              onTap: () => print('go to $child messages') ,
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(),settings: RouteSettings(arguments: child))); },
               child: Container(
                 height: 75,
                 padding: EdgeInsets.all(5),
