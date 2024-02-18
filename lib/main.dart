@@ -1,15 +1,29 @@
+import 'package:exercise_app/WelcomeScreen.dart';
 import 'package:exercise_app/explore.dart';
 import 'package:exercise_app/feed.dart';
 import 'package:exercise_app/profile.dart';
 import 'package:exercise_app/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:exercise_app/near_you.dart';
+//import 'WelcomeScreen.dart';
 
-void main() => runApp(MaterialApp(
-  home: Home()
-));
+void main() => runApp(MyApp());
 
-class Home extends StatefulWidget{
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Your App Title',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: WelcomeScreen(),
+    );
+  }
+}
+
+class Home extends StatefulWidget {
   @override
   State<Home> createState() => _HomeState();
 }
