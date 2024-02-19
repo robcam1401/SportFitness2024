@@ -13,6 +13,7 @@ dependencies:
   flutter_polyline_points: ^1.0.0
   google_maps_flutter: ^2.1.7
   flutter_svg: ^1.1.0
+  chat_bubbles: ^1.6.0
 
 dev_dependencies:
   flutter_test:
