@@ -45,12 +45,21 @@ class _ForgotScreenState extends State<forgotScreen> {
 
     final smtpServer = gmail(username, password);
 
-    // Create our message.
+    String token = "UNIQUE_TOKEN_GENERATED_SERVER_SIDE";
+    String resetUrl =
+        "http://www2.latech.edu/~nni002/Fitness.html?token=$token";
+    String htmlContent = '''
+  <p>This is your password reset link: 
+    <a href="$resetUrl">Reset Password</a>
+  </p>
+''';
+
+// Create our message.
     final message = Message()
       ..from = Address(username, 'Your Name')
       ..recipients.add(emailAddress)
       ..subject = 'Your Password Reset Link'
-      ..text = 'This is your password reset link: http://yourlink.com';
+      ..html = htmlContent;
 
     try {
       final sendReport = await send(message, smtpServer);

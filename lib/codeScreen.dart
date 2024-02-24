@@ -1,3 +1,4 @@
+import 'package:exercise_app/feed.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_application_1/loginScreen.dart';
 
@@ -88,23 +89,29 @@ class _CodeScreenState extends State<codeScreen> {
                     SizedBox(
                       height: 70,
                     ),
-                    Container(
-                      height: 55,
-                      width: 300,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: LinearGradient(colors: [
-                          Color(0xff881736),
-                          Color(0xff281537),
-                        ]),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Log In',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.white),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Feed()));
+                      },
+                      child: Container(
+                        height: 55,
+                        width: 300,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          gradient: LinearGradient(colors: [
+                            Color(0xff881736),
+                            Color(0xff281537),
+                          ]),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Log In',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.white),
+                          ),
                         ),
                       ),
                     ),

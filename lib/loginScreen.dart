@@ -136,23 +136,29 @@ class _LoginScreenState extends State<loginScreen> {
                     SizedBox(
                       height: 70,
                     ),
-                    Container(
-                      height: 55,
-                      width: 300,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: LinearGradient(colors: [
-                          Color(0xff881736),
-                          Color(0xff281537),
-                        ]),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'LOG IN',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.white),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Feed()));
+                      },
+                      child: Container(
+                        height: 55,
+                        width: 300,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          gradient: LinearGradient(colors: [
+                            Color(0xff881736),
+                            Color(0xff281537),
+                          ]),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'LOG IN',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.white),
+                          ),
                         ),
                       ),
                     ),
