@@ -16,8 +16,9 @@ class _Friends extends State<Friends> {
   static const json = '{"friends" : [{"pairID" : "1", "acctNum" : "2"}, {"pairID" : "2", "acctNum" : "3"}]}';
   static const json2 = '{"friends": [{"pairID": 1, "acctNum": 2}, {"pairID": 2, "acctNum": 3}], "usernames": [{"acctNum": 2, "username": "GenericUser"}, {"acctNum": 3, "username": "GenericUser2"}]}';
   // these are for actually connecting to the server
-  // static String sentString = Query().friends_list(1);
-  // static dynamic sentData = jsonDecode(sentString);
+
+  //static dynamic sentString = Query().friends_list(1);
+  //static dynamic sentData = jsonDecode(sentString);
   static dynamic jsonData = jsonDecode(json);
   static dynamic json2Data = jsonDecode(json2);
   // jsonFriends contains pair ids associated with friend pairs

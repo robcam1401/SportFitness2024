@@ -30,7 +30,7 @@ Future<String> connect_to_server(send_string) async {
   // Define the server's IP address and port
     final String serverIp = 'localhost'; // Change to the server's IP address
     final int serverPort = 12000; // Change to the server's port
-
+    print('here');
     try {
     // Create a socket connection to the server
 		final socket = await Socket.connect(serverIp, serverPort);
