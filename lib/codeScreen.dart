@@ -1,4 +1,4 @@
-import 'package:exercise_app/feed.dart';
+import 'package:exercise_app/main.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_application_1/loginScreen.dart';
 
@@ -92,7 +92,7 @@ class _CodeScreenState extends State<codeScreen> {
                     InkWell(
                       onTap: () {
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Feed()));
+                            MaterialPageRoute(builder: (context) => Home()));
                       },
                       child: Container(
                         height: 55,
