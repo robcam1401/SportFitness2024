@@ -19,6 +19,8 @@ class _Feed extends State<Feed> {
         centerTitle: true,
         backgroundColor: Colors.red[600],
       ),
+      
     );
+
   }
 }
