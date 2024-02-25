@@ -16,6 +16,7 @@ dependencies:
   fluttertoast: ^8.0.0
   mailer: ^6.1.0
   uni_links: ^0.5.1
+  chat_bubbles: ^1.6.0
 
 dev_dependencies:
   flutter_test:
