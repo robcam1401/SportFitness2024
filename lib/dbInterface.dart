@@ -18,8 +18,8 @@ void main() {
 		};
 	const query_data = {
 		'Action' : 'Q',
-		'Function' : 'account_info',
-		'AccountNumber' : 4
+		'Function' : 'friends_list',
+		'AccountNumber' : 1
 		};
 	final String query_json = jsonEncode(query_data);
 	print(query_json);
@@ -57,7 +57,8 @@ Future<String> connect_to_server(send_string) async {
 
 		// Close the socket when you're done
 		socket.close();
-    return String.fromCharCodes(ret);
+    String sent_string = String.fromCharCodes(ret);
+    return sent_string;
 	} 
 	catch (e) {
     	print('Error: $e');
@@ -68,7 +69,7 @@ Future<String> connect_to_server(send_string) async {
 final class Insert {
 
   // Insert a new account
-  String query_account_info(account_info) {
+  String account_info(account_info) {
     account_info['Action'] = 'I';
     account_info['Function'] = 'new_user';
     final String insert_json = jsonEncode(account_info);
@@ -89,65 +90,84 @@ final class Insert {
 
 // Query for account info
 final class Query {
-  String query_account_info(account_number) {
-    dynamic query_data = {
+  String account_info(accountNumber) {
+    dynamic queryData = {
       'Action' : 'Q',
       'Function' : 'account_info',
-      'AccountNumber' : account_number
+      'AccountNumber' : accountNumber
       };
-    final String query_json = jsonEncode(query_data);
-    print(query_json);
-    dynamic ret = connect_to_server(query_json);
+    final String queryJson = jsonEncode(queryData);
+    dynamic ret = connect_to_server(queryJson);
     return ret;
   }
   // Query for account email
-  String query_account_email(account_number) {
-    dynamic query_data = {
+  String account_email(accountNumber) {
+    dynamic queryData = {
       'Action' : 'Q',
       'Function' : 'account_email',
-      'AccountNumber' : account_number
+      'AccountNumber' : accountNumber
       };
-    final String query_json = jsonEncode(query_data);
-    print(query_json);
-    dynamic ret = connect_to_server(query_json);
+    final String queryJson = jsonEncode(queryData);
+    print(queryJson);
+    dynamic ret = connect_to_server(queryJson);
     return ret;
   }
 
   // Query for videos associated with an account, descending by date
-  String query_account_videos_date_desc(account_number) {
-    dynamic query_data = {
+  String account_videos_date_desc(accountNumber) {
+    dynamic queryData = {
       'Action' : 'Q',
       'Function' : 'account_videos_date_desc',
-      'AccountNumber' : account_number
+      'AccountNumber' : accountNumber
       };
-    final String query_json = jsonEncode(query_data);
-    print(query_json);
-    dynamic ret = connect_to_server(query_json);
+    final String queryJson = jsonEncode(queryData);
+    dynamic ret = connect_to_server(queryJson);
     return ret;
   }
   // Ascending by date
-  String query_account_videos_date_asc(account_number) {
-    dynamic query_data = {
+  String account_videos_date_asc(accountNumber) {
+    dynamic queryData = {
       'Action' : 'Q',
       'Function' : 'account_videos_date_asc',
-      'AccountNumber' : account_number
+      'AccountNumber' : accountNumber
       };
-    final String query_json = jsonEncode(query_data);
-    print(query_json);
-    dynamic ret = connect_to_server(query_json);
+    final String queryJson = jsonEncode(queryData);
+    dynamic ret = connect_to_server(queryJson);
     return ret;
   }
   // Query for friend PairIDs associated with an account number
-  String query_friends_list(account_number) {
-    dynamic query_data = {
+  String friends_list(dynamic accountNumber) {
+    dynamic queryData = {
       'Action' : 'Q',
       'Function' : 'account_friends_list',
-      'AccountNumber' : account_number
+      'AccountNumber' : accountNumber
       };
-    final String query_json = jsonEncode(query_data);
-    print(query_json);
-    dynamic ret = connect_to_server(query_json);
+    final String queryJson = jsonEncode(queryData);
+    dynamic ret = connect_to_server(queryJson);
     return ret;
   }
 
+  String friend_messages(dynamic pairID) {
+    dynamic queryData = {
+      'Action' : 'Q',
+      'Function' : 'friend_messages_date',
+      'PairID' : pairID
+    };
+    final String queryJson = jsonEncode(queryData);
+    dynamic ret = connect_to_server(queryJson);
+    return ret;
+  }
+
+  String account_communities(dynamic accountNumber) {
+    dynamic queryData = {
+      'Action' : 'Q',
+      'Function' : 'account_communities',
+      'accountNumber' : accountNumber
+    };
+    final String queryJson = jsonEncode(queryData);
+    dynamic ret = connect_to_server(queryJson);
+    return ret;
+  }
+
+  
 }

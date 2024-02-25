@@ -8,6 +8,18 @@ void main() => runApp(MaterialApp(
 
 
 class ChatScreen extends StatelessWidget{
+  // chat message data sent from server will be formatted as:
+  // {"messages" : [list]}
+  // where the list contains json objects of the form:
+  // {
+  //    "pairID" : int,
+  //    "messageID" : int,
+  //    "message" : 'str',
+  //    "timestamp" : str,
+  //    "sentUser" : int
+  // }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

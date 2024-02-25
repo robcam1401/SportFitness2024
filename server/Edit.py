@@ -14,7 +14,8 @@ sys.path.insert(0,_CloudAPIs)
 sys.path.insert(0,_libs)
 
 # import from path variables
-from CloudAPIs.Insert import *
+# from CloudAPIs.Insert import *
+from Insert import *
 
 def videoTitle(video_id,new_title):
     cnx,cursor = connect()
