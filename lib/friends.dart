@@ -1,7 +1,5 @@
 import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
-import 'dbInterface.dart';
-import 'dart:convert';
 
 class Friends extends StatefulWidget{
   @override

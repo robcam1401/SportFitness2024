@@ -57,4 +57,3 @@ class _Groups extends State<Groups> {
     );
   }
 }
-
