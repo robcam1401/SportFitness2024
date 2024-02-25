@@ -28,3 +28,5 @@ flutter:
   assets:
     - assets/Images/train.jpg
     - assets/Images/dumbbell.png
+    - assets/train.jpg
+
