@@ -27,3 +27,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/train.jpg
+    - assets/Images/train.jpg
+    - assets/Images/dumbbell.png
