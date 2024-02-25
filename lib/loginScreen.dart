@@ -1,6 +1,5 @@
 import 'package:exercise_app/feed.dart';
 import 'package:exercise_app/forgotScreen.dart';
-import 'package:exercise_app/main.dart';
 import 'package:exercise_app/regScreen.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_application_1/forgotScreen.dart';
@@ -140,7 +139,7 @@ class _LoginScreenState extends State<loginScreen> {
                     InkWell(
                       onTap: () {
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Home()));
+                            MaterialPageRoute(builder: (context) => Feed()));
                       },
                       child: Container(
                         height: 55,
