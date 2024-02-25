@@ -98,6 +98,11 @@ class insert():
         "CreatedUser" : 'int'
     }
 
+    community_member_template = {
+        "CommunityID" : 'int',
+        "AccountID" : 'int'
+    }
+
     community_messages_info_template = {
         "CommunityID" : 'int',
         "MessageID" : None,
@@ -227,6 +232,10 @@ class query():
     
     def comment_body(commentid):
         return_matrix = commentBody(commentid)
+        return return_matrix
+    
+    def account_communities(accountid):
+        return_matrix = accountCommunities(accountid)
         return return_matrix
 
 ## edit functions, for editable tables and columns
