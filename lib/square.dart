@@ -1,3 +1,6 @@
+import 'package:exercise_app/chat.dart';
+import 'package:exercise_app/other_profile.dart';
+import 'package:exercise_app/settings.dart';
 import 'package:flutter/material.dart';
 
 
@@ -18,7 +21,7 @@ MySquare({required this.child});
             flex:10,
             child: Container(
               child: InkWell(
-                onLongPress: () => print('go to $child profile'),
+                onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile())); },
                 child: const CircleAvatar(backgroundImage:NetworkImage('assets/train.jpg'),
                 radius: 37.5,
                 
@@ -29,7 +32,7 @@ MySquare({required this.child});
           Expanded(
             flex:90,
             child: InkWell(
-              onTap: () => print('go to $child messages') ,
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen())); },
               child: Container(
                 height: 75,
                 padding: EdgeInsets.all(5),
