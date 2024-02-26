@@ -169,6 +169,20 @@ def newContentInsert(ContentInfo,Link):
     cnx.close()
     return
 
+def newBookmarksLikes(bookmarkLikeInfo):
+    cnx,cursor = connect()
+
+    bookmark_like_info['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
+    add_bml = ("INSERT INTO UserLikesBookmarks "
+              "(bmlID, AccountNumber, Bookmarked, Liked, ContentType, ContentID)"
+              "VALUES (%(bmlID)s, %(AccountNumber)s, %(Bookmarked)s, %(Liked)s, %(ContentType)s, %(ContentID)s)")
+    cursor.execute(add_bml, bookmark_like_info)
+    cnx.commit()
+
+    cursor.close()
+    cnx.close()
+    return    
+
 def newFriendsInsert(FriendInfo):
     # authenticate the user instance
     #acct_auth(AccInfo['AccountNumber'],token)
@@ -184,6 +198,19 @@ def newFriendsInsert(FriendInfo):
     cursor.close()
     cnx.close()
     return
+
+def newFriendRequests(RequestInfo):
+    cnx,cursor = connect()
+    RequestInfo['RequestID'] = getLastID('FriendRequest', 'RequestID') + 1
+    add_request = ("INSERT INTO FriendRequest "
+              "(RequestID, User1ID, User2ID, User1Accepted,User2Accepted)"
+              "VALUES (%(RequestID)s, %(User1ID)s, %(User2ID)s, %(User1Accepted)s, %(User2Accepted)s)")
+    cursor.execute(add_request,RequestInfo)
+    cnx.commit()
+
+    cursor.close()
+    cnx.close()
+
 
 def newFriendMessages(MessageInfo):
     # authenticate the user instance

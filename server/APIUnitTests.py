@@ -15,15 +15,15 @@ sys.path.insert(0,_CloudAPIs)
 sys.path.insert(0,_libs)
 
 # import from path variables
-from CloudAPIs.Insert import *
-from CloudAPIs.Query import *
-from CloudAPIs.Edit import *
-from CloudAPIs.sqlInterface import *
+# from CloudAPIs.Insert import *
+# from CloudAPIs.Query import *
+# from CloudAPIs.Edit import *
+# from CloudAPIs.sqlInterface import *
 
-# from Insert import *
-# from Query import *
-# from Edit import *
-# from sqlInterface import *
+from Insert import *
+from Query import *
+from Edit import *
+from sqlInterface import *
 
 import datetime
 

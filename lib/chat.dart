@@ -7,7 +7,16 @@ class ChatScreen extends StatefulWidget{
 }
 
 class _Chatscreen extends State<ChatScreen> {
-
+  // chat message data sent from server will be formatted as:
+  // {"messages" : [list]}
+  // where the list contains json objects of the form:
+  // {
+  //    "pairID" : int,
+  //    "messageID" : int,
+  //    "message" : 'str',
+  //    "timestamp" : str,
+  //    "sentUser" : int
+  // }
 
 
 

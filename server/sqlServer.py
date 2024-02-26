@@ -28,6 +28,8 @@ def call_from_json(json_data):
         return "Error", exception
 
 def main():
+    # json1 = json.dumps(query.account_friends_list(1))
+    # print(json1)
 
     server_socket = socket(AF_INET, SOCK_STREAM)
     # port number = 12000
@@ -45,12 +47,11 @@ def main():
         print("Received message: {}\n".format(received_message))
 
         ret, code  = call_from_json(received_message)
-        sent_message = ''
-        for i in ret:
-            sent_message += str(i)
-
-        connection_socket.send(sent_message.encode())
-        print(sent_message)
+        # the returned dictionary is dumped into a json string format
+        sent_json = json.dumps(ret)
+        sent_json = json.loads(sent_json)
+        connection_socket.send(sent_json.encode())
+        print(sent_json)
         print(code)
         print("Message sent\n")
         connection_socket.close()
