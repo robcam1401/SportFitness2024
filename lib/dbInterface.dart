@@ -68,7 +68,7 @@ Future<String> connect_to_server(send_string) async {
 final class Insert {
 
   // Insert a new account
-  String query_account_info(account_info) {
+  String new_account(account_info) {
     account_info['Action'] = 'I';
     account_info['Function'] = 'new_user';
     final String insert_json = jsonEncode(account_info);
