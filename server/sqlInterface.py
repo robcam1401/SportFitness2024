@@ -35,6 +35,16 @@ class insert():
         "PasswordHash" : 'str'
     }
 
+    bookmark_like_info_template = {
+        "bmlID" : 'int(32)',
+        "AccountNumber" : 'int(32)',
+        "Bookmarked" : 'bool',
+        "Liked" : 'bool',
+        # contentType: 0 = video, 1 = content, 2 = comment
+        "ContentType" : 'int(2)',
+        "ContentID" : 'int(32)'
+    }
+
     # VideoLink, Thumbnail, UploadDate are automatically assigned on insert
     video_info_template = {
         "VideoID" : None,
@@ -141,9 +151,17 @@ class insert():
     def new_content(content_info):
         newContentInsert(content_info)
         return 'Inserted'
+    
+    def new_bookmarks_likes(bookmark_like_info):
+        newBookmarksLikes(bookmark_like_info)
+        return 'Inserted'
 
     def add_friends(friend_info):
         newFriendsInsert(friend_info)
+        return 'Inserted'
+    
+    def new_friend_request(request_info):
+        newFriendRequests(request_info)
         return 'Inserted'
 
     def new_message(message_info):

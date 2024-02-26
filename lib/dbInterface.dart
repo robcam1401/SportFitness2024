@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 
 void main() {
+  // main is a test method, should not be called during runtime
 	print('Hello, World!');
 	const insert_data = {
 		'Action' : 'I',
@@ -69,36 +70,92 @@ Future<String> connect_to_server(send_string) async {
 final class Insert {
 
   // Insert a new account
+  // Basic process for all inserts:
   String account_info(account_info) {
+    // Action I denotes an Insert action
     account_info['Action'] = 'I';
+    // Function is the function name associated with the desired process
+    // in the sqlInterface.py file
     account_info['Function'] = 'new_user';
+    // encode the info dictionary into a json for sending
     final String insert_json = jsonEncode(account_info);
-    print(insert_json);
+    // send to the python server and return any success/failure codes
     dynamic ret = connect_to_server(insert_json);
     return ret;
   }
 
   // Insert a new video
+  String new_video(video_info) {
+    video_info['Action'] = 'I';
+    video_info['Function'] = 'new_video';
+    final String insert_json = jsonEncode(video_info);
+    dynamic ret = connect_to_server(insert_json);
+    return ret;
+  }
 
   // Insert new content
+  String new_content(content_info) {
+    content_info['Action'] = 'I';
+    content_info['Function'] = 'new_content';
+    final String insert_json = jsonEncode(content_info);
+    dynamic ret = connect_to_server(insert_json);
+    return ret;
+  }
 
   // Insert new comments
+  String new_comment(comment_info) {
+    comment_info['Action'] = 'I';
+    if (comment_info['type'] == 'video') {
+      comment_info['Function'] = 'new_video_comment';
+    }
+    else {
+      comment_info['Function'] = 'new_content_comment';
+    }
+    final String insert_json = jsonEncode(comment_info);
+    dynamic ret = connect_to_server(insert_json);
+    return ret;
+  }
 
-  // Insert into friends
+  // Insert new bookmarks/likes
+  String new_bookmarks_likes(bookmark_like_info) {
+    bookmark_like_info['Action'] = 'I';
+    bookmark_like_info['Function'] = 'new_bookmarks_likes';
+    final String insert_json = jsonEncode(new_bookmarks_likes(bookmark_like_info));
+    dynamic ret = connect_to_server(insert_json);
+    return ret;
+  }
+
+  // Insert into friend requests
+  String new_friend_request(request_info) {
+    request_info['Action'] = 'I';
+    request_info['Function'] = 'new_friend_request';
+    final String insert_json = jsonEncode(request_info);
+    dynamic ret = connect_to_server(insert_json);
+    return ret;
+  }
 
 }
 
 // Query for account info
+// basic process for queries
 final class Query {
   String account_info(accountNumber) {
+    // Action Q denotes a Query action
+    // Function is associated with the desired function
+    // in the sqlInterface.py file
     dynamic queryData = {
       'Action' : 'Q',
       'Function' : 'account_info',
       'AccountNumber' : accountNumber
       };
+    // encode the dictionary and send to server
     final String queryJson = jsonEncode(queryData);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    dynamic return_json = connect_to_server(queryJson);
+    // return_json is in the format:
+    // {'account_info' : {'accountNumber' : <>, ...}}
+    // return_json['account_info'] gives just the info json inside
+    // the account_info json contains all info associated with a UserAccount table row
+    return return_json;
   }
   // Query for account email
   String account_email(accountNumber) {
@@ -109,8 +166,10 @@ final class Query {
       };
     final String queryJson = jsonEncode(queryData);
     print(queryJson);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    // return_json in this function returns a json as:
+    // {'accountEmail' : <email>}
+    dynamic return_json = connect_to_server(queryJson);
+    return return_json;
   }
 
   // Query for videos associated with an account, descending by date
@@ -121,8 +180,11 @@ final class Query {
       'AccountNumber' : accountNumber
       };
     final String queryJson = jsonEncode(queryData);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    // this return_json is of the form:
+    // {1 : {'videoID' : <>, ...}, 2 : {'videoID' : <>}}
+    // with the calling value increasing as the videos go on
+    dynamic return_json = connect_to_server(queryJson);
+    return return_json;
   }
   // Ascending by date
   String account_videos_date_asc(accountNumber) {
@@ -132,8 +194,10 @@ final class Query {
       'AccountNumber' : accountNumber
       };
     final String queryJson = jsonEncode(queryData);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    // this json returns the exact same as the previous function
+    // except backwards
+    dynamic return_json = connect_to_server(queryJson);
+    return return_json;
   }
   // Query for friend PairIDs associated with an account number
   String friends_list(dynamic accountNumber) {
@@ -143,8 +207,13 @@ final class Query {
       'AccountNumber' : accountNumber
       };
     final String queryJson = jsonEncode(queryData);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    // this return_json returns the friends list of an account as:
+    // {'friends' : [{'pairID' : <>, 'acctNum' : <>}], 'usernames' : [{'acctNum' : <>, 'username' : <>}]}
+    // note: return_json['friends'] and return_json['usernames']
+    // are lists of jsons
+    // so return_json['friends'][0]['pairID'] gives the pairID of the first pair
+    dynamic return_json = connect_to_server(queryJson);
+    return return_json;
   }
 
   String friend_messages(dynamic pairID) {
@@ -154,8 +223,11 @@ final class Query {
       'PairID' : pairID
     };
     final String queryJson = jsonEncode(queryData);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    // this return_json is of the form:
+    // {'messages' : [{'messageID' : <>, 'message' : <>, 'user' : <>}]}
+    // note return_json['messages'] is a list of jsons
+    dynamic return_json = connect_to_server(queryJson);
+    return return_json;
   }
 
   String account_communities(dynamic accountNumber) {
@@ -165,8 +237,10 @@ final class Query {
       'accountNumber' : accountNumber
     };
     final String queryJson = jsonEncode(queryData);
-    dynamic ret = connect_to_server(queryJson);
-    return ret;
+    // this return_json is of the form:
+    // {"communities" : [{"commID" : <>}, {...}]}
+    dynamic return_json = connect_to_server(queryJson);
+    return return_json;
   }
 
   

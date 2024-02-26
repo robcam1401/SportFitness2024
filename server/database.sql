@@ -48,10 +48,11 @@ create table UserAuth(
 
 /* for content type, 0 = video, 1 = content, 2 = comment */
 create table UserLikesBookmarks(
+    bmlID           int(32)     NOT NULL,
     AccountNumber   int(32)     NOT NULL,
     Bookmarked      boolean,
     Liked           boolean,
-    contentType     int(2)      NOT NULL,
+    ContentType     int(2)      NOT NULL,
     ContentID       int(32)     NOT NULL
 );
 

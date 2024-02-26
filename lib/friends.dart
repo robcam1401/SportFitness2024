@@ -1,5 +1,6 @@
 import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class Friends extends StatefulWidget{
   @override
@@ -14,7 +15,7 @@ class _Friends extends State<Friends> {
   static const json = '{"friends" : [{"pairID" : "1", "acctNum" : "2"}, {"pairID" : "2", "acctNum" : "3"}]}';
   static const json2 = '{"friends": [{"pairID": 1, "acctNum": 2}, {"pairID": 2, "acctNum": 3}], "usernames": [{"acctNum": 2, "username": "GenericUser"}, {"acctNum": 3, "username": "GenericUser2"}]}';
   // these are for actually connecting to the server
-
+  // once it is working
   //static dynamic sentString = Query().friends_list(1);
   //static dynamic sentData = jsonDecode(sentString);
   static dynamic jsonData = jsonDecode(json);
