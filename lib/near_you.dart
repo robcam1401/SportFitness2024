@@ -35,16 +35,7 @@ class _NearYou extends State<NearYou> {
                 // pressing the button will switch to those pages
                 Row(
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        color: Colors.blue,
-                        child: ElevatedButton(
-                          onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Friends()));},
-                          child: const Text("friend list"),
-                        ),
-                      ),
-                    ),
+
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.all(20),

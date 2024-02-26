@@ -243,5 +243,5 @@ final class Query {
     return return_json;
   }
 
-  
+ 
 }
