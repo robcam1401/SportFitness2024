@@ -1,3 +1,4 @@
+import 'package:exercise_app/friends.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:exercise_app/post_card.dart';
@@ -25,7 +26,7 @@ class _Feed extends State<Feed> {
         //title: Image.asset('assets/Images/OurLogo.png', width: 90, height: 50),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Friends()));},
             icon: Icon(
               Icons.messenger_outline,
             ),
