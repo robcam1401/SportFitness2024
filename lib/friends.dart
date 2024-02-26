@@ -1,5 +1,6 @@
 import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class Friends extends StatefulWidget{
   @override
@@ -9,14 +10,24 @@ class Friends extends StatefulWidget{
 class _Friends extends State<Friends> {
   // sample data for the list
   //  will be updated with data in the database later
-  final List _people = [
-    'nabinta',
-    'cam',
-    'zach',
-    'olga',
-    'person 5',
-    'person 6',
-  ];
+  // These jsons are json strings sent from the sql server
+  // connecting to server is finnicky, so jsons are hard-coded for now
+  static const json = '{"friends" : [{"pairID" : "1", "acctNum" : "2"}, {"pairID" : "2", "acctNum" : "3"}]}';
+  static const json2 = '{"friends": [{"pairID": 1, "acctNum": 2}, {"pairID": 2, "acctNum": 3}], "usernames": [{"acctNum": 2, "username": "GenericUser"}, {"acctNum": 3, "username": "GenericUser2"}]}';
+  // these are for actually connecting to the server
+  // once it is working
+  //static dynamic sentString = Query().friends_list(1);
+  //static dynamic sentData = jsonDecode(sentString);
+  static dynamic jsonData = jsonDecode(json);
+  static dynamic json2Data = jsonDecode(json2);
+  // jsonFriends contains pair ids associated with friend pairs
+  // jsonAccounts contains usernames associated with accounts in the pairs
+  static dynamic jsonFriends = json2Data["friends"];
+  static dynamic jsonAccounts = json2Data["usernames"];
+  // _pairs will be used to open a chat for a specific friend pair
+  // _people contains the list of usernames associated with pairs
+  final List _pairs = [jsonFriends[0]["pairID"], jsonFriends[1]["pairID"]];
+  final List _people = [jsonAccounts[0]["username"], jsonAccounts[1]["username"]];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder
