@@ -28,5 +28,8 @@ flutter:
   assets:
     - assets/Images/train.jpg
     - assets/Images/dumbbell.png
-
-
+    - assets/Images/OurLogo.png
+  fonts:
+    - family: DancingScript
+      fonts:
+        - asset: fonts/CedarvilleCursive-Regular.ttf
