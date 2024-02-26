@@ -13,6 +13,8 @@ class NearYou extends StatefulWidget{
 }
 
 class _NearYou extends State<NearYou> {
+List<Marker> myMarker = [];
+
   @override
   // created the google maps widget inside the column so it 
   //would occupy the full space
@@ -25,10 +27,13 @@ class _NearYou extends State<NearYou> {
       ),
       body:  Column(
         children: [
-          const Expanded(
+           Expanded(
             flex: 90,
             child: GoogleMap(
-              initialCameraPosition: CameraPosition(target: sourceLocation, zoom: 14)
+              initialCameraPosition: CameraPosition(target: sourceLocation, zoom: 14),
+              markers: Set.from(myMarker),
+              mapType: MapType.normal,
+              onTap: _handleTap,
               ),
           ),
                 //made a temporary row of two button to show the friends and groups list 
@@ -53,6 +58,21 @@ class _NearYou extends State<NearYou> {
               ),
           
           );
-      
   }
+          _handleTap(LatLng tappedPoint) {
+            print(tappedPoint);
+            setState(() {
+              myMarker = [];
+              myMarker.add(Marker(
+                markerId: MarkerId(tappedPoint.toString()),
+                position: tappedPoint,
+                draggable: true,
+                onDragEnd: (DragEndDetails) {
+                  print(DragEndDetails);
+                }
+              ));
+            });
+          }
+      
+
 }
