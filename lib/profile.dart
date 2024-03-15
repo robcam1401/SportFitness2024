@@ -57,7 +57,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
           CircleAvatar(
             radius: 60,
             // Your profile picture
-            backgroundImage: AssetImage('assets/profile_picture.jpg'),
+            backgroundImage: AssetImage('assets/Images/profile_picture.jpg'),
           ),
           SizedBox(height: 20),
           Text(
@@ -125,13 +125,13 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               controller: _tabController,
               children: [
                 // Feed Tab
-                SingleChildScrollView(
+                const SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Sample post
                       PostWidget(
-                        image: AssetImage('assets/post_image1.jpg'),
+                        image: AssetImage('assets/Images/post_image1.jpg'),
                         caption: 'Beautiful day for tennis!',
                       ),
                       // Add more posts as needed

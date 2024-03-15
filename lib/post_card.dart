@@ -92,14 +92,14 @@ class PostCard extends StatelessWidget {
             ),
           ),
           //Image Section
-          SizedBox(
+          /*SizedBox(
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
             child: Image.network(
               posts,
               fit: BoxFit.cover,
             ),
-          ),
+          ),*/
           // Like Comment and Share section
           Row(
             children: [
