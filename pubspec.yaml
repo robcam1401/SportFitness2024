@@ -17,6 +17,9 @@ dependencies:
   fluttertoast: ^8.0.0
   mailer: ^6.1.0
   uni_links: ^0.5.1
+  url_launcher: ^6.0.13
+  video_player: ^2.8.2
+  flutter_paypal_checkout: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -28,5 +31,11 @@ flutter:
   assets:
     - assets/Images/train.jpg
     - assets/Images/dumbbell.png
-
-
+    - assets/Images/OurLogo.png
+    - assets/Images/profile_picture.jpg
+    - assets/Images/post_image1.jpg
+    
+  fonts:
+    - family: DancingScript
+      fonts:
+        - asset: fonts/CedarvilleCursive-Regular.ttf

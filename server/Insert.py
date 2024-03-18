@@ -171,7 +171,12 @@ def newContentInsert(ContentInfo,Link):
 
 def newBookmarksLikes(bookmarkLikeInfo):
     cnx,cursor = connect()
-
+    
+    bookmark_like_info['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
+    add_bml = ("INSERT INTO UserLikesBookmarks "
+              "(bmlID, AccountNumber, Bookmarked, Liked, ContentType, ContentID)"
+              "VALUES (%(bmlID)s, %(AccountNumber)s, %(Bookmarked)s, %(Liked)s, %(ContentType)s, %(ContentID)s)")
+    cursor.execute(add_bml, bookmark_like_info)
     bookmarkLikeInfo['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
     add_bml = ("INSERT INTO UserLikesBookmarks "
               "(bmlID, AccountNumber, Bookmarked, Liked, ContentType, ContentID)"

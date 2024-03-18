@@ -164,5 +164,4 @@ final class Query {
     ret += 'help';
     return ret;
   }
-
 }
