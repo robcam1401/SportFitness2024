@@ -48,8 +48,9 @@ def main():
 
         ret, code  = call_from_json(received_message)
         # the returned dictionary is dumped into a json string format
+        print(ret)
         sent_json = json.dumps(ret)
-        sent_json = json.loads(sent_json)
+        #sent_json_2 = json.loads(sent_json_1)
         connection_socket.send(sent_json.encode())
         print(sent_json)
         print(code)
