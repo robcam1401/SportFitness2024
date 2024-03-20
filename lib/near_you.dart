@@ -13,6 +13,8 @@ class NearYou extends StatefulWidget{
 }
 
 class _NearYou extends State<NearYou> {
+List<Marker> myMarker = [];
+
   @override
   // created the google maps widget inside the column so it 
   //would occupy the full space
@@ -25,26 +27,20 @@ class _NearYou extends State<NearYou> {
       ),
       body:  Column(
         children: [
-          const Expanded(
+           Expanded(
             flex: 90,
             child: GoogleMap(
-              initialCameraPosition: CameraPosition(target: sourceLocation, zoom: 14)
+              initialCameraPosition: CameraPosition(target: sourceLocation, zoom: 14),
+              markers: Set.from(myMarker),
+              mapType: MapType.normal,
+              onTap: _handleTap,
               ),
           ),
                 //made a temporary row of two button to show the friends and groups list 
                 // pressing the button will switch to those pages
                 Row(
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        color: Colors.blue,
-                        child: ElevatedButton(
-                          onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Friends()));},
-                          child: const Text("friend list"),
-                        ),
-                      ),
-                    ),
+
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.all(20),
@@ -62,6 +58,21 @@ class _NearYou extends State<NearYou> {
               ),
           
           );
-      
   }
+          _handleTap(LatLng tappedPoint) {
+            print(tappedPoint);
+            setState(() {
+              myMarker = [];
+              myMarker.add(Marker(
+                markerId: MarkerId(tappedPoint.toString()),
+                position: tappedPoint,
+                draggable: true,
+                onDragEnd: (DragEndDetails) {
+                  print(DragEndDetails);
+                }
+              ));
+            });
+          }
+      
+
 }

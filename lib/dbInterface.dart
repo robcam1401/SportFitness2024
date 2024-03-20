@@ -259,5 +259,4 @@ final class Query {
 
     return {'_messages' : _messages, '_message_ids' : _message_ids, '_sender_ids' : _sender_ids, '_timestamps' : _timestamps};
   }
-
 }

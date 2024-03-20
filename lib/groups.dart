@@ -11,13 +11,6 @@ class Groups extends StatefulWidget{
 class _Groups extends State<Groups> {
 // sample data for the list
   //  will be updated with data in the database later
-  // group membership json from the server will be formatted as:
-  // {"communities" : [{"commID" : <>}, {...}]}
-  // once connection works:
-  // static String sentString = Query().account_communities(1);
-  // static dynamic sentData = jsonDecode(sentString);
-  // final List _communities = sentData["communities"];
-  // final List _people = [_communities[0]["commID"],_communities[1]["commID"]]
   final List _people = [
     'workout 1',
     'workout 2',
@@ -57,3 +50,4 @@ class _Groups extends State<Groups> {
     );
   }
 }
+
