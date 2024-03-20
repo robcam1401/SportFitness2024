@@ -10,10 +10,9 @@ class Friends extends StatefulWidget{
 class _Friends extends State<Friends> {
   // sample data for the list
   //  will be updated with data in the database later
-  static List _locals = Insert().test_friends();
-  final List _people = _locals[0];
-  final List _pairs = _locals[1];
-  var test = Insert().test_string();
+  static final Map _locals = Query().friends_list(1);
+  final List _people = _locals['_people'];
+  final List _pairs = _locals['_pairs'];
   // this query returns a list of lists
   // the _people list contains usernames of friends
   // the _pairs list contains pair IDs of friends

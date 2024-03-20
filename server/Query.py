@@ -3,6 +3,8 @@
 # required imports
 import sys
 import os
+import secrets
+import Insert
 
 os.chdir("..")
 # find absolute paths
@@ -49,8 +51,31 @@ def accountInfo(acct_num):
         return_matrix.append(temp_list)
         temp_list = []
     cursor.close()
+    # {'acctInfo' : [acctnum, username, email, etc.]}
     final_json = {'acctInfo' : return_matrix}
     return final_json
+
+# password hash is a haxadecimal value as a string
+def passwordHashAuth(password_hash, username):
+    cnx,cursor = connect()
+    query = ("SELECT PasswordHash FROM UserAccount\
+             WHERE Username = {} OR Email = {}").format(username, username)
+    
+    cursor.execute(query)
+    cnx.commit()
+    cnx.close()
+    return_status = {'match' : False}
+    # if true, the passwords match
+    for i in cursor:
+        if i[0] == password_hash:
+            return_status['match'] = True
+    cursor.close()
+    # create the login token with the secrets library
+    login_token = secrets.token_hex(16)
+    return_status['token'] = login_token
+    # now insert the token into the database
+    Insert.newToken(account_number, login_token)
+    return return_status
 
 def accountSearchName(search_term):
     cnx,cursor = connect()
@@ -64,7 +89,7 @@ def accountSearchName(search_term):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'usernames' : return_matrix}
 
 # returns the email address associated with a specific account
 def accountSearchEmail(account_id):
@@ -79,7 +104,39 @@ def accountSearchEmail(account_id):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'email' : return_matrix}
+
+# query for newly uploaded videos
+# depth asks the server how many videos to query
+def allVideosDate(depth):
+    cnx,cursor = connect()
+
+    query = ("SELECT * FROM Videos\
+             ORDER BY UploadDate{}\
+             LIMIT {}").format(depth)
+    cursor.execute(query)
+    cnx.commit()
+    cnx.close()
+
+    # all the data for each video will be contained in a video_dict dictionary
+    video_dict = {}
+    temp_list = []
+    for i in cursor:
+        video_dict['VideoID'] = i[0]
+        video_dict['VideoLink'] = i[1]
+        video_dict['AccountNumber'] = i[2]
+        video_dict['VideoTitle'] = i[3]
+        video_dict['VidDescription'] = i[4]
+        video_dict['Category'] = i[5]
+        video_dict['Views'] = i[6]
+        # upload date has to be converted to a string to encode into a json format
+        upload_date = i[7]
+        video_dict['UploadDate'] = str(upload_date)
+        video_dict['Thumbnail'] = i[8]
+        temp_list.append(video_dict)
+    cursor.close()
+    return {'videos' : temp_list, 'depth' : depth}
+
 
 # returns all videos posted by a single account
 # ordered by date, descending or ascending, chosen by calling function
@@ -97,7 +154,7 @@ def accountVideosDate(acct_num, sort):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'videos' : return_matrix}
 
 def accountContentDate(acct_num, sort):
     cnx,cursor = connect()
@@ -113,7 +170,7 @@ def accountContentDate(acct_num, sort):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'content' : return_matrix}
 
 def videoSearchName(search_term):
     cnx, cursor = connect()
@@ -127,7 +184,7 @@ def videoSearchName(search_term):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'videos' : return_matrix}
 
 # returns IDs of all top-level comments under a post
 def commentsUnderPost(post_id,sort,post_type):
@@ -149,7 +206,28 @@ def commentsUnderPost(post_id,sort,post_type):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'comments' : return_matrix}
+
+def commentsUnderComment(post_id,sort,post_type,parent_id):
+    cnx,cursor = connect()
+
+    if (post_type == 1):
+        query = ("SELECT CommentID FROM Comment\
+                WHERE VideoComment = {}, ThreadParent = {}\
+                ORDER BY PostDate{}").format(post_id, parent_id,sort)
+    else:
+        query = ("SELECT CommentID FROM Comment\
+                WHERE ContentComment = {}, ThreadParent = {}\
+                ORDER BY PostDate{}").format(post_id, parent_id, sort)
+
+    cursor.execute(query)
+    cnx.commit()
+    cnx.close()
+    return_matrix = []
+    for i in cursor:
+        return_matrix.append(i)
+    cursor.close()
+    return {'comments' : return_matrix}
 
 def commentBody(comment_id):
     cnx,cursor = connect()
@@ -164,7 +242,7 @@ def commentBody(comment_id):
     for i in cursor:
         return_matrix.append(i)
     cursor.close()
-    return return_matrix
+    return {'comment_body' : return_matrix}
 
 def friendsList(account_number):
     cnx,cursor = connect()
@@ -221,8 +299,8 @@ def friendPairMessages(pair_id):
         message_array.append(json1)
     cursor.close()
     cnx.close()
-    sent_json = {"messages" : message_array}
-    return sent_json
+    return_json = {"messages" : message_array}
+    return return_json
 
 def accountCommunities(account_id):
     cnx,cursor = connect()
@@ -236,5 +314,5 @@ def accountCommunities(account_id):
         member_array.append(json1)
     cursor.close()
     cnx.close()
-    sent_json = {"communities" : member_array}
-    return sent_json
+    return_json = {"communities" : member_array}
+    return return_json

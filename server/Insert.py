@@ -1,6 +1,7 @@
 # required imports
 import sys
 import os
+import hashlib
 
 # find absolute paths
 _libs =  os.path.join(os.getcwd(), os.path.dirname("libs"))
@@ -51,36 +52,45 @@ def getLastID(table : str, identifier):
 # when inserting, columns will be strongly-typed at insert and will be checked to see if they are within the declared parameters
 # for example, username is strongly typed as a string and will be checked to see if it is 15 characters or less
 def newAccountTypeCheck(AccInfo):
+    status = ""
+    accept = True
     if len(AccInfo['Username']) > 15:
-        raise "Username too long"
+        status += "Username too long. "
+        accept = False
     if len(AccInfo['Email']) > 32:
-        raise "Email too long"
+        status += "Email too long. "
+        accept = False
     if AccInfo['PhoneNumber'] > 99999999999:
-        raise "Phone number too large"
+        status += "Phone number too large. "
+        accept = False
     if len(AccInfo['Fname']) > 15:
-        raise "First name too long"
+        status += "First name too long. "
+        accept = False
     if len(AccInfo['Minit']) > 1:
-        raise "Middle Initial too long"
+        status += "Middle Initial too long. "
+        accept = False
     if len(AccInfo['Lname']) > 15:
-        raise "Last name too long"
+        status += "Last name too long. "
+        accept = False
     # try: 
     #     AccInfo['UserDoB'] = datetime.date(AccInfo['UserDoB'])
     # except:
     #     raise "Invalid Date of Birth"
-    return
+    return status, accept
 
 ## Insert Methods
 
 # Insert a new Account with given account information in a dictionary
 def newAccountInsert(AccInfo):
     # check for valid data
-    newAccountTypeCheck(AccInfo)
-
+    status, accept = newAccountTypeCheck(AccInfo)
+    if (not accept):
+        return status
     cnx,cursor = connect()
     AccInfo['AccountNumber'] = getLastID('UserAccount','AccountNumber') + 1
-    #AccInfo['PasswordHash'] = zachhash(AccInfo['PasswordHash'])
-    # for item in AccInfo:
-    #     print("{} {}".format(item, (AccInfo[item])))
+    hash = hashlib.sha256()
+    hash.update(AccInfo('PasswordHash'))
+    AccInfo['PasswordHash'] = hash.hexdigest()
     add_User = ("INSERT INTO UserAccount "
               "(AccountNumber, Username, Email, PhoneNumber,Fname,Minit,Lname,UserDoB,PasswordHash)"
               "VALUES (%(AccountNumber)s, %(Username)s, %(Email)s, %(PhoneNumber)s, %(Fname)s, %(Minit)s, %(Lname)s, %(UserDoB)s,%(PasswordHash)s)")
@@ -93,6 +103,17 @@ def newAccountInsert(AccInfo):
     # create a new token for the new user on their device
     #logon_token = create_token(AccInfo['AccountNumber'])
     #return logon_token
+    return
+
+def newToken(accNum, Token):
+    cnx,cursor = connect()
+    query = ("INSERT INTO Friends "
+              "(AccountNumber, Token)"
+              "VALUES (%(account_number)s, %(login_token)s)")
+    cursor.execute(query)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
     return
 
 # Insert a new video with given video information and a video and thumbnail file
