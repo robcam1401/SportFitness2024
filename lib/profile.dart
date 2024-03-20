@@ -12,7 +12,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   int followingCount = 100;
@@ -118,6 +118,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             tabs: [
               Tab(text: 'Feed'),
               Tab(text: 'Services'),
+              Tab(text: 'Saved'),
             ],
           ),
           Expanded(
@@ -167,6 +168,19 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                         ],
                       );
                     }).toList(),
+                  ),
+                ),
+                const SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Sample post
+                      PostWidget(
+                        image: AssetImage('assets/Images/post_image1.jpg'),
+                        caption: 'another sample post',
+                      ),
+                      // Add more posts as needed
+                    ],
                   ),
                 ),
               ],

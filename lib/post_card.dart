@@ -1,3 +1,7 @@
+import 'package:exercise_app/other_profile.dart';
+import 'package:exercise_app/profile.dart';
+import 'package:share_plus/share_plus.dart';
+
 import 'package:flutter/material.dart';
 
 final List<String> userImagesUrls = [
@@ -17,6 +21,7 @@ final List<String> posts = [
 class PostCard extends StatelessWidget {
   final String userImagesUrls;
   final String posts;
+  final String text = "hello";
 
   const PostCard({
     Key? key,
@@ -68,20 +73,21 @@ class PostCard extends StatelessWidget {
                               vertical: 16,
                             ),
                             shrinkWrap: true,
-                            children: [
-                              'Delete',
+                            children: <Widget>[
+                              InkWell(
+                                child: Container(
+                                  height: 50,
+                                  child: const Center (child: Text('Delete'))
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
+                                child: Container(
+                                  height: 50,
+                                  child: const Center(child: Text('Profile')),
+                                ),
+                              )
                             ]
-                                .map(
-                                  (e) => InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12, horizontal: 16),
-                                      child: Text(e),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
                           ),
                         ),
                       );
@@ -117,10 +123,8 @@ class PostCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.send,
-                ),
+                onPressed: () {Share.share('check out my website https://example.com');},
+                icon: const Icon(Icons.send,),
               ),
               Expanded(
                 child: Align(
