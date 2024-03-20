@@ -30,10 +30,27 @@ def accountInfo(acct_num):
     cnx.commit()
     cnx.close()
     return_matrix = []
+    # the cursor is made of tuples
+    # a datetime.date datatype cannot be serialized into json format
+    # to change the datetime type into a string, the tuples have to be turned into lists
+    # because tuples dont support item assignment
+    # temp_list will be the temporary list to replace the tuples
+    # which will be added to return_matrix like nothing even happened
+    temp_list = []
     for i in cursor:
-        return_matrix.append(i)
+        temp = i
+        for j in range(len(temp)):
+            # change the datetime format into a string and append
+            if type(temp[j]) == datetime.date:
+                temp_list.append(str(temp[j]))
+            else:
+            # just append
+                temp_list.append(temp[j])
+        return_matrix.append(temp_list)
+        temp_list = []
     cursor.close()
-    return return_matrix
+    final_json = {'acctInfo' : return_matrix}
+    return final_json
 
 def accountSearchName(search_term):
     cnx,cursor = connect()

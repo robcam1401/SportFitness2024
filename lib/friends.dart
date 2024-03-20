@@ -1,5 +1,6 @@
 import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
+import 'dbInterface.dart';
 
 class Friends extends StatefulWidget{
   @override
@@ -9,14 +10,22 @@ class Friends extends StatefulWidget{
 class _Friends extends State<Friends> {
   // sample data for the list
   //  will be updated with data in the database later
-  final List _people = [
-    'nabinta',
-    'cam',
-    'zach',
-    'olga',
-    'person 5',
-    'person 6',
-  ];
+  static List _locals = Insert().test_friends();
+  final List _people = _locals[0];
+  final List _pairs = _locals[1];
+  var test = Insert().test_string();
+  // this query returns a list of lists
+  // the _people list contains usernames of friends
+  // the _pairs list contains pair IDs of friends
+
+  // final List _people = [
+  //   'nabinta',
+  //   'cam',
+  //   'zach',
+  //   'olga',
+  //   'person 5',
+  //   user1,
+  // ];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 
-void main() {
+void test_func() {
 	print('Hello, World!');
 	const insert_data = {
 		'Action' : 'I',
@@ -23,12 +23,12 @@ void main() {
 		};
 	final String query_json = jsonEncode(query_data);
 	print(query_json);
-    connect_to_server(query_json);
-    }
+  print(connect_to_server(query_json));
+  }
 
 Future<String> connect_to_server(send_string) async {
   // Define the server's IP address and port
-    final String serverIp = 'localhost'; // Change to the server's IP address
+    final String serverIp = '10.0.2.2'; // Change to the server's IP address
     final int serverPort = 12000; // Change to the server's port
 
     try {
@@ -77,6 +77,20 @@ final class Insert {
     return ret;
   }
 
+  void test_string() {
+    test_func();
+  }
+
+  List test_friends() {
+    final List _people = [];
+    final List _pairs = [];
+    const int fList_length = 2;
+    const Map friends = {'friends' : [{'pairID' : 1, 'acctNum' : 1}, {'pairID' : 2, 'acctNum' : 2}], 'usernames' : [{'acctNum' : 1, 'username' : 'User1'}, {'acctNum' : 2, 'username' : 'User2'}]};
+    for (var i = 0; i < fList_length; i++) {
+      _people.add(friends['usernames'][i]['username']);
+    }
+    return [_people,_pairs];
+  }
   // Insert a new video
 
   // Insert new content
@@ -147,7 +161,7 @@ final class Query {
     final String query_json = jsonEncode(query_data);
     print(query_json);
     dynamic ret = connect_to_server(query_json);
+    ret += 'help';
     return ret;
   }
-
 }
