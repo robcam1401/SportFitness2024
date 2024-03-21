@@ -46,7 +46,7 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Other User Profiles'),
         centerTitle: true,
         backgroundColor: Colors.blue,
       ),

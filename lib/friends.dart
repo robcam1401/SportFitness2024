@@ -1,4 +1,7 @@
+import 'package:exercise_app/groupcircle.dart';
 import 'package:exercise_app/square.dart';
+import 'package:exercise_app/groupcircle.dart';
+
 import 'package:flutter/material.dart';
 import 'dbInterface.dart';
 
@@ -18,14 +21,17 @@ class _Friends extends State<Friends> {
   // the _people list contains usernames of friends
   // the _pairs list contains pair IDs of friends
 
-  // final List _people = [
-  //   'nabinta',
-  //   'cam',
-  //   'zach',
-  //   'olga',
-  //   'person 5',
-  //   user1,
-  // ];
+  final List _groups = [
+    'nabinta',
+    'cam',
+    'zach',
+    'olga',
+    'person 5',
+    '1',
+    '2',
+    '3',
+    '4',
+  ];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder
@@ -42,15 +48,33 @@ class _Friends extends State<Friends> {
       Column(
         children: [
           Expanded(
-            child: ListView.builder(
-                itemCount: _people.length,
+            flex: 20,
+            child:Container(
+              child:  ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _groups.length,
                 itemBuilder: (context, index) {
-                  return MySquare(
-                    child: _people[index],
+                  return MyCircle(
+                    child: _groups[index],
                   );
                 }
             ),
-          ),
+          )
+             
+            ),
+          Expanded(
+            flex: 80,
+            child: Container(
+            child: ListView.builder(
+                itemCount: _groups.length,
+                itemBuilder: (context, index) {
+                  return MySquare(
+                    child: _groups[index],
+                  );
+                }
+            ),
+            )
+          )
         ],
       )
     
