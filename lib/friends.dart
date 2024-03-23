@@ -66,10 +66,10 @@ class _Friends extends State<Friends> {
             flex: 80,
             child: Container(
             child: ListView.builder(
-                itemCount: _groups.length,
+                itemCount: _people.length,
                 itemBuilder: (context, index) {
                   return MySquare(
-                    child: _groups[index],
+                    child: _people[index],
                   );
                 }
             ),

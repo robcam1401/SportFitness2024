@@ -70,10 +70,8 @@ class _Feed extends State<Feed> {
                           // Logic to pick the image
                         },
                         style: ElevatedButton.styleFrom(
-                          primary:
-                              Colors.red[600], // Button background color is red
-                          onPrimary: Colors
-                              .white, // Text color for the ElevatedButton style
+                          foregroundColor: Colors
+                              .white, backgroundColor: Colors.red[600], // Text color for the ElevatedButton style
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
