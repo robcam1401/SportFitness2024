@@ -20,7 +20,7 @@ def call_from_json(json_data):
         if query_data['Action'] == 'Q':
             f = getattr(query,query_data['Function'])
         ret = f(query_data)
-        print(f'json_ret: {ret}')
+        # print(f'json_ret: {ret}')
         return ret
     # should add more comprehensive error catching and notification
     # ex. in the case of a duplicate email, send "email already in use"
@@ -39,9 +39,10 @@ def main():
     server_socket.bind(('',12000))
     # 1 is an infinite loop
     server_socket.listen(1)
-    print("Server is ready to connect...\n")
+    # print("Server is ready to connect...\n")
 
     while(True):
+        print("Server is ready to connect...\n")
         connection_socket, address = server_socket.accept()
         print("Connection established with: {}\n".format(address))
 
@@ -51,7 +52,7 @@ def main():
 
         ret = call_from_json(received_message)
         # the returned dictionary is dumped into a json string format
-        print(f'ret: {ret}')
+        # print(f'ret: {ret}')
         sent_json = json.dumps(ret)
         #sent_json_2 = json.loads(sent_json_1)
         connection_socket.send(sent_json.encode())

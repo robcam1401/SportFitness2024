@@ -48,9 +48,9 @@ Future<String> connect_to_server(send_string) async {
 			(data) {
 				print('Received from server: ${String.fromCharCodes(data)}');
         Type type = data.runtimeType;
-        print('Type: $type');
+        // print('Type: $type');
         String SocketData = String.fromCharCodes(data);
-        print('data: $SocketData');
+        // print('data: $SocketData');
         ret.complete(SocketData);
 			},
 			onDone: () {
@@ -78,7 +78,7 @@ Future<String> connect_to_server(send_string) async {
     final String query_json = jsonEncode(query);
     try {
       dynamic future_string = await connect_to_server(query_json);
-      print('f_string: $future_string');
+      // print('f_string: $future_string');
       Map _locals = jsonDecode(future_string);
       return _locals;
     }
@@ -205,6 +205,7 @@ final class Query {
       'Function' : 'account_friends_list',
       'AccountNumber' : account_number
     };
+    print(query_data);
     Map _fList = await query_helper(query_data);
     print(_fList);
     /* ret should contain a json of the form:
@@ -246,7 +247,7 @@ final class Query {
     // dictionary containing two lists: _people and _pairs
   }
 
-  Map friend_messages(pair_id, account_number) async { // pair_id is an integer
+  Future<Map> friend_messages(pair_id, account_number) async { // pair_id is an integer
     // lists that will contain the necessary information for each message
     // each index represents a single message
     // _messages[0] contains the body of the same message that _timestamps[0] contains the timestamp of
@@ -254,7 +255,7 @@ final class Query {
     dynamic query_data = {
       'Action' : 'Q',
       'Function' : 'friend_messages_date',
-      'AccountNumber' : pair_id
+      'PairID' : pair_id
     };
     // connect to the server and retrieve the message data
     dynamic _fMessages = await query_helper(query_data);
@@ -274,26 +275,33 @@ final class Query {
     }
     */
     // now iterate and construct the list of message widgets
-    final int fMessages_length = _fMessages['messages'].length();
+    final int fMessages_length = _fMessages['messages'].length;
+    final _messages = _fMessages['messages'];
     List<Widget> children = [];
     bool sender = false;
     Color color = Color(0xFFE8E8EE);
     for (var i = 0; i < fMessages_length; i++) {
-      if (_fMessages[i]["SentUser"] == account_number) {
+      // String message = _messages[i]["MessageBody"];
+      // print("message: $message");
+      // determine the sender of each message and change color and sender args accordingly
+      if (_messages[i]["SentUser"] == account_number) {
         sender = true;
-        Color color = Color.fromARGB(255, 155, 155, 238);
+        color = Color.fromARGB(255, 192, 192, 252);
       }
-      BubbleSpecialThree(
-        text: _fMessages[i]["MessageBody"],
+      else {
+        sender = false;
+        color  = Color(0xFFE8E8EE);
+      }
+      Widget child = BubbleSpecialThree(
+        text: _messages[i]["MessageBody"],
         color: color,
         tail: true,
         isSender: sender,
       );
-      
+      children.add(child);
     }
-
-
-    return children;
+    // children is a list: [Widget, Widget, ...]
+    return {'children' : children};
   }
 
   Future<Map> groups_list(account_number) async {

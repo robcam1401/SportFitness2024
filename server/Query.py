@@ -302,15 +302,15 @@ def friendsList(account_number):
     # ultimately is a json containing lists of dictionaries containing the data
     return sent_json
 
-def friendPairMessages(pair_id):
+def friendPairMessages(query_info):
     cnx,cursor = connect()
     query = ("SELECT * FROM FriendMessages\
-             Where PairID={} ORDER BY SentStamp desc".format(pair_id))
+             Where PairID={} ORDER BY SentStamp asc".format(query_info['PairID']))
     cursor.execute(query)
     cnx.commit()
     message_array = [] 
     for i in cursor:
-        json1 = {"pairID" : i[0], "messageID" : i[1], "message" : i[2], "timestamp" : i[3], "sentUser" : i[4]}
+        json1 = {"PairID" : i[0], "MessageID" : i[1], "MessageBody" : i[2], "Timestamp" : str(i[3]), "SentUser" : i[4]}
         message_array.append(json1)
     cursor.close()
     cnx.close()
