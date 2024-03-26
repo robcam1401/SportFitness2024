@@ -1,3 +1,7 @@
+import 'package:exercise_app/other_profile.dart';
+import 'package:exercise_app/profile.dart';
+import 'package:share_plus/share_plus.dart';
+
 import 'package:flutter/material.dart';
 
 final List<String> userImagesUrls = [
@@ -14,15 +18,25 @@ final List<String> posts = [
   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
 ];
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final String userImagesUrls;
   final String posts;
+  final String text = "hello";
 
   const PostCard({
     Key? key,
     required this.userImagesUrls,
     required this.posts,
   }) : super(key: key);
+
+  @override
+  _PostCardState createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool showComments = false; //boolean for comment state
+  bool isLiked = false; //boolean variable for like state
+  TextEditingController _commentController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +52,7 @@ class PostCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundImage: NetworkImage(userImagesUrls),
+                  backgroundImage: NetworkImage(widget.userImagesUrls),
                 ),
                 Expanded(
                   child: Padding(
@@ -68,20 +82,21 @@ class PostCard extends StatelessWidget {
                               vertical: 16,
                             ),
                             shrinkWrap: true,
-                            children: [
-                              'Delete',
+                            children: <Widget>[
+                              InkWell(
+                                child: Container(
+                                  height: 50,
+                                  child: const Center (child: Text('Delete'))
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
+                                child: Container(
+                                  height: 50,
+                                  child: const Center(child: Text('Profile')),
+                                ),
+                              )
                             ]
-                                .map(
-                                  (e) => InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12, horizontal: 16),
-                                      child: Text(e),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
                           ),
                         ),
                       );
@@ -104,23 +119,29 @@ class PostCard extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                onPressed: () {},
-                icon: const Icon(
+                onPressed: () {
+                  setState(() {
+                    isLiked = !isLiked;
+                  });
+                },
+                icon: Icon(
                   Icons.thumb_up,
-                  color: Colors.blue,
+                  color: isLiked ? Colors.blue : Colors.grey,
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  setState(() {
+                    showComments = !showComments;
+                  });
+                },
                 icon: const Icon(
                   Icons.comment_outlined,
                 ),
               ),
               IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.send,
-                ),
+                onPressed: () {Share.share('check out my website https://example.com');},
+                icon: const Icon(Icons.send,),
               ),
               Expanded(
                 child: Align(
@@ -194,10 +215,37 @@ class PostCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                   ),
+                  if (showComments)
+                    Column(
+                      children: [
+                        TextField(
+                          controller: _commentController,
+                          decoration: InputDecoration(
+                            labelText: 'Write a comment...',
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.send),
+                              onPressed: () {
+                                final commentText = _commentController.text;
+                                // Here, you'd  send the comment to your backend or handle it as needed
+                                print(
+                                    'Comment: $commentText'); // For demonstration only
+                                _commentController.clear();
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ))
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 }

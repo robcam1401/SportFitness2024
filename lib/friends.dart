@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:exercise_app/groupcircle.dart';
 import 'package:exercise_app/square.dart';
+import 'package:exercise_app/groupcircle.dart';
 import 'package:flutter/material.dart';
 import 'dbInterface.dart';
 
@@ -29,7 +31,17 @@ class _Friends extends State<Friends> {
   //   user1,
   // ];
 
-
+  final List _groups = [
+    'nabinta',
+    'cam',
+    'zach',
+    'olga',
+    'person 5',
+    '1',
+    '2',
+    '3',
+    '4',
+  ];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder
@@ -104,6 +116,34 @@ class _Friends extends State<Friends> {
           //       }
           //   ),
           // ),
+          Expanded(
+            flex: 20,
+            child:Container(
+              child:  ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _groups.length,
+                itemBuilder: (context, index) {
+                  return MyCircle(
+                    child: _groups[index],
+                  );
+                }
+            ),
+          )
+             
+            ),
+          Expanded(
+            flex: 80,
+            child: Container(
+            child: ListView.builder(
+                itemCount: _people.length,
+                itemBuilder: (context, index) {
+                  return MySquare(
+                    child: _people[index],
+                  );
+                }
+            ),
+            )
+          )
         ],
       ),
 
