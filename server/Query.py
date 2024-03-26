@@ -56,7 +56,7 @@ def accountInfo(acct_num):
     return final_json
 
 # password hash is a haxadecimal value as a string
-def passwordHashAuth(password_hash, username):
+def passwordHashAuth(password_hash, username, account_number):
     cnx,cursor = connect()
     query = ("SELECT PasswordHash FROM UserAccount\
              WHERE Username = {} OR Email = {}").format(username, username)
@@ -70,11 +70,11 @@ def passwordHashAuth(password_hash, username):
         if i[0] == password_hash:
             return_status['match'] = True
     cursor.close()
-    # create the login token with the secrets library
-    login_token = secrets.token_hex(16)
+
+    # create and insert a login token into the database
+    login_token = Insert.newToken(account_number)
+    # return the token to the client
     return_status['token'] = login_token
-    # now insert the token into the database
-    Insert.newToken(account_number, login_token)
     return return_status
 
 def accountSearchName(search_term):
@@ -282,6 +282,7 @@ def friendsList(account_number):
         username_array.append(json2)
     # append the array to the json to send to the client
     sent_json["usernames"] = username_array
+    print(sent_json)
     # final json has the form {"friends" : ["pairID" : <>, "acctNum" : <>],
     #                         "usernames" : ["acctNum" : <>, "username" : <>]}
     # ultimately is a json containing lists of dictionaries containing the data

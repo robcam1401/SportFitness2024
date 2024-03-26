@@ -1,3 +1,5 @@
+# Tx/ Rx ##
+
 When sending and receiving data from the sql server, the data must be handled in a specific way
 All data is handled within JSON strings
 When sending data to the server, the JSON will look something like:
@@ -67,4 +69,28 @@ Specific input and output datatype formats will be commented in each method.
 Queries, and therefore jsons and lists are not very well optimized right now, for example the friends_list json contains
 account number twice, because two different queries were made to create the json. Effort will be made to clean these queries
 up in the future, but ideally, nothing should change on the client-side.
+
+
+## Error Codes ##
+
+When inserting into the database, often there will be conflicts with uniquenesss and primary keys.
+To communicate a uniqueness constraint, error codes will be given in a 3-digit code, with 
+the first digit representing the error instance (uniqueness, type/format check, etc.),
+the second representing the problem column,
+and the third representing extras, idk
+Only tables with enforced uniqueness will have uniqueness codes,
+only tables with type checks will have type codes, etc.
+Specific codes identified below:
+
+First Digit
+1 : Uniqueness collision
+2 : Invalid Length
+
+Second Digit
+
+0 : UserAccount
+1 : UserProfile
+2 : UserAuth
+3 : 
+
 

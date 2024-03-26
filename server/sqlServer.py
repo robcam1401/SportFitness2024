@@ -1,5 +1,6 @@
 from socket import *
 import json
+from time import sleep
 
 from sqlInterface import *
 
@@ -19,10 +20,12 @@ def call_from_json(json_data):
         if query_data['Action'] == 'Q':
             f = getattr(query,query_data['Function'])
         ret = f(query_data)
-        return ret, "Clean"
+        print(f'json_ret: {ret}')
+        return ret
     # should add more comprehensive error catching and notification
     # ex. in the case of a duplicate email, send "email already in use"
     except Exception as err:
+        print(json_data)
         exception = [("Exception: {}, {}\n".format(err, type(err))),"{}".format(json_data)]
 
         return "Error", exception
@@ -46,14 +49,13 @@ def main():
         received_message = incoming_message.decode()
         print("Received message: {}\n".format(received_message))
 
-        ret, code  = call_from_json(received_message)
+        ret = call_from_json(received_message)
         # the returned dictionary is dumped into a json string format
-        print(ret)
+        print(f'ret: {ret}')
         sent_json = json.dumps(ret)
         #sent_json_2 = json.loads(sent_json_1)
         connection_socket.send(sent_json.encode())
-        print(sent_json)
-        print(code)
+        print(f'sent: {sent_json}')
         print("Message sent\n")
         connection_socket.close()
 

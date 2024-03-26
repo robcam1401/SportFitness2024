@@ -134,12 +134,12 @@ class insert():
     }
 
     def new_user(user_info):
-        newAccountInsert(user_info)
-        return 'Inserted'
+        errors = newAccountInsert(user_info)
+        return errors
 
     def new_video(video_info):
-        newVideoInsert(video_info)
-        return 'Inserted'
+        errors = newVideoInsert(video_info)
+        return errors
 
     def new_content_comment(comment_info):
         newCommentInsertContent(comment_info)
@@ -202,7 +202,7 @@ class query():
     
     # given a password hash and a username, returns authentication and a login token
     def password_hash(auth_info):
-        return_matrix = passwordHashAuth(auth_info['PasswordHash'],auth_info['Username'])
+        return_matrix = passwordHashAuth(auth_info['PasswordHash'],auth_info['Username'],auth_info['AccountNumber'])
         return return_matrix
 
     # given a username, search for the user account
@@ -279,8 +279,9 @@ class query():
         return return_matrix
     
         # given an account number, retrieve the friends list of a user
-    def account_friends_list(account_number):
-        return_matrix = friendsList(account_number)
+    def account_friends_list(query_info):
+        return_matrix = friendsList(query_info['AccountNumber'])
+        print(f'return_matrix: {return_matrix}')
         return return_matrix
     # given a pair id, return the messages between two friends
     def friend_messages_date(pair_id):

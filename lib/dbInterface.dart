@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 
 void test_func() {
 	print('Hello, World!');
@@ -35,16 +37,20 @@ Future<String> connect_to_server(send_string) async {
     try {
     // Create a socket connection to the server
 		final socket = await Socket.connect(serverIp, serverPort);
-    dynamic ret = "";
+    dynamic ret = Completer<String>();
 
 		// Send data to the server
 		socket.writeln(send_string);
 
 		// Listen for data from the server
-		socket.listen(
+		await socket.listen(
 			(data) {
 				print('Received from server: ${String.fromCharCodes(data)}');
-        ret = data;
+        Type type = data.runtimeType;
+        print('Type: $type');
+        String SocketData = String.fromCharCodes(data);
+        print('data: $SocketData');
+        ret.complete(SocketData);
 			},
 			onDone: () {
 				print('Server disconnected.');
@@ -58,7 +64,7 @@ Future<String> connect_to_server(send_string) async {
 
 		// Close the socket when you're done
 		socket.close();
-    return String.fromCharCodes(ret);
+    return ret.future;
 	} 
 	catch (e) {
     	print('Error: $e');
@@ -158,21 +164,34 @@ final class Query {
   }
   // Query for friend PairIDs associated with an account number
   // account_number should be an integer
-  Map friends_list(account_number) {
+  Future<Map> friends_list_helper(query) async {
+    final String query_json = jsonEncode(query);
+    try {
+      dynamic _fList = await connect_to_server(query_json);
+      Map _locals = jsonDecode(_fList);
+      return _locals;
+    }
+    on Exception catch (ex) {
+      print('Friends List Helper Query Error: $ex');
+    }
+    throw();
+  }
+
+  Future<Map> friends_list(account_number) async{
     final List _people = [];
     final List _pairs = [];
     //const int fList_length = 2;
     // dictionary containing two lists of dictionaries
     // test Map
-    const Map friends = {'friends' : [{'pairID' : 1, 'acctNum' : 1}, {'pairID' : 2, 'acctNum' : 2}], 'usernames' : [{'acctNum' : 1, 'username' : 'User1'}, {'acctNum' : 2, 'username' : 'User2'}]};
+    // const Map friends = {'friends' : [{'pairID' : 1, 'acctNum' : 1}, {'pairID' : 2, 'acctNum' : 2}], 'usernames' : [{'acctNum' : 1, 'username' : 'User1'}, {'acctNum' : 2, 'username' : 'User2'}]};
     // call the db function
     dynamic query_data = {
       'Action' : 'Q',
       'Function' : 'account_friends_list',
       'AccountNumber' : account_number
     };
-    final String query_json = jsonEncode(query_data);
-    dynamic _fList = connect_to_server(query_json);
+    Map _fList = await friends_list_helper(query_data);
+    print(_fList);
     /* ret should contain a json of the form:
     {
       'friends' : [{},{}],
@@ -188,19 +207,19 @@ final class Query {
       'acctNum' : int,
       'username' : str
     }
-    this might change to joim the dictionaries with a single query
+    this might change to join the dictionaries with a single query
 
     */
     // iterating through the test map to create the _pairs and _people lists
     // fList_length should be the length of the two lists in the map, which should both be the same lenght
     // if not, something else has gone wrong anyways server-side
-    final int fList_length = _fList['usernames'].length();
-    for (var i = 0; i < fList_length; i++) {
-      // _people contains all the usernames of friends
-      _people.add(friends['usernames'][i]['username']);
-      // _pairs contains all the pairIDs of friends
-      _pairs.add(friends['friends'][i]['pairID']);
-    }
+    final int fList_length = _fList['usernames'].length;
+    // for (var i = 0; i < fList_length; i++) {
+    //   // _people contains all the usernames of friends
+    //   _people.add(friends['usernames'][i]['username']);
+    //   // _pairs contains all the pairIDs of friends
+    //   _pairs.add(friends['friends'][i]['pairID']);
+    // }
 
     for (var i = 0; i < fList_length; i++) {
       // add to _people
@@ -228,7 +247,7 @@ final class Query {
     };
     // connect to the server and retrieve the message data
     final String json_data = jsonEncode(query_data);
-    dynamic _fMessages = connect_to_server(query_data);
+    dynamic _fMessages = connect_to_server(json_data);
     /*
     _fMessages has the form:
     {
