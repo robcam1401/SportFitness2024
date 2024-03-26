@@ -152,6 +152,8 @@ create table CommMessages(
 create table CommunityMembers(
     CommunityID     int(32)     NOT NULL,
     AccountID       int(32)     NOT NULL,
+    constraint CommMembers_pk
+    primary key (CommunityID, AccountID)
 );
 
 create table Events(
@@ -247,10 +249,13 @@ alter table CommMessages
     foreign key (CommunityID) references Communities(CommunityID);
     
 alter table CommunityMembers
-    add constraint comm_id_fk
-    foreign key (CommunityID) references Communities(CommunityID);
-    add constraint acct_id_fk
-    foreign key (AccountNumber) references UserAccount(AccountNumber);
+    add constraint comm_members_id_fk
+    foreign key (CommunityID) references Communities(CommunityID),
+    add constraint acct_members_id_fk
+    foreign key (AccountID) references UserAccount(AccountNumber);
+    
+alter table CommunityMembers
+	drop constraint comm_id_fk;
 
     -- Keys connect Events(PosterID) to UserAccount(AccountNumber)
 alter table Events

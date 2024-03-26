@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
+import 'package:chat_bubbles/chat_bubbles.dart';
 
 void test_func() {
 	print('Hello, World!');
@@ -72,19 +73,32 @@ Future<String> connect_to_server(send_string) async {
   	}
 }
 
+ // helper function to keep from rewriting lots of copy-pasted code
+  Future<Map> query_helper(query) async {
+    final String query_json = jsonEncode(query);
+    try {
+      dynamic future_string = await connect_to_server(query_json);
+      print('f_string: $future_string');
+      Map _locals = jsonDecode(future_string);
+      return _locals;
+    }
+    on Exception catch (ex) {
+      print('Friends List Helper Query Error: $ex');
+    }
+    throw();
+  }
+
 final class Insert {
 
   // Insert a new account
-  String new_account(account_info) {
+  Future<Map> new_account(account_info) async {
     account_info['Action'] = 'I';
     account_info['Function'] = 'new_user';
     account_info['Followers'] = 0;
     account_info['Following'] = 0;
-    final String insert_json = jsonEncode(account_info);
-    // print(insert_json);
-    dynamic ret = connect_to_server(insert_json);
+    Map _response = await query_helper(account_info);
     // ret will be a string containing an error/success code
-    return ret;
+    return _response;
   }
 
   // Insert a new video
@@ -95,47 +109,62 @@ final class Insert {
 
   // Insert into friends
 
+  // Insert into friend messages
+  Future<Map> new_friend_messages(message_info) async {
+    message_info['Action'] = 'I';
+    message_info['Function'] = 'new_message';
+    Map _response = await query_helper(message_info);
+    return _response;
+  }
+
 }
 
 // Query for account info
 final class Query {
 
   // Given an account number, returns all info associated with an account
-  String query_account_info(account_number) {
+  Future<Map> account_info(account_number) async {
     dynamic query_data = {
       'Action' : 'Q',
       'Function' : 'account_info',
       'AccountNumber' : account_number
       };
-    final String query_json = jsonEncode(query_data);
-    // print(query_json);
-    dynamic ret = connect_to_server(query_json);
-    return ret;
+    Map _info = await query_helper(query_data);
+    return _info;
   }
+
+  // Query for owner name of an account
+  Future<Map> account_name(account_number) async {
+    dynamic query_data = {
+      'Action' : 'Q',
+      'Function' : 'account_name',
+      'AccountNumber' : account_number
+    };
+    Map _name = await query_helper(query_data);
+    return _name['name'];
+  }
+
   // Query for account email
-  String query_account_email(account_number) {
+  Future<Map> account_email(account_number) async {
     dynamic query_data = {
       'Action' : 'Q',
       'Function' : 'account_email',
       'AccountNumber' : account_number
       };
-    final String query_json = jsonEncode(query_data);
-    // print(query_json);
-    dynamic ret = connect_to_server(query_json);
-    // ret should be a dictionary containing the account email and a success/error code
-    return ret;
+    Map _email = await query_helper(query_data);
+    return _email;
+    // _email is a dictionary containing the email address
+    // {'email' : 'abc@xyz.com'}
   }
 
   // Query for videos associated with an account, descending by date
-  String query_account_videos_date_desc(account_number) {
+  Future<Map> account_videos_date_desc(account_number) async {
     dynamic query_data = {
       'Action' : 'Q',
       'Function' : 'account_videos_date_desc',
       'AccountNumber' : account_number
       };
-    final String query_json = jsonEncode(query_data);
-    // print(query_json);
-    dynamic ret = connect_to_server(query_json);
+    Map _videos = await query_helper(query_data);
     // ret should be a dictionary containing lots of video data:
     /* 
     {
@@ -146,36 +175,22 @@ final class Query {
       'views' : [int, ...],
       'upload_date' : [str, ...]
     }
-
     */
-    return ret;
+    return _videos;
   }
   // Ascending by date
-  String query_account_videos_date_asc(account_number) {
+  Future<Map> account_videos_date_asc(account_number) async {
     dynamic query_data = {
       'Action' : 'Q',
       'Function' : 'account_videos_date_asc',
       'AccountNumber' : account_number
     };
-    final String query_json = jsonEncode(query_data);
-    print(query_json);
-    dynamic ret = connect_to_server(query_json);
-    return ret;
+    Map _videos = await query_helper(query_data);
+    return _videos;
   }
   // Query for friend PairIDs associated with an account number
   // account_number should be an integer
-  Future<Map> friends_list_helper(query) async {
-    final String query_json = jsonEncode(query);
-    try {
-      dynamic _fList = await connect_to_server(query_json);
-      Map _locals = jsonDecode(_fList);
-      return _locals;
-    }
-    on Exception catch (ex) {
-      print('Friends List Helper Query Error: $ex');
-    }
-    throw();
-  }
+
 
   Future<Map> friends_list(account_number) async{
     final List _people = [];
@@ -190,7 +205,7 @@ final class Query {
       'Function' : 'account_friends_list',
       'AccountNumber' : account_number
     };
-    Map _fList = await friends_list_helper(query_data);
+    Map _fList = await query_helper(query_data);
     print(_fList);
     /* ret should contain a json of the form:
     {
@@ -231,14 +246,10 @@ final class Query {
     // dictionary containing two lists: _people and _pairs
   }
 
-  Map friend_messages(pair_id) { // pair_id is an integer
+  Map friend_messages(pair_id, account_number) async { // pair_id is an integer
     // lists that will contain the necessary information for each message
     // each index represents a single message
     // _messages[0] contains the body of the same message that _timestamps[0] contains the timestamp of
-    final List _messages = []; // str
-    final List _sender_ids = []; // int
-    final List _timestamps = []; // str
-    final List _message_ids = []; // int
 
     dynamic query_data = {
       'Action' : 'Q',
@@ -246,13 +257,13 @@ final class Query {
       'AccountNumber' : pair_id
     };
     // connect to the server and retrieve the message data
-    final String json_data = jsonEncode(query_data);
-    dynamic _fMessages = connect_to_server(json_data);
+    dynamic _fMessages = await query_helper(query_data);
     /*
     _fMessages has the form:
     {
       messages: [{},{},{},...]
     }
+    each dictionary represents a separate message
     with the dictionaries in the messages list as:
     {
       "pairID" : int, 
@@ -262,20 +273,47 @@ final class Query {
       "sentUser" : int
     }
     */
-
-    // now iterate and construct the lists
+    // now iterate and construct the list of message widgets
     final int fMessages_length = _fMessages['messages'].length();
+    List<Widget> children = [];
+    bool sender = false;
+    Color color = Color(0xFFE8E8EE);
     for (var i = 0; i < fMessages_length; i++) {
-      // _messages contains the bodies of all the messages
-      _messages.add(_fMessages['messages'][i]['message']);
-      // _message_ids contains the ids
-      _message_ids.add(_fMessages['messages'][i]['messageID']);
-      // _sender_ids contains the id of the sender
-      _sender_ids.add(_fMessages['messages'][i]['sentUser']);
-      // _timestamps contains the timestamps
-      _timestamps.add(_fMessages['messages'][i]['timestamp']);
+      if (_fMessages[i]["SentUser"] == account_number) {
+        sender = true;
+        Color color = Color.fromARGB(255, 155, 155, 238);
+      }
+      BubbleSpecialThree(
+        text: _fMessages[i]["MessageBody"],
+        color: color,
+        tail: true,
+        isSender: sender,
+      );
+      
     }
 
-    return {'_messages' : _messages, '_message_ids' : _message_ids, '_sender_ids' : _sender_ids, '_timestamps' : _timestamps};
+
+    return children;
+  }
+
+  Future<Map> groups_list(account_number) async {
+    final List _groups = [];
+    
+    // create the query and send to server
+    dynamic query = {
+      "Action" : "Q", 
+      "Function" : "account_communities", 
+      "AccountNumber" : account_number
+      };
+    
+    Map _gList = await query_helper(query);
+
+    // create the group list
+    final int gList_length = _gList['groups'].length;
+    for (var i = 0; i < gList_length; i++) {
+      // add to _groups
+      _groups.add(_gList['groups'][i]['group_name']);
+    }
+    return {'_groups' : _groups};
   }
 }

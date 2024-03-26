@@ -70,6 +70,35 @@ Queries, and therefore jsons and lists are not very well optimized right now, fo
 account number twice, because two different queries were made to create the json. Effort will be made to clean these queries
 up in the future, but ideally, nothing should change on the client-side.
 
+## FUTURE BUILDERS ##
+
+Future builder widgets will be used to asynchronously fetch data from the database and display onto the ui
+
+Each individual call starts with a helper function, ex:
+    Future<Map> addPeople() async {
+        Map _locals_friends = await Query().friends_list(1);
+        return _locals_friends;
+    }
+that is later passed into the future argument of the future builder.
+
+The future builder itself is a child widget, and returns a widget
+To construct a future builder, as follows:
+FutureBuilder<Map>(
+    future: function defined above,
+    builder: (BuildContext context, AsyncSnapshot<Map> snapshot){
+        ## now, we set the completion parameters of the builder and tell it what to do when done
+        if (snapshot.connectionState == ConnectionState.done){
+            ## if the future is complete, and the data is loaded, format the data appropriately and return a widget
+            something(snapshot.data)
+            return widget
+        }
+        ## if the snapshot is not done loading, we can just return in a loading widget for now
+        return CircularProgressIndicator()
+    }
+), // FutureBuilder
+
+Future Builder async functions will always return a Map of some sort check with interface functions for specifics
+
 
 ## Error Codes ##
 

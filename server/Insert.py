@@ -286,17 +286,19 @@ def newFriendRequests(RequestInfo):
 def newFriendMessages(MessageInfo):
     # authenticate the user instance
     #acct_auth(AccInfo['AccountNumber'],token)
+    now = datetime.datetime.now()
+    MessageInfo['MessageID'] = getLastID('FriendMessages','MessageID') + 1
+    MessageInfo['SentStamp'] = f"{now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")} {now.strftime("%H")}:{now.strftime("%M")}:{now.strftime("%S")}"
     cnx,cursor = connect()
-    #MessageInfo['MessageID'] = getLastID('FriendMessages','MessageID')
     add_message = ("INSERT INTO FriendMessages "
-              "(PairID, MessageID, MessageBody, SentStamp, SentUser, AttatchedLink)"
-              "VALUES (%(PairID)s, %(MessageID)s, %(MessageBody)s, %(SentStamp)s,%(SentUser)s,%(AttatchedLink)s)")
+              "(PairID, MessageID, MessageBody, SentStamp, SentUser)"
+              "VALUES (%(PairID)s, %(MessageID)s, %(MessageBody)s, %(SentStamp)s,%(SentUser)s)")
     cursor.execute(add_message,MessageInfo)
     cnx.commit()
 
     cursor.close()
     cnx.close()
-    return
+    return {"error" : "Success"}
 
 def newFriendMessagesLink(MessageInfo,Link):
     # authenticate the user instance

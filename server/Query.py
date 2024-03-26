@@ -55,6 +55,20 @@ def accountInfo(acct_num):
     final_json = {'acctInfo' : return_matrix}
     return final_json
 
+# find the name of the owner of the account specified
+def accountName(account_number):
+    cnx,cursor = connect()
+    query = (f"SELECT Fname, Lname FROM UserAccount WHERE AccountNumber = {account_number}")
+    cursor.execute(query)
+    cnx.commit()
+    cnx.close()
+    name = {}
+    for i in cursor:
+        name['first'] = i[0]
+        name['last'] = i[1]
+    #{'name' : {'first' : 'abc', 'last : 'xyz'}}
+    return {'name' : name}
+
 # password hash is a haxadecimal value as a string
 def passwordHashAuth(password_hash, username, account_number):
     cnx,cursor = connect()
@@ -305,15 +319,14 @@ def friendPairMessages(pair_id):
 
 def accountCommunities(account_id):
     cnx,cursor = connect()
-    query = ("SELECT * FROM CommunityMembers\
+    query = ("SELECT CommunityID FROM CommunityMembers\
              WHERE AccountID = {}".format(account_id))
     cursor.execute(query)
     cnx.commit() 
     member_array = []
     for i in cursor:
-        json1 = {"commID" : i[0]}
-        member_array.append(json1)
+        member_array.append(i[0])
     cursor.close()
     cnx.close()
-    return_json = {"communities" : member_array}
+    return_json = {"groups" : member_array}
     return return_json

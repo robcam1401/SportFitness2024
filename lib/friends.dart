@@ -8,11 +8,20 @@ import 'dbInterface.dart';
 class Friends extends StatefulWidget{
   @override
   State<Friends> createState() => _Friends();
-  Future<Map> _locals = Query().friends_list(4);
 }
 
 class _Friends extends State<Friends> {
-  final Future<Map> _locals = Query().friends_list(4);
+  // account variables
+  int _account_number = 1;
+
+  Future<Map> addPeople() async {
+    Map _locals_friends = await Query().friends_list(_account_number);
+    return _locals_friends;
+  }
+  Future<Map> addGroups() async {
+    Map _locals_groups = await Query().groups_list(_account_number);
+    return _locals_groups;
+  }
   // sample data for the list
   //  will be updated with data in the database later
   // final List _people = _locals['_people'];
@@ -31,17 +40,17 @@ class _Friends extends State<Friends> {
   //   user1,
   // ];
 
-  final List _groups = [
-    'nabinta',
-    'cam',
-    'zach',
-    'olga',
-    'person 5',
-    '1',
-    '2',
-    '3',
-    '4',
-  ];
+  // final List _groups = [
+  //   'nabinta',
+  //   'cam',
+  //   'zach',
+  //   'olga',
+  //   'person 5',
+  //   '1',
+  //   '2',
+  //   '3',
+  //   '4',
+  // ];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder
@@ -58,40 +67,19 @@ class _Friends extends State<Friends> {
       Column(
         children: [
           // I really don't know how this works, hopefully it works perfectly
+          // future builder for the friends
           FutureBuilder<Map>(
-            future: _locals, 
+            future: addPeople(), 
             builder: (BuildContext context, AsyncSnapshot<Map> snapshot){
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                case ConnectionState.waiting:
-                  return CircularProgressIndicator();
-                case ConnectionState.done:
-                  // if (!snapshot.hasData){
-                  //   return Text('No Data');
-                  // }
-                // once the data is loaded, separate it into the two lists
-                // and build the list widget
-                  final _people = snapshot.data?['_people'];
-                  final _pairs = snapshot.data?['_pairs'];
-                  if (_people.length == 0) {
-                    return Text('No Friends? :( ');
-                  }
-                  else {
-                    return Expanded(
-                      child: ListView.builder(
-                        itemCount: _people.length,
-                        itemBuilder: (context, index) {
-                          return MySquare(
-                            child: _people[index],
-                          );
-                        }
-                      )
-                    );
-                  }
-                default:
-                  List _people = [];
-                  List _pairs = [];
+              if (snapshot.connectionState == ConnectionState.done){
+                final _people = snapshot.data!['_people'];
+                final _pairs = snapshot.data!['_pairs'];
+                if (_people.length == 0) {
+                  return const Text('No Friends? :( ');
+                }
+                else {
                   return Expanded(
+                    flex: 80,
                     child: ListView.builder(
                       itemCount: _people.length,
                       itemBuilder: (context, index) {
@@ -101,49 +89,48 @@ class _Friends extends State<Friends> {
                       }
                     )
                   );
+                }
               }
-              
+              else if (snapshot.hasError) {
+                return Text("Snapshot Error");
+              }
+              return const CircularProgressIndicator();
             }
-
           ),
-          // Expanded(
-          //   child: ListView.builder(
-          //       itemCount: _people.length,
-          //       itemBuilder: (context, index) {
-          //         return MySquare(
-          //           child: _people[index],
-          //         );
-          //       }
-          //   ),
-          // ),
-          Expanded(
-            flex: 20,
-            child:Container(
-              child:  ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _groups.length,
-                itemBuilder: (context, index) {
-                  return MyCircle(
-                    child: _groups[index],
-                  );
+          // future builder for the groups
+          FutureBuilder<Map>(
+            future: addGroups(),
+            builder: (BuildContext context, AsyncSnapshot<Map> snapshot){
+              if (snapshot.connectionState == ConnectionState.done){
+                if (snapshot.hasData) {
+                  final _groups = snapshot.data!['_groups'];
+                  if (_groups.length == 0) {
+                    return const Text('No Groups? :( ');
+                  }
+                  else {
+                    return Expanded(
+                      flex: 20,
+                      child:Container(
+                        child:  ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _groups.length,
+                          itemBuilder: (context, index) {
+                            return MyCircle(
+                              child: _groups[index],
+                            );
+                          }
+                        ),
+                      )
+                    );
+                  }
                 }
-            ),
-          )
-             
-            ),
-          Expanded(
-            flex: 80,
-            child: Container(
-            child: ListView.builder(
-                itemCount: _people.length,
-                itemBuilder: (context, index) {
-                  return MySquare(
-                    child: _people[index],
-                  );
-                }
-            ),
-            )
-          )
+              }
+              else if (snapshot.hasError) {
+                return Text("Snapshot Error");
+              }
+              return const CircularProgressIndicator();
+            }
+          ),
         ],
       ),
 

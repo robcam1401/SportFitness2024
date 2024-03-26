@@ -165,8 +165,8 @@ class insert():
         return 'Inserted'
 
     def new_message(message_info):
-        newFriendMessages(message_info)
-        return 'Inserted'
+        errors = newFriendMessages(message_info)
+        return errors
 
     def new_message_link(message_info,link):
         newFriendMessages(message_info,link)
@@ -198,6 +198,10 @@ class query():
     # given an account number, returns the email associated
     def account_email(account_info):
         return_matrix = accountSearchEmail(int(account_info['AccountNumber']))
+        return return_matrix
+    
+    def account_name(account_info):
+        return_matrix = accountName(int(account_info['AccountNumber']))
         return return_matrix
     
     # given a password hash and a username, returns authentication and a login token
@@ -281,15 +285,14 @@ class query():
         # given an account number, retrieve the friends list of a user
     def account_friends_list(query_info):
         return_matrix = friendsList(query_info['AccountNumber'])
-        print(f'return_matrix: {return_matrix}')
         return return_matrix
     # given a pair id, return the messages between two friends
     def friend_messages_date(pair_id):
         return_matrix = friendPairMessages(pair_id)
         return return_matrix
     
-    def account_communities(accountid):
-        return_matrix = accountCommunities(accountid)
+    def account_communities(query_info):
+        return_matrix = accountCommunities(query_info['AccountNumber'])
         return return_matrix
 
 ## edit functions, for editable tables and columns
