@@ -1,6 +1,8 @@
 # required imports
 import sys
 import os
+import hashlib
+import secrets
 
 # find absolute paths
 _libs =  os.path.join(os.getcwd(), os.path.dirname("libs"))
@@ -51,49 +53,113 @@ def getLastID(table : str, identifier):
 # when inserting, columns will be strongly-typed at insert and will be checked to see if they are within the declared parameters
 # for example, username is strongly typed as a string and will be checked to see if it is 15 characters or less
 def newAccountTypeCheck(AccInfo):
+    status = []
     if len(AccInfo['Username']) > 15:
-        raise "Username too long"
+        status.append(211)
     if len(AccInfo['Email']) > 32:
-        raise "Email too long"
+        status.append(212)
     if AccInfo['PhoneNumber'] > 99999999999:
-        raise "Phone number too large"
+        status.append(213)
     if len(AccInfo['Fname']) > 15:
-        raise "First name too long"
+        status.append(214)
     if len(AccInfo['Minit']) > 1:
-        raise "Middle Initial too long"
+        status.append(214)
     if len(AccInfo['Lname']) > 15:
-        raise "Last name too long"
+        status.append(215)
+
     # try: 
     #     AccInfo['UserDoB'] = datetime.date(AccInfo['UserDoB'])
     # except:
     #     raise "Invalid Date of Birth"
-    return
+    return status
 
 ## Insert Methods
 
 # Insert a new Account with given account information in a dictionary
 def newAccountInsert(AccInfo):
     # check for valid data
-    newAccountTypeCheck(AccInfo)
-
+    status= newAccountTypeCheck(AccInfo)
     cnx,cursor = connect()
-    AccInfo['AccountNumber'] = getLastID('UserAccount','AccountNumber') + 1
-    #AccInfo['PasswordHash'] = zachhash(AccInfo['PasswordHash'])
-    # for item in AccInfo:
-    #     print("{} {}".format(item, (AccInfo[item])))
-    add_User = ("INSERT INTO UserAccount "
-              "(AccountNumber, Username, Email, PhoneNumber,Fname,Minit,Lname,UserDoB,PasswordHash)"
-              "VALUES (%(AccountNumber)s, %(Username)s, %(Email)s, %(PhoneNumber)s, %(Fname)s, %(Minit)s, %(Lname)s, %(UserDoB)s,%(PasswordHash)s)")
-    cursor.execute(add_User,AccInfo)
+
+    # Enforce Uniqueness on Username, Email, PhoneNumber
+    errors = {'uniqueness' : status, 'exit' : False}
+    username_uniqueness = (f"SELECT Username FROM UserAccount WHERE Username = {AccInfo['Username']}")
+    cursor.execute(username_uniqueness)
     cnx.commit()
+    for i in cursor:
+        if i[0] == AccInfo['Username']:
+            errors['uniqueness'].append(110)
+
+    email_uniqueness = (f"SELECT Email FROM UserAccount WHERE Email = {AccInfo['Email']}")
+    cursor.execute(email_uniqueness)
+    cnx.commit()
+    for i in cursor:
+        if i[0] == AccInfo['Email']:
+            errors['Uniqueness'].append(120)
+
+    pnumber_uniqueness = (f"SELECT PhoneNumber FROM UserAccount WHERE PhoneNumber = {AccInfo['PhoneNumber']}")
+    cursor.execute(pnumber_uniqueness)
+    cnx.commit()
+    for i in cursor:
+        if i[0] == AccInfo['PhoneNumber']:
+            errors['Uniqueness'].append(130)
+
+    cursor.close()
+    cnx.close()
+    # if there are any uniqueness errors, return the error dictionary
+    if len(errors['Uniqueness']) > 0:
+        return errors
+
+    # Create a new connection
+    cnx,cursor = connect()
+    try:
+        AccInfo['AccountNumber'] = getLastID('UserAccount','AccountNumber') + 1
+        hash = hashlib.sha256()
+        hash.update(AccInfo('PasswordHash'))
+        AccInfo['PasswordHash'] = hash.hexdigest()
+        add_User = ("INSERT INTO UserAccount "
+                "(AccountNumber, Username, Email, PhoneNumber,Fname,Minit,Lname,UserDoB,PasswordHash)"
+                "VALUES (%(AccountNumber)s, %(Username)s, %(Email)s, %(PhoneNumber)s, %(Fname)s, %(Minit)s, %(Lname)s, %(UserDoB)s,%(PasswordHash)s)")
+        cursor.execute(add_User,AccInfo)
+        cnx.commit()
+        errors['exit' : True]
+    except:
+        errors['exit' : False]
 
     cursor.close()
     cnx.close()
 
-    # create a new token for the new user on their device
-    #logon_token = create_token(AccInfo['AccountNumber'])
+    # create a new token for the new user on their device and insert into db
+    login_token = newToken(AccInfo['AccountNumber'])
     #return logon_token
-    return
+    errors['token'] = login_token
+    return errors
+
+def newToken(accNum):
+    cycle = True
+    while (cycle):
+        # find a unique token for the client
+        login_token = secrets.token_hex(16)
+        cnx,cursor = connect()
+        query = (f"SELECT Token FROM UserAuth WHERE Token = {login_token}")
+        cursor.execute(query)
+        cnx.commit()
+        for i in cursor:
+            # if the token is unique, break and insert
+            if len(cursor) == 0:
+                cycle = False
+            if cursor[0] != login_token:
+                cycle = False
+        
+    cnx,cursor = connect()
+    query = ("INSERT INTO Friends "
+              "(AccountNumber, Token)"
+              "VALUES ({},{})").format(accNum,login_token)
+    cursor.execute(query)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+    return login_token
 
 # Insert a new video with given video information and a video and thumbnail file
 def newVideoInsert(VideoInfo, VideoLink, Thumbnail):
@@ -169,19 +235,19 @@ def newContentInsert(ContentInfo,Link):
     cnx.close()
     return
 
-def newBookmarksLikes(bookmarkLikeInfo):
+def newBookmarksLikes(BookmarkLikeInfo):
     cnx,cursor = connect()
     
-    bookmark_like_info['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
+    BookmarkLikeInfo['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
     add_bml = ("INSERT INTO UserLikesBookmarks "
               "(bmlID, AccountNumber, Bookmarked, Liked, ContentType, ContentID)"
               "VALUES (%(bmlID)s, %(AccountNumber)s, %(Bookmarked)s, %(Liked)s, %(ContentType)s, %(ContentID)s)")
-    cursor.execute(add_bml, bookmark_like_info)
-    bookmarkLikeInfo['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
+    cursor.execute(add_bml, BookmarkLikeInfo)
+    BookmarkLikeInfo['bmlID'] = getLastID('UserLikesBookmarks','bmlID') + 1
     add_bml = ("INSERT INTO UserLikesBookmarks "
               "(bmlID, AccountNumber, Bookmarked, Liked, ContentType, ContentID)"
               "VALUES (%(bmlID)s, %(AccountNumber)s, %(Bookmarked)s, %(Liked)s, %(ContentType)s, %(ContentID)s)")
-    cursor.execute(add_bml, bookmarkLikeInfo)
+    cursor.execute(add_bml, BookmarkLikeInfo)
     cnx.commit()
 
     cursor.close()

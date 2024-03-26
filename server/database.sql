@@ -56,6 +56,11 @@ create table UserLikesBookmarks(
     ContentID       int(32)     NOT NULL
 );
 
+create table Following(
+    AccountNumber   int(32)     NOT NULL,
+    FollowingAcct   int(32)     NOT NULL
+);
+
 create table Videos(
     VideoID         int(32)     NOT NULL,
     VideoLink       text(255)   NOT NULL,
@@ -193,6 +198,12 @@ alter table UserLikesBookmarks
     add constraint user_fk
     foreign key (AccountNumber) references UserAccount(AccountNumber);
 
+alter table Following
+    add constraint er_fk
+    foreign key (AccountNumber) references UserAccount(AccountNumber),
+    add constraint ing_fk
+    foreign key (FollowingAcct) references UserAccount(AccountNumber);
+
 alter table Comments
     add constraint comment_owner_fk
     foreign key (AccountNumber) references UserAccount(AccountNumber),
@@ -257,3 +268,7 @@ alter table UserProfile
 
 alter table UserAccount
     add PasswordHash text(32);
+
+alter table UserAccount
+    add Followers int(32),
+    add Following int(32);

@@ -134,12 +134,12 @@ class insert():
     }
 
     def new_user(user_info):
-        newAccountInsert(user_info)
-        return 'Inserted'
+        errors = newAccountInsert(user_info)
+        return errors
 
     def new_video(video_info):
-        newVideoInsert(video_info)
-        return 'Inserted'
+        errors = newVideoInsert(video_info)
+        return errors
 
     def new_content_comment(comment_info):
         newCommentInsertContent(comment_info)
@@ -192,22 +192,36 @@ class insert():
 class query():
 
     # given an account number, returns the row containing the account number
-    def account_info(accountinfo):
-        return_matrix = accountInfo(accountinfo['AccountNumber'])
+    def account_info(account_info):
+        return_matrix = accountInfo(account_info['AccountNumber'])
         return return_matrix
     # given an account number, returns the email associated
-    def account_email(accountinfo):
-        return_matrix = accountSearchEmail(int(accountinfo['AccountNumber']))
+    def account_email(account_info):
+        return_matrix = accountSearchEmail(int(account_info['AccountNumber']))
         return return_matrix
-        
+    
+    # given a password hash and a username, returns authentication and a login token
+    def password_hash(auth_info):
+        return_matrix = passwordHashAuth(auth_info['PasswordHash'],auth_info['Username'],auth_info['AccountNumber'])
+        return return_matrix
+
+    # given a username, search for the user account
+    def account_name_info(search_term):
+        return_matrix = accountSearchName(search_term)        
+        return return_matrix
+
+    # given a depth to search, search all videos by date
+    def all_videos_date(depth):
+        return_matrix = allVideosDate(depth)
+        return return_matrix
 
     # given an account number, returns a table containing all videos by the specified account
     # ordered descending and ascending by date
-    def account_videos_date_desc(accountinfo):
-        return_matrix = accountVideosDate(accountinfo['AccountNumber'], " DESC")
+    def account_videos_date_desc(account_info):
+        return_matrix = accountVideosDate(account_info['AccountNumber'], " DESC")
         return return_matrix
-    def account_videos_date_asc(accountinfo):
-        return_matrix = accountVideosDate(accountinfo['AccountNumber'], "")
+    def account_videos_date_asc(account_info):
+        return_matrix = accountVideosDate(account_info['AccountNumber'], "")
         return return_matrix
     
     # given a search term, returns a cursor containing the video(s)
@@ -224,11 +238,9 @@ class query():
         return_matrix = accountContentDate(account_number, "")
         return return_matrix
     
-    def account_friends_list(account_number):
-        return_matrix = friendsList(account_number)
-        return return_matrix
-    def friend_messages_date(pair_id):
-        return_matrix = friendPairMessages(pair_id)
+    # given a search term, search for videos matching the search term
+    def video_search_name(search_term):
+        return_matrix = videoSearchName(search_term)
         return return_matrix
     
     # given a video/content id, returns a table containing all top-level comments on the specified video/content
@@ -240,6 +252,13 @@ class query():
     def video_comments_desc(videoid):
         return_matrix = commentsUnderPost(videoid," DESC",1)
         return return_matrix
+    # return children of a specific comment
+    def video_comments_desc_children(commentinfo):
+        return_matrix = commentsUnderComment(commentinfo['VideoID'],'DESC',1,commentinfo['ParentID'])
+        return return_matrix
+    def video_comments_asc_children(commentinfo):
+        return_matrix = commentsUnderComment(commentinfo['VideoID'],'',1,commentinfo['ParentID'])
+        return return_matrix
 
     def content_comments_asc(contentid):
         return_matrix = commentsUnderPost(contentid, "",0)
@@ -247,9 +266,26 @@ class query():
     def content_comments_desc(contentid):
         return_matrix = commentsUnderPost(contentid, " DESC",0)
         return return_matrix
+    # return children of a specific comment
+    def content_comments_desc_children(commentinfo):
+        return_matrix = commentsUnderComment(commentinfo['ContentID'],'DESC',0,commentinfo['ParentID'])
+        return return_matrix
+    def content_comments_asc_children(commentinfo):
+        return_matrix = commentsUnderComment(commentinfo['ContentID'],'',0,commentinfo['ParentID'])
+        return return_matrix
     
     def comment_body(commentid):
         return_matrix = commentBody(commentid)
+        return return_matrix
+    
+        # given an account number, retrieve the friends list of a user
+    def account_friends_list(query_info):
+        return_matrix = friendsList(query_info['AccountNumber'])
+        print(f'return_matrix: {return_matrix}')
+        return return_matrix
+    # given a pair id, return the messages between two friends
+    def friend_messages_date(pair_id):
+        return_matrix = friendPairMessages(pair_id)
         return return_matrix
     
     def account_communities(accountid):

@@ -1,0 +1,96 @@
+# Tx/ Rx ##
+
+When sending and receiving data from the sql server, the data must be handled in a specific way
+All data is handled within JSON strings
+When sending data to the server, the JSON will look something like:
+
+{
+    "Action" : "I",
+    "Function" : "new_user",
+    "AccountNumber" : None,
+    "Username" : 'str',
+    "Email" : 'str',
+    "PhoneNumber" : 'int',
+    "Fname" : "str",
+    "Minit" : "char",
+    "Lname" : 'str',
+    "UserDoB" : 'yyyy-mm-dd',
+    "PasswordHash" : 'str'
+}
+
+Where the 'action' character represents the class the desired function belongs to:
+    I = Insert
+    Q = Query
+    E = Edit
+    D = Delete
+
+And 'function' is the server-side function name to be called in the sqlInterface.py file, for example:
+    'new_user' in the Insert class, to insert a new user account, with the given account information
+    'account_info' in the Query class, to query for an account's information
+    'video_title' in the Edit class, to change a video's title
+
+When receiving information from the server, it will typically be formatted as:
+
+{
+    'string1' : [list],
+    'string2' : [[list], [list]],
+    'string3' : [{dict},{dict}]
+}
+making use of data structures to organize the necessary information, a working example would be:
+
+{
+    "friends" : [{"pairID" : <>, "acctNum" : <>}],
+    "usernames" : [{"acctNum" : <>, "username" : <>}]
+}
+which is a json containing lists of dictionaries.
+To access a specific username of user i, you would call json['usernames'][i]['usernames'],
+or the username of user i in the list 'usernames' in the json structure.
+
+Often, when calling a function to communicate with the sql server, it will not return the raw json structure,
+instead a scrubbed, more streamlined structure, that may vary from function to function.
+For example, the query_friends_list method in the dbInterface.dart file's Query class returns:
+
+json = {
+    '_people' : [name,name,name,name,...],
+    '_pairs' : [1,2,3,4,...]
+}
+
+This is a json containing two lists. A list of usernames of friends, and the pairID associated with those friends.
+Often, it will be useful to grab the lists out of the json and manipulate them from there:
+
+final List _people = json['_people'];
+
+and list elements can be accessed with the index of the element as:
+
+name = _people[0]
+
+Specific input and output datatype formats will be commented in each method.
+
+Queries, and therefore jsons and lists are not very well optimized right now, for example the friends_list json contains
+account number twice, because two different queries were made to create the json. Effort will be made to clean these queries
+up in the future, but ideally, nothing should change on the client-side.
+
+
+## Error Codes ##
+
+When inserting into the database, often there will be conflicts with uniquenesss and primary keys.
+To communicate a uniqueness constraint, error codes will be given in a 3-digit code, with 
+the first digit representing the error instance (uniqueness, type/format check, etc.),
+the second representing the problem column,
+and the third representing extras, idk
+Only tables with enforced uniqueness will have uniqueness codes,
+only tables with type checks will have type codes, etc.
+Specific codes identified below:
+
+First Digit
+1 : Uniqueness collision
+2 : Invalid Length
+
+Second Digit
+
+0 : UserAccount
+1 : UserProfile
+2 : UserAuth
+3 : 
+
+
