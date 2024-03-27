@@ -169,6 +169,16 @@ create table Events(
     primary key (EventID)
 );
 
+create table Services(
+    AccountNumber   int(32)     NOT NULL,
+    ServiceName     text(50)    NOT NULL,
+    /*
+    other checkboxes
+    */
+    spaces          boolean     DEFAULT FALSE
+
+);
+
 -- modify tables to create constraints with foreign keys
 
     -- Keys connect Video(AccountNumber) to USerAccount(AccountNumber)

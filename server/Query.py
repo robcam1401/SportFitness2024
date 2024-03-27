@@ -70,25 +70,28 @@ def accountName(account_number):
     return {'name' : name}
 
 # password hash is a haxadecimal value as a string
-def passwordHashAuth(password_hash, username, account_number):
+def passwordHashAuth(password_hash, username):
     cnx,cursor = connect()
-    query = ("SELECT PasswordHash FROM UserAccount\
+    query = ("SELECT PasswordHash, AccountNumber FROM UserAccount\
              WHERE Username = {} OR Email = {}").format(username, username)
     
     cursor.execute(query)
     cnx.commit()
     cnx.close()
-    return_status = {'match' : False}
+    return_status = {'match' : 'false'}
     # if true, the passwords match
+    account_number = NULL
     for i in cursor:
         if i[0] == password_hash:
-            return_status['match'] = True
+            return_status['match'] = 'true'
+            account_number = i[1]
     cursor.close()
 
-    # create and insert a login token into the database
-    login_token = Insert.newToken(account_number)
-    # return the token to the client
-    return_status['token'] = login_token
+    if return_status['match']:
+        # create and insert a login token into the database
+        login_token = Insert.newToken(account_number)
+        # return the token to the client
+        return_status['token'] = login_token
     return return_status
 
 def accountSearchName(search_term):

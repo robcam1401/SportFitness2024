@@ -3,6 +3,8 @@ import 'package:exercise_app/main.dart';
 import 'package:exercise_app/forgotScreen.dart';
 import 'package:exercise_app/regScreen.dart';
 import 'package:flutter/material.dart';
+import 'dbInterface.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 //import 'package:flutter_application_1/forgotScreen.dart';
 //import 'package:flutter_application_1/regScreen.dart';
 
@@ -15,6 +17,7 @@ class loginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<loginScreen> {
   final TextEditingController _gmailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _showGmailCheck = false;
   bool _isPasswordObscured = true;
 
@@ -25,6 +28,10 @@ class _LoginScreenState extends State<loginScreen> {
       final text = _gmailController.text;
       final showCheck = text.contains("@gmail.com");
       setState(() => _showGmailCheck = showCheck);
+    });
+    _passwordController.addListener(() {
+      final text = _passwordController.text;
+      final showCheck = text.length >= 5 && text.length <= 30;
     });
   }
 
@@ -93,6 +100,7 @@ class _LoginScreenState extends State<loginScreen> {
                           )),
                     ),
                     TextField(
+                      controller: _passwordController,
                       obscureText: _isPasswordObscured,
                       decoration: InputDecoration(
                           suffixIcon: IconButton(
@@ -139,8 +147,20 @@ class _LoginScreenState extends State<loginScreen> {
                     ),
                     InkWell(
                       onTap: () {
-                        Navigator.push(context,
+                        // this, too will have to change to a future handler
+                        //Future<Map> _info = Query().account_login(_gmailController.text, _passwordController.text);
+                        Map _info_test = {'match' : 'true', 'token' : '12345'};
+                        if (_info_test['match'] == 'true') {
+                          Navigator.push(context,
                             MaterialPageRoute(builder: (context) => Home()));
+                        }
+                        else {
+                          Fluttertoast.showToast(
+                            msg: "Invalid Username or Password",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                        }
                       },
                       child: Container(
                         height: 55,

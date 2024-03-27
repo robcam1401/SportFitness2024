@@ -167,11 +167,36 @@ def newVideoInsert(VideoInfo, VideoLink, Thumbnail):
     #acct_auth(AccInfo['AccountNumber'],token)
 
     cnx,cursor = connect()
+    now = datetime.datetime.now()
     VideoInfo['VideoID'] = getLastID('Videos','VideoID') + 1
+    VideoInfo['Views'] = 0;
+    VideoInfo['UploadDate'] = f"{now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")} {now.strftime("%H")}:{now.strftime("%M")}:{now.strftime("%S")}"
+    ## generate a video link with secrets
+    videoFilename = ''
+    _name = videoFilename.split('.')
+    new_link = secrets.token_urlsafe()
+    _name[0] = new_link
+    new_name = _name[0] + _name[1]
+    ## rename file to new_name
+    ##
+    ## Upload Video to cloud storage bucket
+    VideoInfo['VideoLink'] = new_name
+    ## generate a thumbnail link with secrets
+    ThumbnailFilename = ''
+    _name = ThumbnailFilename.split('.')
+    new_link = secrets.token_urlsafe()
+    _name[0] = new_link
+    new_name = _name[0] + _name[1]
+    ## rename thumbnail to new_name
+    ##
+    ## upload thumbnail to cloud storage bucket
+    ##
+
+    VideoInfo['Thumbnail'] = new_name
     # VideoLink, Views, Thumbnail, Upload Date will be auto-completed with a trigger when the row is inserted
     add_Video = ("INSERT INTO UserAccount "
-              "(VideoID, AccountNumber, VideoTitle,VidDescription,Category,Thumbnail)"
-              "VALUES (%(VideoID)s, %(AccountNumber)s, %(VideoTitle)s, %(VidDescription)s, %(Category)s, %(Thumbnail)s)")
+              "(VideoID, VideoLink, AccountNumber, VideoTitle, VidDescription, Category, Views, UploadDate Thumbnail)"
+              "VALUES (%(VideoID)s, %(VideoLink)s, %(AccountNumber)s, %(VideoTitle)s, %(VidDescription)s, %(Category)s, %(Views)s, %(UploadDate)s, %(Thumbnail)s)")
 
     cursor.execute(add_Video, VideoInfo)
     cnx.commit()

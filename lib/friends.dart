@@ -75,7 +75,7 @@ class _Friends extends State<Friends> {
                 final _people = snapshot.data!['_people'];
                 final _pairs = snapshot.data!['_pairs'];
                 if (_people.length == 0) {
-                  return const Text('No Friends? :( ');
+                  return const Expanded(child: Center(child: Text('No Friends? :( ')));
                 }
                 else {
                   return Expanded(
@@ -94,7 +94,7 @@ class _Friends extends State<Friends> {
               else if (snapshot.hasError) {
                 return Text("Snapshot Error");
               }
-              return const CircularProgressIndicator();
+              return const Expanded(child: Center(child: CircularProgressIndicator()));
             }
           ),
           // future builder for the groups
@@ -105,7 +105,7 @@ class _Friends extends State<Friends> {
                 if (snapshot.hasData) {
                   final _groups = snapshot.data!['_groups'];
                   if (_groups.length == 0) {
-                    return const Text('No Groups? :( ');
+                    return const Expanded(child: Center(child: Text('No Groups? :( ')));
                   }
                   else {
                     return Expanded(
@@ -128,7 +128,7 @@ class _Friends extends State<Friends> {
               else if (snapshot.hasError) {
                 return Text("Snapshot Error");
               }
-              return const CircularProgressIndicator();
+              return const Expanded(child: Center(child: CircularProgressIndicator()));
             }
           ),
         ],

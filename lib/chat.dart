@@ -11,6 +11,7 @@ class _Chatscreen extends State<ChatScreen> {
   // account variables
   int _account_number = 1;
   int _pair_id = 1;
+  List<Widget> _messages = [];
 
   // future functions
   Future<List<Widget>> addMessages(_pair_id, _account_number) async {
@@ -37,7 +38,7 @@ class _Chatscreen extends State<ChatScreen> {
             if (snapshot.connectionState == ConnectionState.done){
               final _messages = snapshot.data;
               int _mList_length = _messages!.length; 
-              List _children = _messages;
+              // List _children = _messages;
               if (_mList_length == 0) {
                 return Text("No Messages? :( ");
               }
@@ -53,7 +54,10 @@ class _Chatscreen extends State<ChatScreen> {
             else if (snapshot.hasError) {
                 return Text("Snapshot Error");
               }
-              return const CircularProgressIndicator();
+              return const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator()
+                  ));
           }
         ),
         // const SingleChildScrollView(

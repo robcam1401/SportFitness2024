@@ -206,7 +206,7 @@ class query():
     
     # given a password hash and a username, returns authentication and a login token
     def password_hash(auth_info):
-        return_matrix = passwordHashAuth(auth_info['PasswordHash'],auth_info['Username'],auth_info['AccountNumber'])
+        return_matrix = passwordHashAuth(auth_info['PasswordHash'],auth_info['Username'])
         return return_matrix
 
     # given a username, search for the user account

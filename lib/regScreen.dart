@@ -4,6 +4,7 @@ import 'codeScreen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'dbInterface.dart';
 
 class regScreen extends StatefulWidget {
   const regScreen({Key? key}) : super(key: key);
@@ -16,10 +17,13 @@ class _RegScreenState extends State<regScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _gmailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  // gonna make more, too. For phone number and birthdate
 
   bool _showFullNameCheck = false;
   bool _showGmailCheck = false;
   bool _showUsernameCheck = false;
+  bool _showPasswordCheck = false;
   bool isSendingEmail = false;
 
   @override
@@ -42,6 +46,14 @@ class _RegScreenState extends State<regScreen> {
       final showCheck = text.length >= 5 && text.length <= 30;
       setState(() => _showUsernameCheck = showCheck);
     });
+
+    _passwordController.addListener(() {
+      final text = _passwordController.text;
+      final showCheck = text.length >= 5 && text.length <= 30;
+      setState(() => _showPasswordCheck = showCheck);
+    });
+
+    // add a listener for phone number and dob
   }
 
   void _togglePasswordVisibility() {
@@ -176,6 +188,7 @@ class _RegScreenState extends State<regScreen> {
                           )),
                     ),
                     TextField(
+                      controller: _passwordController,
                       obscureText: _isObscured,
                       decoration: InputDecoration(
                           suffixIcon: IconButton(
@@ -204,6 +217,20 @@ class _RegScreenState extends State<regScreen> {
                     ),
                     ElevatedButton(
                       onPressed: () {
+                        // create the account_info map and pass into new_account
+                        Map account_info = {
+                          'Username' : _usernameController.text,
+                          'Email' : _gmailController.text,
+                          'Name' : _fullNameController.text,
+                          'PasswordHash' : _passwordController.text,
+                          'PhoneNumber' : 16,
+                          'DoB' : '1111-11-11 11:11:11'
+                        };
+                        // because inserts do send a response,
+                        // make a future builder, or maybe use completer class???
+                        //Future<Map> _info = Insert().new_account(account_info);
+                        Insert().new_account(account_info);
+                        Map _info_test = {'success' : true};
                         //check if the email has not aldready been sent and checks for valid gamial address
                         if (_showGmailCheck && !isSendingEmail) {
                           // calling sendVerificationCode
@@ -257,6 +284,7 @@ class _RegScreenState extends State<regScreen> {
     _fullNameController.dispose();
     _gmailController.dispose();
     _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 }

@@ -1,8 +1,11 @@
+// ignore_for_file: non_constant_identifier_names, no_leading_underscores_for_local_identifiers
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
+import 'package:http/http.dart';
 
 void test_func() {
 	print('Hello, World!');
@@ -102,9 +105,60 @@ final class Insert {
   }
 
   // Insert a new video
+  // helper functions for uploading
+  // files will be uploaded first, then added to the database
+  // I'm not exactly sure how this will look on the other end, but it has to work
+  Future<String> video_upload(video_link) async {
+    var request = MultipartRequest("POST", Uri(host: '10.0.2.2'));
+    request.files.add(MultipartFile.fromPath('name', video_link) as MultipartFile);
+    request.send().then((response) {
+      if (response.statusCode == 200) {
+        print('uploaded');
+      }
+    });
+    return 'name';
+  }
+  Future<String> thumbnail_upload(thumbnail_link) async {
+    return 'name';
+  }
 
-  // Insert new content
+  Future<Map> new_video(video_info, video_path, thumbnail_path) async {
+    // first, send a request to upload to the cloud storage bucket
+    String video_name = await video_upload(video_path);
+    String thumbnail_name = await thumbnail_upload(thumbnail_path);
 
+    // then send a request to insert into the database
+    video_info['Action'] = 'I';
+    video_info['Function'] = 'new_video';
+    video_info['VideoPath'] = video_name;
+    video_info['ThumbnailPath'] = thumbnail_name;
+    Map _response = await query_helper(video_info);
+    return _response;
+  }
+
+  // Insert new picture
+  Future<String> picture_upload(pic_path) async {
+    var request = MultipartRequest("POST", Uri(host: '10.0.2.2'));
+    request.files.add(MultipartFile.fromPath('name', pic_path) as MultipartFile);
+    request.send().then((response) {
+      if (response.statusCode == 200) {
+        print('uploaded');
+      }
+    });
+    return 'name';
+  }
+
+  Future<Map> new_picture(picture_info, picture_path) async {
+    // first, send a request to upload to the cloud storage bucket
+    String picture_name = await picture_upload(picture_path);
+
+    // then send a request to insert into the database
+    picture_info['Action'] = 'I';
+    picture_info['Function'] = 'new_content';
+    picture_info['VideoPath'] = picture_name;
+    Map _response = await query_helper(picture_info);
+    return _response;
+  }
   // Insert new comments
 
   // Insert into friends
@@ -129,6 +183,18 @@ final class Query {
       'Function' : 'account_info',
       'AccountNumber' : account_number
       };
+    Map _info = await query_helper(query_data);
+    return _info;
+  }
+
+  // login
+  Future<Map> account_login(username, password) async {
+    dynamic query_data = {
+      'Action' : 'Q',
+      'Function' : 'passwordHash',
+      'Username' : username,
+      'PasswordHash' : password
+    };
     Map _info = await query_helper(query_data);
     return _info;
   }
