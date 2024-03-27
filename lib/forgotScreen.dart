@@ -1,9 +1,11 @@
+import 'package:exercise_app/PasswordResetScreen.dart';
 import 'package:exercise_app/loginScreen.dart';
 import 'package:flutter/material.dart';
 //import 'package:SportFitness2024/loginScreen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'dart:math';
 
 class forgotScreen extends StatefulWidget {
   const forgotScreen({Key? key}) : super(key: key);
@@ -40,44 +42,37 @@ class _ForgotScreenState extends State<forgotScreen> {
       isSendingEmail = true; // Preventing multiple sends
     });
 
+    final verificationCode = Random().nextInt(899999) + 100000; // 6-digit code
+
     String username = 'fitnesssports0011@gmail.com';
     String password = 'jgti jgfk onza wnjh';
 
     final smtpServer = gmail(username, password);
 
-    String token = "UNIQUE_TOKEN_GENERATED_SERVER_SIDE";
-    String resetUrl =
-        "http://www2.latech.edu/~nni002/Fitness.html?token=$token";
-    String htmlContent = '''
-  <p>This is your password reset link: 
-    <a href="$resetUrl">Reset Password</a>
-  </p>
-''';
-
-// Create our message.
     final message = Message()
-      ..from = Address(username, 'Your Name')
+      ..from = Address(username, 'Your App Name')
       ..recipients.add(emailAddress)
-      ..subject = 'Your Password Reset Link'
-      ..html = htmlContent;
+      ..subject = 'Your Verification Code'
+      ..text = 'Your verification code is: $verificationCode';
 
     try {
       final sendReport = await send(message, smtpServer);
       Fluttertoast.showToast(
-        msg: "Reset link sent: ${sendReport.toString()}",
+        msg: "Verification code sent: ${sendReport.toString()}",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.CENTER,
       );
-      // Navigate to the loginScreen after showing toast.
-      Navigator.pushReplacement(
-        context,
+      // Optionally navigate to another screen where the user can enter the verification code
+      // Navigate to  PasswordRestScreen
+      Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => loginScreen(),
+          builder: (context) =>
+              PasswordResetScreen(verificationCode: verificationCode),
         ),
       );
     } on MailerException catch (e) {
       Fluttertoast.showToast(
-        msg: "Failed to send reset link. ${e.toString()}",
+        msg: "Failed to send verification code. ${e.toString()}",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.CENTER,
       );

@@ -1,74 +1,157 @@
+import 'package:exercise_app/NewPass.dart';
+import 'package:exercise_app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:exercise_app/loginScreen.dart'; // Assuming this is where the user should navigate after resetting their password
+
+//import 'package:flutter_application_1/loginScreen.dart';
 
 class PasswordResetScreen extends StatefulWidget {
-  final String token;
-
-  const PasswordResetScreen({Key? key, required this.token}) : super(key: key);
+  final int verificationCode;
+  const PasswordResetScreen({Key? key, required this.verificationCode})
+      : super(key: key);
 
   @override
   _PasswordResetScreenState createState() => _PasswordResetScreenState();
 }
 
 class _PasswordResetScreenState extends State<PasswordResetScreen> {
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-  bool _isSubmitting = false;
+  final TextEditingController _codeController = TextEditingController();
+  bool _showCodeCheck = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _codeController.addListener(() {
+      final text = _codeController.text;
+      final showCheck = text.length == 6;
+      setState(() => _showCodeCheck = showCheck);
+    });
+  }
 
   @override
   void dispose() {
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
+    _codeController.dispose();
     super.dispose();
-  }
-
-  Future<void> resetPassword() async {
-    if (_isSubmitting) return; // Prevent multiple submissions
-    if (_newPasswordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match.')),
-      );
-      return;
-    }
-    // Assuming password validation passes, navigate to the login screen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => loginScreen()),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Reset Password'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _newPasswordController,
-              decoration: InputDecoration(labelText: 'New Password'),
-              obscureText: true, // Ensure the text is treated as a password
+      body: Stack(
+        children: [
+          Container(
+            height: double.infinity,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [
+                Color(0xff881736),
+                Color(0xff281537),
+              ]),
             ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(labelText: 'Confirm New Password'),
-              obscureText: true, // Ensure the text is treated as a password
+            child: const Padding(
+              padding: EdgeInsets.only(top: 60.0, left: 22),
+              child: Text("Enter Your Code",
+                  style: TextStyle(
+                    fontSize: 30,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  )),
             ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : resetPassword,
-              child: _isSubmitting
-                  ? CircularProgressIndicator()
-                  : Text('Reset Password'),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 200.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40)),
+                color: Colors.white,
+              ),
+              height: double.infinity,
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 18.0, right: 18.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: _codeController,
+                      decoration: InputDecoration(
+                        suffixIcon: _showCodeCheck
+                            ? Icon(Icons.check, color: Colors.green)
+                            : null,
+                        label: Text(
+                          '##########',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffB81736),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 70,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => NewPassScreen()));
+                      },
+                      child: Container(
+                        height: 55,
+                        width: 300,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          gradient: LinearGradient(colors: [
+                            Color(0xff881736),
+                            Color(0xff281537),
+                          ]),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Continue',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 150,
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(
+                              Icons.arrow_back, //The back Arrow Icon
+                              color: Colors.black,
+                            ),
+                            Text(
+                              "Go back",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
