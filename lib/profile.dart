@@ -1,262 +1,486 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'codeScreen.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'lesson_booking_page.dart';
+import 'video_analysis_page.dart';
+import 'post_card.dart';
+import 'dart:convert';
+import 'dbInterface.dart';
+import 'resource.dart';
 
-class regScreen extends StatefulWidget {
-  const regScreen({Key? key}) : super(key: key);
+class Profile extends StatefulWidget {
   @override
-  _RegScreenState createState() => _RegScreenState();
+  State<Profile> createState() => _ProfileState();
 }
 
-class _RegScreenState extends State<regScreen> {
-  bool _isObscured = true;
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _gmailController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
-
-  bool _showFullNameCheck = false;
-  bool _showGmailCheck = false;
-  bool _showUsernameCheck = false;
-  bool isSendingEmail = false;
+class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  String userName = '';
 
   @override
   void initState() {
     super.initState();
-    _fullNameController.addListener(() {
-      final text = _fullNameController.text;
-      final showCheck = text.length > 5 && text.length <= 30;
-      setState(() => _showFullNameCheck = showCheck);
-    });
-
-    _gmailController.addListener(() {
-      final text = _gmailController.text;
-      final showCheck = text.contains("@gmail.com");
-      setState(() => _showGmailCheck = showCheck);
-    });
-
-    _usernameController.addListener(() {
-      final text = _usernameController.text;
-      final showCheck = text.length >= 5 && text.length <= 30;
-      setState(() => _showUsernameCheck = showCheck);
-    });
+    _tabController = TabController(length: 2, vsync: this);
+    fetchUserName();
   }
 
-  void _togglePasswordVisibility() {
+  void fetchUserName() async {
+    Query query = Query();
+    int myAccountNumber = 1; // Replace with your actual account number
+    Map response = await Query().account_name(myAccountNumber);
+    String firstName = response['lirst'];
+    String lastName = response['last'];
+    // Update the state with the user's name
     setState(() {
-      _isObscured = !_isObscured;
+      userName = '$firstName $lastName';
     });
   }
 
-  Future<void> sendVerificationCode(String emailAddress) async {
-    if (isSendingEmail) return;
-    setState(() {
-      isSendingEmail = true;
-    });
-
-    final verificationCode = Random().nextInt(899999) + 100000; // 6-digit code
-
-    String username = 'fitnesssports0011@gmail.com';
-    String password = 'jgti jgfk onza wnjh';
-
-    final smtpServer = gmail(username, password);
-
-    final message = Message()
-      ..from = Address(username, 'Your App Name')
-      ..recipients.add(emailAddress)
-      ..subject = 'Your Verification Code'
-      ..text = 'Your verification code is: $verificationCode';
-
-    try {
-      await send(message, smtpServer);
-      Fluttertoast.showToast(
-        msg: "Verification code sent",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-      );
-      // Navigate to codeScreen
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => codeScreen(verificationCode: verificationCode),
-        ),
-      );
-    } on MailerException catch (e) {
-      Fluttertoast.showToast(
-        msg: "Failed to send verification code. ${e.toString()}",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-      );
-    } finally {
-      setState(() {
-        isSendingEmail = false;
-      });
-    }
-  }
+  int followingCount = 100;
 
   @override
   Widget build(BuildContext context) {
+    List<Resource> resources = [
+      Resource(
+        id: '1',
+        name: 'Private Lessons',
+        description: 'Personalised tennis sessions to up to 3 players! Work on your shot teqnique, feet movement, strategy...',
+        available: true,
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage()));
+        },
+      ),
+      Resource(
+        id: '2',
+        name: 'Video Analysis',
+        description: 'Personalised Video Anlaysis...',
+        available: true,
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => VideoAnalysisPage()));
+        },
+      ),
+      // Add more resources as needed
+    ];
+
+    List<ImageProvider> postImages = [
+      AssetImage('assets/Images/post_image1.jpg'),
+      // Add more post images as needed
+    ];
+
     return Scaffold(
-      body: Stack(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-              height: double.infinity,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Color(0xff881736),
-                  Color(0xff281537),
-                ]),
+          SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 20), // Adding space for better alignment
+              CircleAvatar(
+                radius: 40,
+                // Your profile picture
+                backgroundImage: AssetImage('assets/Images/profile_picture.jpg'),
               ),
-              child: const Padding(
-                  padding: EdgeInsets.only(top: 60.0, left: 22),
-                  child: Text("Create Your Account",
-                      style: TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      )))),
-          Padding(
-            padding: const EdgeInsets.only(top: 200.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40)),
-                color: Colors.white,
-              ),
-              height: double.infinity,
-              width: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 18.0, right: 18.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextField(
-                      controller: _fullNameController,
-                      decoration: InputDecoration(
-                          suffixIcon: _showFullNameCheck
-                              ? Icon(Icons.check, color: Colors.green)
-                              : null,
-                          label: Text(
-                            'Full Name',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
-                            ),
-                          )),
-                    ),
-                    TextField(
-                      controller: _gmailController,
-                      decoration: InputDecoration(
-                          suffixIcon: _showGmailCheck
-                              ? Icon(Icons.check, color: Colors.green)
-                              : null,
-                          label: Text(
-                            'Gmail',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
-                            ),
-                          )),
-                    ),
-                    TextField(
-                      controller: _usernameController,
-                      decoration: InputDecoration(
-                          suffixIcon: _showUsernameCheck
-                              ? Icon(Icons.check, color: Colors.green)
-                              : null,
-                          label: Text(
-                            'Username',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
-                            ),
-                          )),
-                    ),
-                    TextField(
-                      obscureText: _isObscured,
-                      decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isObscured
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                            onPressed: _togglePasswordVisibility,
-                          ),
-                          // Call this method when the icon is pressed
-                          label: Text(
-                            'Password',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
-                            ),
-                          )),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      height: 70,
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        //check if the email has not aldready been sent and checks for valid gamial address
-                        if (_showGmailCheck && !isSendingEmail) {
-                          // calling sendVerificationCode
-                          sendVerificationCode(_gmailController.text);
-                        } else {
-                          //showing toast message if the Gmail address is not valid
-                          Fluttertoast.showToast(
-                            msg: "Please enter a valid Gmail address",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Color(0xff881736), // Button background color
-                        foregroundColor: Colors.white, // Text color
-                        minimumSize: Size(300, 55), // Size
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+              SizedBox(width: 20), // Adding space between bio and counts
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Following: ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: isSendingEmail
-                          ? CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            )
-                          : Text(
-                              'SIGN IN',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
-                            ),
-                    ),
-                    SizedBox(
-                      height: 80,
-                    ),
-                  ],
+                      Text(
+                        followingCount.toString(), // Your following count
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Text(
+                        'Followers: ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '100K', // Your followers count
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(width: 20), // Adding space between profile picture and name
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '\t\t$userName',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              SizedBox(height: 10),
+              Text(
+                '  Your go-to tennis coach! Louisiana Tech Alumn.',
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: 'Feed'),
+              Tab(text: 'Resources'),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Feed Tab
+                GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 4.0,
+                    mainAxisSpacing: 4.0,
+                  ),
+                  itemCount: postImages.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PostCardScreen(
+                              image: postImages[index],
+                              name: 'Ilana Tetruashvili',
+                              profilePicture: AssetImage('assets/Images/profile_picture.jpg'),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 200, // Adjust width as needed
+                        height: 200, // Adjust height as needed
+                        child: Image(
+                          image: postImages[index],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                // Resources Tab
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: resources.map((resource) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ListTile(
+                                title: Text(
+                                  resource.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  resource.description, // Assuming description exists in your Resource class
+                                ),
+                                trailing: ElevatedButton(
+                                  onPressed: resource.onPressed,
+                                  child: Text('Select'),
+                                ),
+                              ),
+                              Divider(), 
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    ListTile(
+                                      title: Text('Create a Resource'),
+                                      onTap: () {
+                                        Navigator.pop(context); // Close the modal bottom sheet
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => ResourceCreationScreen()));
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: Text('+'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
+
+
+
+class Resource {
+  final String id;
+  final String name;
+  final String description;
+  final bool available;
+  final VoidCallback? onPressed;
+
+  Resource({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.available,
+    this.onPressed,
+  });
+}
+
+class PostCardScreen extends StatelessWidget {
+  final ImageProvider image;
+  final String name;
+  final ImageProvider profilePicture;
+
+  const PostCardScreen({
+    required this.image,
+    required this.name,
+    required this.profilePicture,
+  });
 
   @override
-  void dispose() {
-    _fullNameController.dispose();
-    _gmailController.dispose();
-    _usernameController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Post'),
+      ),
+      body: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          children: [
+            // Header Section
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16)
+                  .copyWith(right: 0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundImage: profilePicture,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          // Add more children here if necessary
+                        ],
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          child: ListView(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                            ),
+                            shrinkWrap: true,
+                            children: [
+                              'Delete',
+                            ]
+                                .map(
+                                  (e) => InkWell(
+                                    onTap: () {},
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 16),
+                                      child: Text(e),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.more_vert),
+                  ),
+                  // Add more widgets here if necessary
+                ],
+              ),
+            ),
+            // Image Section
+            Container(
+              height: MediaQuery.of(context).size.height * 0.50,
+              width: double.infinity,
+              child: Image(
+                image: image,
+                fit: BoxFit.cover,
+              ),
+            ),
+            // Like, Comment, and Share section
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.thumb_up,
+                    color: Colors.blue,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.comment_outlined,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.send,
+                  ),
+                ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: IconButton(
+                      icon: Icon(Icons.bookmark_border),
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Caption and number of comments
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DefaultTextStyle(
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle2!
+                        .copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                    child: Text(
+                      '509 likes',
+                      style: Theme.of(context).textTheme.bodyText2,
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.only(
+                      top: 8,
+                    ),
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' Great day to play some tennis!',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        'View all 5 comments',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      '2/25/2024',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
