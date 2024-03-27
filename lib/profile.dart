@@ -1,264 +1,262 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'lesson_booking_page.dart';
+import 'codeScreen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 
-class Profile extends StatefulWidget {
+class regScreen extends StatefulWidget {
+  const regScreen({Key? key}) : super(key: key);
   @override
-  State<Profile> createState() => _ProfileState();
+  _RegScreenState createState() => _RegScreenState();
 }
 
-class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _RegScreenState extends State<regScreen> {
+  bool _isObscured = true;
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _gmailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+
+  bool _showFullNameCheck = false;
+  bool _showGmailCheck = false;
+  bool _showUsernameCheck = false;
+  bool isSendingEmail = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _fullNameController.addListener(() {
+      final text = _fullNameController.text;
+      final showCheck = text.length > 5 && text.length <= 30;
+      setState(() => _showFullNameCheck = showCheck);
+    });
+
+    _gmailController.addListener(() {
+      final text = _gmailController.text;
+      final showCheck = text.contains("@gmail.com");
+      setState(() => _showGmailCheck = showCheck);
+    });
+
+    _usernameController.addListener(() {
+      final text = _usernameController.text;
+      final showCheck = text.length >= 5 && text.length <= 30;
+      setState(() => _showUsernameCheck = showCheck);
+    });
   }
 
-  int followingCount = 100;
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isObscured = !_isObscured;
+    });
+  }
+
+  Future<void> sendVerificationCode(String emailAddress) async {
+    if (isSendingEmail) return;
+    setState(() {
+      isSendingEmail = true;
+    });
+
+    final verificationCode = Random().nextInt(899999) + 100000; // 6-digit code
+
+    String username = 'fitnesssports0011@gmail.com';
+    String password = 'jgti jgfk onza wnjh';
+
+    final smtpServer = gmail(username, password);
+
+    final message = Message()
+      ..from = Address(username, 'Your App Name')
+      ..recipients.add(emailAddress)
+      ..subject = 'Your Verification Code'
+      ..text = 'Your verification code is: $verificationCode';
+
+    try {
+      await send(message, smtpServer);
+      Fluttertoast.showToast(
+        msg: "Verification code sent",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+      );
+      // Navigate to codeScreen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => codeScreen(verificationCode: verificationCode),
+        ),
+      );
+    } on MailerException catch (e) {
+      Fluttertoast.showToast(
+        msg: "Failed to send verification code. ${e.toString()}",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+      );
+    } finally {
+      setState(() {
+        isSendingEmail = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<Service> services = [
-      Service(
-        id: '1',
-        name: 'One-on-One Lessons',
-        resources: [
-          Resource(
-            id: '1',
-            name: 'Tennis Lesson',
-            available: true,
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage()));
-            },
-          ),
-        ],
-      ),
-      Service(
-        id: '2',
-        name: 'Video Analysis',
-        resources: [
-          Resource(id: '2', name: 'Video Analysis Session', available: true),
-        ],
-      ),
-      // Add more services as needed
-    ];
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      body: Stack(
         children: [
-          SizedBox(height: 20),
-          CircleAvatar(
-            radius: 60,
-            // Your profile picture
-            backgroundImage: AssetImage('assets/Images/profile_picture.jpg'),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Ilana Tetruashvili',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Your go-to tennis coach! Louisiana Tech Alumn.',
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Followers: ',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+          Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  Color(0xff881736),
+                  Color(0xff281537),
+                ]),
               ),
-              Text(
-                '100K', // Your followers count
-                style: TextStyle(
-                  fontSize: 16,
-                ),
+              child: const Padding(
+                  padding: EdgeInsets.only(top: 60.0, left: 22),
+                  child: Text("Create Your Account",
+                      style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      )))),
+          Padding(
+            padding: const EdgeInsets.only(top: 200.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40)),
+                color: Colors.white,
               ),
-            ],
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Following: ',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                followingCount.toString(), // Your following count
-                style: TextStyle(
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(text: 'Feed'),
-              Tab(text: 'Services'),
-              Tab(text: 'Saved'),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // Feed Tab
-                const SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Sample post
-                      PostWidget(
-                        image: AssetImage('assets/Images/post_image1.jpg'),
-                        caption: 'Beautiful day for tennis!',
-                      ),
-                      // Add more posts as needed
-                    ],
-                  ),
-                ),
-                // Services Tab
-                SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: services.map((service) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            service.name,
+              height: double.infinity,
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 18.0, right: 18.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: _fullNameController,
+                      decoration: InputDecoration(
+                          suffixIcon: _showFullNameCheck
+                              ? Icon(Icons.check, color: Colors.green)
+                              : null,
+                          label: Text(
+                            'Full Name',
                             style: TextStyle(
-                              fontSize: 20,
                               fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
                             ),
+                          )),
+                    ),
+                    TextField(
+                      controller: _gmailController,
+                      decoration: InputDecoration(
+                          suffixIcon: _showGmailCheck
+                              ? Icon(Icons.check, color: Colors.green)
+                              : null,
+                          label: Text(
+                            'Gmail',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
+                            ),
+                          )),
+                    ),
+                    TextField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                          suffixIcon: _showUsernameCheck
+                              ? Icon(Icons.check, color: Colors.green)
+                              : null,
+                          label: Text(
+                            'Username',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
+                            ),
+                          )),
+                    ),
+                    TextField(
+                      obscureText: _isObscured,
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscured
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                            onPressed: _togglePasswordVisibility,
                           ),
-                          Column(
-                            children: service.resources.map((resource) {
-                              return ListTile(
-                                title: Text(resource.name),
-                                trailing: ElevatedButton(
-                                  onPressed: resource.onPressed,
-                                  child: Text('Select'),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Sample post
-                      PostWidget(
-                        image: AssetImage('assets/Images/post_image1.jpg'),
-                        caption: 'another sample post',
+                          // Call this method when the icon is pressed
+                          label: Text(
+                            'Password',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
+                            ),
+                          )),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      height: 70,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        //check if the email has not aldready been sent and checks for valid gamial address
+                        if (_showGmailCheck && !isSendingEmail) {
+                          // calling sendVerificationCode
+                          sendVerificationCode(_gmailController.text);
+                        } else {
+                          //showing toast message if the Gmail address is not valid
+                          Fluttertoast.showToast(
+                            msg: "Please enter a valid Gmail address",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Color(0xff881736), // Button background color
+                        foregroundColor: Colors.white, // Text color
+                        minimumSize: Size(300, 55), // Size
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                       ),
-                      // Add more posts as needed
-                    ],
-                  ),
+                      child: isSendingEmail
+                          ? CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : Text(
+                              'SIGN IN',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                    ),
+                    SizedBox(
+                      height: 80,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class PostWidget extends StatelessWidget {
-  final ImageProvider image;
-  final String caption;
-
-  const PostWidget({
-    required this.image,
-    required this.caption,
-  });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Post image
-          Image(image: image),
-          SizedBox(height: 10),
-          // Caption
-          Text(
-            caption,
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
-    );
+  void dispose() {
+    _fullNameController.dispose();
+    _gmailController.dispose();
+    _usernameController.dispose();
+    super.dispose();
   }
-}
-
-class Service {
-  final String id;
-  final String name;
-  final List<Resource> resources;
-
-  Service({required this.id, required this.name, required this.resources});
-}
-
-class Resource {
-  final String id;
-  final String name;
-  final bool available;
-  final VoidCallback? onPressed;
-
-  Resource({
-    required this.id,
-    required this.name,
-    required this.available,
-    this.onPressed,
-  });
-}
-
-class Appointment {
-  final String id;
-  final Service service;
-  final Resource resource;
-  final DateTime dateTime;
-
-  Appointment({
-    required this.id,
-    required this.service,
-    required this.resource,
-    required this.dateTime,
-  });
 }
