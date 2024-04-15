@@ -18,7 +18,6 @@ import os
 from Insert import *
 from Query import *
 from Edit import *
-from Delete import *
 
 ## start with the insert functions
 class insert():
@@ -34,6 +33,17 @@ class insert():
         "Lname" : 'str',
         "UserDoB" : 'yyyy-mm-dd',
         "PasswordHash" : 'str'
+    }
+
+    resource_info_template = {
+        "AccountNumber": None,
+        "ResourceName": 'str',  # Assuming this corresponds to "Username" in your table
+        "Resource_Description": 'str',  # Assuming this corresponds to "Email" in your table
+        "People_amount": 'bool',  # Assuming this corresponds to "PhoneNumber" in your table
+        "Hours_amount": 'bool',  # Assuming this corresponds to "Fname" in your table
+        "Date_of_Booking": 'bool',  # Assuming this corresponds to "Minit" in your table
+        "Payment": 'bool',  # Assuming this corresponds to "Lname" in your table
+        "File_Upload": 'bool'  # Assuming this corresponds to "UserDoB" in your table
     }
 
     bookmark_like_info_template = {
@@ -140,6 +150,10 @@ class insert():
 
     def new_video(video_info):
         errors = newVideoInsert(video_info)
+        return errors
+    
+    def new_resource(resource_info):
+        errors = newResourceInsert(resource_info)
         return errors
 
     def new_content_comment(comment_info):
@@ -313,23 +327,10 @@ class edit():
     def content_body(contentid,newbody):
         contentBody(contentid,newbody)
         return
-    
-    def account_details(accountid,username,email,phonenumber):
-        accountDetails(accountid,username,email,phonenumber)
-        return
-    
-    def profile_name(accountid,newname):
-        profileName(accountid,newname)
-        return
 
-    def profile_bio(accountid,newbio):
-        profileBio(accountid,newbio)
-        return
-    
 ## delete functions for deleteable tables and columns
 
 class delete():
-    def delete_content(contentid):
-        deleteContent(contentid)
-        return
+    def de():
+        pass
 ##

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dbInterface.dart';
+import 'dart:convert';
 
 class ResourceCreationScreen extends StatefulWidget {
   @override
@@ -157,12 +159,41 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
     }
   }
 
-  void _createResource() {
-    // Handle resource creation logic here
-    // For example, you can save the resource to a database
-    // You can also save _selectedPrompts along with the resource
-    // For demonstration purposes, we're just popping the screen
-    Navigator.pop(context); // Return to previous screen
+  void _createResource() async {
+    String accountNumber = '1'; // Replace with actual account number
+
+    // Extract data from controllers and selected prompts
+    String resourceName = _resourceNameController.text;
+    String resourceDescription = _resourceDescriptionController.text;
+    int peopleAmount = _selectedPrompts.contains('Number of People') ? 1 : 0;
+    int hoursAmount = _selectedPrompts.contains('Number of Hours') ? 1 : 0;
+    String dateOfBooking = _selectedPrompts.contains('Date of Booking') ? '2024-04-05' : ''; 
+    bool payment = _selectedPrompts.contains('Payment Option');
+    bool fileUpload = _selectedPrompts.contains('File Upload');
+
+    // Create the dictionary (Map)
+    Map<String, dynamic> resourceData = {
+      'AccountNumber': accountNumber,
+      'ResourceName': resourceName,
+      'Resource_Description': resourceDescription,
+      'People_amount': peopleAmount,
+      'Hours_amount': hoursAmount,
+      'Date_of_Booking': dateOfBooking,
+      'Payment': payment,
+      'File_Upload': fileUpload,
+    };
+
+      // Call the function to send the resource data to the server
+    Map response = await Insert().new_resource(resourceData);
+
+    // Optionally, handle the response from the server
+    if (response['success']) {
+      // Resource created successfully, you can navigate back to the previous screen
+      Navigator.pop(context, resourceData); // Pass resourceData to the previous screen
+    } else {
+      // Resource creation failed, handle the error
+      // You can display an error message or take appropriate action
+    }
   }
 
   @override

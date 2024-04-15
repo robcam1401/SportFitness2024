@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dbInterface.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   @override
@@ -6,7 +8,20 @@ class ProfileSettingsPage extends StatefulWidget {
 }
 
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
-  String _name = 'Olga Bienzobas';
+    String userName = '';
+
+  void fetchUserName() async {
+    Query query = Query();
+    int myAccountNumber = 1; // Replace with your actual account number
+    Map response = await Query().account_name(myAccountNumber);
+    String firstName = response['first'];
+    String lastName = response['last'];
+    // Update the state with the user's name
+    setState(() {
+      userName = '$firstName $lastName';
+    });
+  }
+
   String _bio = 'Tennis player';
   String _website = 'vsco.co/olgabien';
   String _gender = 'Female'; // Assuming Female is the default
@@ -15,7 +30,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   void _updateProfile() {
     // Implement logic to update profile here
     // For simplicity, just print updated information
-    print('Updated Name: $_name');
+    print('Updated Name: $userName');
     print('Updated Bio: $_bio');
     print('Updated Website: $_website');
     print('Updated Gender: $_gender');
@@ -47,7 +62,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             SizedBox(height: 10),
             ListTile(
               title: Text('Edit Name'),
-              subtitle: Text(_name),
+              subtitle: Text(userName),
               onTap: () {
                 // Show dialog to edit name
                 showDialog(
@@ -102,7 +117,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         decoration: InputDecoration(hintText: 'Enter your name'),
         onChanged: (value) {
           setState(() {
-            _name = value;
+            userName = value;
           });
         },
       ),
