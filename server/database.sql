@@ -19,6 +19,19 @@ create table UserAccount(
     unique (Username, Email, PhoneNumber)
 );
 
+create table UserResource(
+    AccountNumber           int(32)     NOT NULL,
+    ResourceName            text(100)   NOT NULL,
+    Resource_Description    text(255)   NOT NULL,
+    People_amount           boolean,
+    Hours_amount            boolean,
+    Date_of_Booking         boolean,
+    Payment                 boolean,
+    File_Upload             boolean,
+    constraint Resource_pk
+    primary key (AccountNumber)
+);
+
 create table UserProfile(
     AccountNumber   int(32)     NOT NULL,
     ProfilePic      text(255),
