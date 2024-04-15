@@ -62,3 +62,26 @@ def contentBody(content_id,new_body):
     cnx.close()
 
     return
+
+def accountDetails(account_id,new_body1,new_body2,new_body3):
+    cnx,cursor = connect()
+    edit = ("UPDATE UserAcount Set Username={} WHERE AccountNumber={}").format(new_body1,account_id)
+    edit2 = ("UPDATE UserAcount Set Email={} WHERE AccountNumber={}").format(new_body2,account_id)
+    edit3 = ("UPDATE UserAcount Set PhoneNumber={} WHERE AccountNumber={}").format(new_body3,account_id)
+    edit4 = ("UPDATE UserProfile Set Email={} WHERE AccountNumber={}").format(new_body2,account_id)
+    edit5 = ("UPDATE UserProfile Set PhoneNumber={} WHERE AccountNumber={}").format(new_body3,account_id)
+    
+    cursor.execute(edit,edit2,edit3,edit4,edit5)
+    cnx.commit()
+
+def profileName(account_id,new_name):
+    cnx,cursor = connect()
+    edit = ("UPDATE UserProfile Set ProfileBanner={} WHERE AccountNumber={}").format(new_name,account_id)
+    cursor.execute(edit)
+    cnx.commit()
+
+def profileBio(account_id,bio):
+    cnx,cursor = connect()
+    edit = ("UPDATE UserProfile Set Biography={} WHERE AccountNumber={}").format(bio,account_id)
+    cursor.execute(edit)
+    cnx.commit()

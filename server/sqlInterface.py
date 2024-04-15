@@ -18,6 +18,7 @@ import os
 from Insert import *
 from Query import *
 from Edit import *
+from Delete import *
 
 ## start with the insert functions
 class insert():
@@ -312,10 +313,23 @@ class edit():
     def content_body(contentid,newbody):
         contentBody(contentid,newbody)
         return
+    
+    def account_details(accountid,username,email,phonenumber):
+        accountDetails(accountid,username,email,phonenumber)
+        return
+    
+    def profile_name(accountid,newname):
+        profileName(accountid,newname)
+        return
 
+    def profile_bio(accountid,newbio):
+        profileBio(accountid,newbio)
+        return
+    
 ## delete functions for deleteable tables and columns
 
 class delete():
-    def de():
-        pass
+    def delete_content(contentid):
+        deleteContent(contentid)
+        return
 ##
