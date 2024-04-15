@@ -1,7 +1,16 @@
+import 'faq_page.dart';
 import 'package:exercise_app/loginScreen.dart';
 import 'package:flutter/material.dart';
 import 'profile_settings.dart';
 import 'account_settings.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+String encodeQueryParameters(Map<String, String> params) {
+  return params.entries
+      .map((e) =>
+          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .join('&');
+}
 
 class Settings extends StatelessWidget {
   @override
@@ -91,7 +100,60 @@ class Settings extends StatelessWidget {
           ListTile(
             title: Text('Help & Support'),
             onTap: () {
-              // Navigate to help & support page
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Need help?'),
+                    content: Text(
+                        'If you encountered a problem, you can either visit our FAQ page or email us directly for support.'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('FAQ'),
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pop(); // Dismissing the dialog first
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FAQPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      TextButton(
+                        child: Text('Email Us'),
+                        onPressed: () async {
+                          Navigator.of(context)
+                              .pop(); // Dismissing the dialog first
+                          final Uri emailLaunchUri = Uri(
+                            scheme: 'mailto',
+                            path: 'fitnesssports0011@gmail.com',
+                            query: encodeQueryParameters(
+                                {'subject': 'Help Needed'}),
+                          );
+                          if (await canLaunch(emailLaunchUri.toString())) {
+                            await launch(emailLaunchUri.toString());
+                          } else {
+                            // If can't launcha email, show an error
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('No email app available.'),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      TextButton(
+                        child: Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Dismiss the dialog
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
             },
           ),
           ListTile(

@@ -12,7 +12,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_polyline_points: ^1.0.0
   google_maps_flutter: ^2.1.7
-  flutter_svg: ^1.1.0
+  flutter_svg: ^2.0.9
   chat_bubbles: ^1.6.0
   fluttertoast: ^8.0.0
   mailer: ^6.1.0
@@ -20,9 +20,10 @@ dependencies:
   url_launcher: ^6.0.13
   video_player: ^2.8.2
   flutter_paypal_checkout: ^1.0.1
-  share_plus: ^7.2.2
+  share_plus: ^8.0.3
   file_picker: ^8.0.0
   http: ^0.13.6
+  webview_flutter: ^4.7.0
 
 dev_dependencies:
   flutter_test:
@@ -37,7 +38,7 @@ flutter:
     - assets/Images/OurLogo.png
     - assets/Images/profile_picture.jpg
     - assets/Images/post_image1.jpg
-    
+
   fonts:
     - family: DancingScript
       fonts:
