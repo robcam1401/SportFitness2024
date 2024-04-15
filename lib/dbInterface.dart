@@ -104,6 +104,31 @@ final class Insert {
     return _response;
   }
 
+  // Insert a new resource
+  Future<Map> new_resource(resource_data) async {
+    // Assuming resource_data contains the necessary information for inserting a new resource
+    resource_data['Action'] = 'I';
+    resource_data['Function'] = 'new_resource';
+    
+    // Map the resource data keys to match the database table columns
+    resource_data['AccountNumber'] = resource_data['AccountNumber']; // Assuming AccountNumber is already in resource_data
+    resource_data['ResourceName'] = resource_data['ResourceName'];
+    resource_data['Resource_Description'] = resource_data['Resource_Description'];
+    resource_data['People_amount'] = resource_data['People_amount'] ?? false; // Defaulting to false if not provided
+    resource_data['Hours_amount'] = resource_data['Hours_amount'] ?? false;
+    resource_data['Date_of_Booking'] = resource_data['Date_of_Booking'] ?? false;
+    resource_data['Payment'] = resource_data['Payment'] ?? false;
+    resource_data['File_Upload'] = resource_data['File_Upload'] ?? false;
+    
+    // Assuming 'Following' is not needed for inserting into the UserResource table
+    
+    // Call the query_helper function with resource_data
+    Map _response = await query_helper(resource_data);
+    
+    // Return the response
+    return _response;
+  }
+
   // Insert a new video
   // helper functions for uploading
   // files will be uploaded first, then added to the database
