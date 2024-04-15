@@ -5,6 +5,7 @@ import 'post_card.dart';
 import 'dart:convert';
 import 'dbInterface.dart';
 import 'resource.dart';
+import 'myresources.dart';
 
 class Profile extends StatefulWidget {
   @override
@@ -14,6 +15,8 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String userName = '';
+  int myAccountNumber = 1; // Replace with actual account number
+  List<Map<String, dynamic>> _bookedResources = [];
 
   @override
   void initState() {
@@ -24,9 +27,8 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
 
   void fetchUserName() async {
     Query query = Query();
-    int myAccountNumber = 1; // Replace with your actual account number
     Map response = await Query().account_name(myAccountNumber);
-    String firstName = response['lirst'];
+    String firstName = response['first'];
     String lastName = response['last'];
     // Update the state with the user's name
     setState(() {
@@ -153,6 +155,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             tabs: [
               Tab(text: 'Feed'),
               Tab(text: 'Resources'),
+              Tab(text: 'Saved'),
             ],
           ),
           Expanded(
@@ -249,6 +252,13 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           );
                         },
                         child: Text('+'),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => MyResourcesScreen()));
+                        },
+                        child: Text('My Resources'), // Button labeled "My Resources"
                       ),
                     ],
                   ),

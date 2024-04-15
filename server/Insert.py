@@ -75,6 +75,20 @@ def newAccountTypeCheck(AccInfo):
 
 ## Insert Methods
 
+def newResourceInsert(ResourceInfo):
+    # authenticate the user instance
+    #acct_auth(AccInfo['AccountNumber'],token)
+    cnx,cursor = connect()
+    add_resource = ("INSERT INTO Resources "
+              "(AccountNumber, ResourceName, Resource_Description, People_amount, Hours_amount, Date_of_Booking,Payment, File_Upload)"
+              "VALUES (%(AccountNumber)s, %(ResourceName)s, %(Resource_Description)s, %(People_amount)s,%(Hours_amount)s,%(Date_of_Booking)s,%(Payment)s,%(File_Upload)s)")
+    cursor.execute(add_resource,ResourceInfo)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+    return
+
+
 # Insert a new Account with given account information in a dictionary
 def newAccountInsert(AccInfo):
     # check for valid data
