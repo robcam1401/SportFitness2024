@@ -1,8 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
 import 'package:exercise_app/feed.dart';
 import 'package:exercise_app/main.dart';
 import 'package:exercise_app/forgotScreen.dart';
 import 'package:exercise_app/regScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dbInterface.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 //import 'package:flutter_application_1/forgotScreen.dart';
@@ -147,20 +153,87 @@ class _LoginScreenState extends State<loginScreen> {
                     ),
                     InkWell(
                       onTap: () {
-                        // this, too will have to change to a future handler
-                        //Future<Map> _info = Query().account_login(_gmailController.text, _passwordController.text);
-                        Map _info_test = {'match' : 'true', 'token' : '12345'};
-                        if (_info_test['match'] == 'true') {
-                          Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Home()));
-                        }
-                        else {
-                          Fluttertoast.showToast(
-                            msg: "Invalid Username or Password",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                          );
-                        }
+                        Map loginInfo = <String, dynamic>{
+                          'Email' : _gmailController.text,
+                          'PasswordHash' : sha256.convert(utf8.encode(_passwordController.text)).toString()
+                        };
+
+                        dynamic db = FirebaseFirestore.instance; 
+                        bool login = false;
+                        db.collection('UserAccount').where('Email', isEqualTo: loginInfo['Email']).where('PasswordHash', isEqualTo: loginInfo['PasswordHash']).get().then(
+                          (querySnapshot) {
+                            print("Completed");
+                            for (var doc in querySnapshot.docs) {
+                              loginUser(doc.id);
+                              login = true;
+                              Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                            }
+                            if (!login){
+                              Fluttertoast.showToast(
+                                msg: "Invalid Email or Password",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                              );
+                              print("Invalid email or password");
+                            }
+                          }
+                        );       
+                        // FutureBuilder(
+                        //   future: db.collection('UserAccount').where("Email", isEqualTo: loginInfo["Email"]).where("PasswordHash", isEqualTo: loginInfo['PasswordHash']).get(),
+                        //   builder:
+                        //     ((BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        //       print("HEre");
+                        //       if (snapshot.hasError) {
+                        //         print("Error logging in");
+                        //         Fluttertoast.showToast(
+                        //           msg: "Please try again later",
+                        //           toastLength: Toast.LENGTH_SHORT,
+                        //           gravity: ToastGravity.CENTER,
+                        //         );
+                        //       };
+                        //       if (snapshot.hasData && snapshot.data!.size == 0) {
+                        //         Fluttertoast.showToast(
+                        //           msg: "Invalid Username or Password",
+                        //           toastLength: Toast.LENGTH_SHORT,
+                        //           gravity: ToastGravity.CENTER,
+                        //         );
+                        //       };
+                        //       if (snapshot.connectionState == ConnectionState.done) {
+                        //         Fluttertoast.showToast(
+                        //           msg: "Welcome",
+                        //           toastLength: Toast.LENGTH_SHORT,
+                        //           gravity: ToastGravity.CENTER,
+                        //         );
+                        //         UserIDCache(snapshot.data?.docs[0].id);
+                        //         Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                        //       }
+                        //       Fluttertoast.showToast(
+                        //         msg: "Loading",
+                        //         toastLength: Toast.LENGTH_SHORT,
+                        //         gravity: ToastGravity.CENTER,
+                        //       );
+                        //       return Text("WHEE");
+                        //     })
+                        // );
+                        // dbLogin(loginInfo).then((Map login) {
+                        //   print(login);
+
+                        //   while (!login['done']) {
+                        //     print('loading');
+                        //   }
+                        //   if (login['login']) {
+                        //     Navigator.push(context,
+                        //     MaterialPageRoute(builder: (context) => Home()));
+                        //   }
+                        //   else {
+                        //     Fluttertoast.showToast(
+                        //       msg: "Invalid Username or Password",
+                        //       toastLength: Toast.LENGTH_SHORT,
+                        //       gravity: ToastGravity.CENTER,
+                        //     );
+                        //   }
+                        // });
+
                       },
                       child: Container(
                         height: 55,
@@ -223,5 +296,10 @@ class _LoginScreenState extends State<loginScreen> {
         ],
       ),
     );
+  }
+  
+  void loginUser(userID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('UserID', userID);
   }
 }
