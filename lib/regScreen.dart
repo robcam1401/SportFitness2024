@@ -259,6 +259,8 @@ class _RegScreenState extends State<regScreen> {
                             'Email' : _gmailController.text,
                             'FullName' : _fullNameController.text,
                             'PasswordHash' : _passwordController.text,
+                            'Following' : 0,
+                            'Followers' : 0,
                           };
                           newAccount(accountInfo);
                           // check if the new account is inserted
