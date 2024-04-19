@@ -1,3 +1,4 @@
+import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
 import 'lesson_booking_page.dart';
 import 'video_analysis_page.dart';
@@ -72,6 +73,15 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         title: const Text('Profile'),
         centerTitle: true,
         backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Notifications()));
+            },
+            icon: Icon(Icons.add_alert_rounded),
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
