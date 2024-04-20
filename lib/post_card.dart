@@ -1,33 +1,47 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/other_profile.dart';
 import 'package:exercise_app/profile.dart';
 import 'package:share_plus/share_plus.dart';
-
+import 'profile.dart';
 import 'package:flutter/material.dart';
 
-final List<String> userImagesUrls = [
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-];
+// final List<String> userImagesUrls = [
+//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
+//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
+//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
+//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
+// ];
 
-final List<String> posts = [
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-];
+// final List<String> posts = [
+//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
+//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
+//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
+//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
+//   'https://firebasestorage.googleapis.com/v0/b/exerciseapp-e8a0e.appspot.com/o/techdiff.jpg?alt=media&token=9dde3ac8-5e8a-4331-9310-f9fb76daa876',
+// ];
 
 class PostCard extends StatefulWidget {
-  final String userImagesUrls;
-  final String posts;
+  final String userImage;
+  final String username;
+  final String postUrl;
+  final String description;
+  final Timestamp timestamp;
+  final int likes;
+  final int comments;
   final String text = "hello";
 
   const PostCard({
     Key? key,
-    required this.userImagesUrls,
-    required this.posts,
+    required this.userImage,
+    required this.username,
+    required this.postUrl,
+    required this.description,
+    required this.timestamp,
+    required this.likes,
+    required this.comments
   }) : super(key: key);
+
+  
 
   @override
   _PostCardState createState() => _PostCardState();
@@ -36,9 +50,9 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   bool showComments = false; //boolean for comment state
   bool isLiked = false; //boolean variable for like state
+  List userInfo = [];
   TextEditingController _commentController = TextEditingController();
 
-  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -52,7 +66,7 @@ class _PostCardState extends State<PostCard> {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundImage: NetworkImage(widget.userImagesUrls),
+                  backgroundImage: NetworkImage(widget.userImage),
                 ),
                 Expanded(
                   child: Padding(
@@ -62,7 +76,7 @@ class _PostCardState extends State<PostCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Username',
+                          widget.username,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -107,14 +121,14 @@ class _PostCardState extends State<PostCard> {
             ),
           ),
           //Image Section
-          /*SizedBox(
+          SizedBox(
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
             child: Image.network(
-              posts,
+              widget.postUrl,
               fit: BoxFit.cover,
             ),
-          ),*/
+          ),
           // Like Comment and Share section
           Row(
             children: [
@@ -169,7 +183,7 @@ class _PostCardState extends State<PostCard> {
                           fontWeight: FontWeight.w800,
                         ),
                     child: Text(
-                      '509 likes',
+                      "${widget.likes}",
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                   ),
@@ -183,13 +197,13 @@ class _PostCardState extends State<PostCard> {
                           style: const TextStyle(color: Colors.black),
                           children: [
                             TextSpan(
-                              text: 'Username',
+                              text: widget.username,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             TextSpan(
-                              text: ' Just a grey Color for now !!!',
+                              text: " ${widget.description}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.normal,
                               ),
@@ -202,7 +216,8 @@ class _PostCardState extends State<PostCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Text(
-                        'View all 5 comments',
+                        // the number of comments are stored in posts[i][Comments]
+                        'View all ${widget.comments} comments',
                         style:
                             const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
@@ -211,7 +226,8 @@ class _PostCardState extends State<PostCard> {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Text(
-                      '2/25/2024',
+                      // the upload date is stored in posts[i][UploadDate]
+                      "${widget.timestamp.toDate()}",
                       style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                   ),
