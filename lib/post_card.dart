@@ -271,8 +271,6 @@ class _PostCardState extends State<PostCard> {
                                 db.collection("Comments").add({"PostID" : widget.postID, "Comment" : commentText});
                                 widget.comments = widget.comments + 1;
                                 db.collection("Pictures").doc(widget.postID).update({"Comments" : widget.comments});
-                                print(
-                                    'Comment: $commentText'); // For demonstration only
                                 _commentController.clear();
                               },
                             ),

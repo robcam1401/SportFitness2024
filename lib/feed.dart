@@ -128,7 +128,6 @@ class _Feed extends State<Feed> {
           builder: ((BuildContext context, AsyncSnapshot snapshot) {
             Widget pc;
             if (snapshot.hasData) {
-              print(snapshot.data.docs[0].id);
               pc = FutureBuilder(
                 future: postCardBuilder(snapshot.data.docs),
                 builder: ((BuildContext context, AsyncSnapshot snapshot2) {
@@ -218,8 +217,6 @@ class _Feed extends State<Feed> {
           final data2 = data.data() as Map<String, dynamic>;
           pics[i]["Username"] = data2["Username"];
           pics[i]["ProfilePicture"] = data2["ProfilePicture"];
-          print(pics[i]["Username"]);
-          print(pics[i]);
           i = i + 1;
         }
       );

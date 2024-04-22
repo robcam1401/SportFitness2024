@@ -64,8 +64,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
           final data2 = data.data() as Map<String, dynamic>;
           pics[i]["Username"] = data2["Username"];
           pics[i]["ProfilePicture"] = data2["ProfilePicture"];
-          print(pics[i]["Username"]);
-          print(pics[i]);
           i = i + 1;
         }
       );
@@ -80,7 +78,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     await db.collection("UserAccount").doc(UserID).get().then(
       (DocumentSnapshot doc) {
         Map data = doc.data() as Map<String, dynamic>;
-        print("Profile Info: $data");
         userName = data["Username"];
         followerCount = data["Followers"];
         followingCount = data["Following"];
@@ -239,7 +236,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
-                                print("opening post card");
                                 print(pics[index]);
                                 Navigator.push(
                                   context,
@@ -360,9 +356,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
       UserID = prefs.getString("UserID")!;
       await db.collection("UserAccount").doc(UserID).get().then(
         (DocumentSnapshot doc) {
-          Map data = doc.data() as Map<String, dynamic>;
-          print("Profile Info: $data");
-          userName = data["Username"];
+          Map data = doc.data() as Map<String, dynamic>;          userName = data["Username"];
           followerCount = data["Followers"];
           followingCount = data["Following"];
           profilePicture = data["ProfilePicture"];

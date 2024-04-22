@@ -8,8 +8,10 @@ import 'package:flutter/material.dart';
 class MySquare extends StatelessWidget{
 final String username;
 final String profilePicture;
+final String UserID;
+final String pairID;
 
-MySquare({required this.username, required this.profilePicture});
+MySquare({required this.username, required this.profilePicture, required this.UserID, required this.pairID});
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -33,7 +35,7 @@ MySquare({required this.username, required this.profilePicture});
           Expanded(
             flex:90,
             child: InkWell(
-              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen())); },
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: pairID, username: username, profilePicture: profilePicture))); },
               child: Container(
                 height: 75,
                 padding: EdgeInsets.all(5),

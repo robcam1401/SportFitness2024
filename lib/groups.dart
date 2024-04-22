@@ -39,7 +39,10 @@ class _Groups extends State<Groups> {
                 itemCount: _people.length,
                 itemBuilder: (context, index) {
                   return MySquare(
-                    child: _people[index],
+                    username: _people[index],
+                    profilePicture: "group pic",
+                    UserID: "",
+                    pairID: ""
                   );
                 }
             ),

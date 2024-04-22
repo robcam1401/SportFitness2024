@@ -11,7 +11,7 @@ class Friends extends StatefulWidget{
 
 class _Friends extends State<Friends> {
   // account variables
-  String? UserID = '';
+  String UserID = '';
   List<String> _friends = [];
   List<String> _pfps = [];
   List<String> _pairs = [];
@@ -23,13 +23,13 @@ class _Friends extends State<Friends> {
 
   void getUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    UserID = prefs.getString("UserID");
+    UserID = prefs.getString("UserID")!;
   }
 
   Future<List<Widget>> addPeople() async {
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    UserID = prefs.getString("UserID");
+    UserID = prefs.getString("UserID")!;
     String loading = "Loading";
     List<Widget> _widgets = [];
     await db.collection("Friends").where("User2ID", isEqualTo: UserID).get().then(
@@ -40,7 +40,7 @@ class _Friends extends State<Friends> {
             (DocumentSnapshot doc2) {
               loading = "Completed";
               Map user = doc2.data() as Map<String, dynamic>;
-              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],));
+              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id));
             }
           );
         }
@@ -54,7 +54,7 @@ class _Friends extends State<Friends> {
             (DocumentSnapshot doc2) {
               loading = "Completed";
               Map user = doc2.data() as Map<String, dynamic>;
-              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],));
+              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id));
             }
           );
         }
@@ -74,13 +74,12 @@ class _Friends extends State<Friends> {
   Future<List<Widget>> addGroups() async {
       dynamic db = FirebaseFirestore.instance;
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      UserID = prefs.getString("UserID");
+      UserID = prefs.getString("UserID")!;
       List<Widget> _widgets = [];
       await db.collection("GroupMembers").where("UserID", isEqualTo: UserID).get().then(
         (querySnapshot) async {
           for (var doc in querySnapshot.docs) {
             Map member = doc.data() as Map<String, dynamic>;
-            print(member);
             await db.collection("Groups").doc(member["GroupID"]).get().then(
               (DocumentSnapshot doc2) {
                 Map group = doc2.data() as Map<String, dynamic>;

@@ -23,7 +23,7 @@ MyCircle({required this.name, required this.groupPicture});
             child: Container(
               width: 60,
               child: InkWell(
-                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen())); },
+                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: "", pairID: "", username: "", profilePicture: ""))); },
                 child: CircleAvatar(backgroundImage:NetworkImage(groupPicture),
                 radius: 60,
                 
