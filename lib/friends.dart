@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:exercise_app/groupcircle.dart';
 import 'package:exercise_app/square.dart';
-import 'package:exercise_app/groupcircle.dart';
 import 'package:flutter/material.dart';
-import 'dbInterface.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Friends extends StatefulWidget{
   @override
@@ -12,15 +11,66 @@ class Friends extends StatefulWidget{
 
 class _Friends extends State<Friends> {
   // account variables
-  int _account_number = 1;
+  String? UserID = '';
+  List<String> _friends = [];
+  List<String> _pfps = [];
+  List<String> _pairs = [];
 
-  Future<Map> addPeople() async {
-    Map _locals_friends = await Query().friends_list(_account_number);
-    return _locals_friends;
+  // void initState() {
+  //   super.initState();
+  //   getUserInfo();
+  // }
+
+  void getUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UserID = prefs.getString("UserID");
   }
-  Future<Map> addGroups() async {
-    Map _locals_groups = await Query().groups_list(_account_number);
-    return _locals_groups;
+
+  Future<List<Widget>> addPeople() async {
+    dynamic db = FirebaseFirestore.instance;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UserID = prefs.getString("UserID");
+    String loading = "Loading";
+    List<Widget> _widgets = [];
+    await db.collection("Friends").where("User2ID", isEqualTo: UserID).get().then(
+      (querySnapshot) async {
+        for (var doc in querySnapshot.docs) {
+          Map friend = doc.data() as Map<String, dynamic>;
+          await db.collection("UserAccount").doc(friend["User1ID"]).get().then(
+            (DocumentSnapshot doc2) {
+              loading = "Completed";
+              Map user = doc2.data() as Map<String, dynamic>;
+              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],));
+            }
+          );
+        }
+        return _widgets;
+      }
+    );
+    return _widgets;
+  }
+  // Future<dynamic> addPeople2(friendPair) {
+  //   dynamic db = FirebaseFirestore.instance;
+
+
+  // }
+
+
+  Future<dynamic> addGroups() async {
+      dynamic db = FirebaseFirestore.instance;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      UserID = prefs.getString("UserID");
+      // await db.collection("GroupMembers").where("UserID", isEqualTo: UserID).get().where(
+      //   (querySnapshot) {
+      //     print("Completed");
+      //     dynamic groupData = querySnapshot.data;
+      //     return groupData;
+      //   }
+      // );
+
+
+    //Map _locals_groups = await Query().groups_list(_account_number);
+    return [];
   }
   // sample data for the list
   //  will be updated with data in the database later
@@ -68,42 +118,36 @@ class _Friends extends State<Friends> {
         children: [
           // I really don't know how this works, hopefully it works perfectly
           // future builder for the friends
-          FutureBuilder<Map>(
-            future: addPeople(), 
-            builder: (BuildContext context, AsyncSnapshot<Map> snapshot){
-              if (snapshot.connectionState == ConnectionState.done){
-                final _people = snapshot.data!['_people'];
-                final _pairs = snapshot.data!['_pairs'];
-                if (_people.length == 0) {
-                  return const Expanded(child: Center(child: Text('No Friends? :( ')));
-                }
-                else {
-                  return Expanded(
-                    flex: 80,
-                    child: ListView.builder(
-                      itemCount: _people.length,
-                      itemBuilder: (context, index) {
-                        return MySquare(
-                          child: _people[index],
-                        );
-                      }
-                    )
-                  );
-                }
-              }
-              else if (snapshot.hasError) {
-                return Text("Snapshot Error");
-              }
-              return const Expanded(child: Center(child: CircularProgressIndicator()));
-            }
-          ),
-          // future builder for the groups
-          FutureBuilder<Map>(
-            future: addGroups(),
-            builder: (BuildContext context, AsyncSnapshot<Map> snapshot){
+          FutureBuilder(
+            future: addPeople(),
+            builder: ((BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.connectionState == ConnectionState.done){
                 if (snapshot.hasData) {
-                  final _groups = snapshot.data!['_groups'];
+                  List<Widget> _widgets = snapshot.data;
+                  return Expanded(
+                    flex: 80,
+                    child: ListView(
+                      children: _widgets
+                    )
+                  );
+                    
+                }
+                else {
+                  return Text("Loading Friends");
+                }
+              }
+              else {
+                return CircularProgressIndicator();
+              }
+            })
+          ),
+          // future builder for the groups
+          FutureBuilder<dynamic>(
+            future: FirebaseFirestore.instance.collection("Friends").where("User2ID", isEqualTo: UserID).get(),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot){
+              if (snapshot.connectionState == ConnectionState.done){
+                if (snapshot.hasData) {
+                  final _groups = [];
                   if (_groups.length == 0) {
                     return const Expanded(child: Center(child: Text('No Groups? :( ')));
                   }
@@ -116,7 +160,7 @@ class _Friends extends State<Friends> {
                           itemCount: _groups.length,
                           itemBuilder: (context, index) {
                             return MyCircle(
-                              child: _groups[index],
+                              child: "in progress",
                             );
                           }
                         ),

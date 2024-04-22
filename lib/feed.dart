@@ -137,7 +137,7 @@ class _Feed extends State<Feed> {
                         itemBuilder: (context, index) {
                           return PostCard(
                             postUrl: pics[index]["Link"],
-                            userImage: pics[index]["Link"],
+                            userImage: pics[index]["ProfilePicture"],
                             description: pics[index]["Description"],
                             username: pics[index]["Username"],
                             likes: pics[index]['Likes'],
@@ -261,6 +261,7 @@ class _Feed extends State<Feed> {
         (DocumentSnapshot data) {
           final data2 = data.data() as Map<String, dynamic>;
           pics[i]["Username"] = data2["Username"];
+          pics[i]["ProfilePicture"] = data2["ProfilePicture"];
           print(pics[i]["Username"]);
           i = i + 1;
         }
