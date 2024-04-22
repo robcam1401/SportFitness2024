@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'post_card.dart';
 
 const LatLng sourceLocation = LatLng(32.53021599903092, -92.65212084047921);
@@ -15,6 +16,7 @@ class Feed extends StatefulWidget {
 
 class _Feed extends State<Feed> {
   dynamic postData;
+  String UserID = '';
 
   void _showUploadSheet() {
     showModalBottomSheet(
@@ -140,9 +142,12 @@ class _Feed extends State<Feed> {
                             userImage: pics[index]["ProfilePicture"],
                             description: pics[index]["Description"],
                             username: pics[index]["Username"],
-                            likes: pics[index]['Likes'],
-                            comments: pics[index]['Comments'],
-                            timestamp: pics[index]["UploadDate"]
+                            likes: pics[index]["Likes"],
+                            comments: pics[index]["Comments"],
+                            timestamp: pics[index]["UploadDate"],
+                            UserID: UserID,
+                            postID: pics[index]["PostID"],
+                            isLiked: pics[index]["isLiked"]
                           );
                         }
                       );
@@ -152,7 +157,7 @@ class _Feed extends State<Feed> {
                     return Text("Snapshot2 Error");
                   }
                   else {
-                    return Text("Snapshot2 Loading");
+                    return const Expanded(child: Center(child: CircularProgressIndicator()));
                   }
                 }
                 )
@@ -168,67 +173,6 @@ class _Feed extends State<Feed> {
             return pc;
           })
         )
-      //   itemCount: 1,
-      //   itemBuilder: (context, index) {
-      //     // return PostCard(
-      //     //   posts: posts[index % posts.length],
-      //     //   userImagesUrls: userImagesUrls[index % userImagesUrls.length],
-      //     //   temp: postData[0]['Comments'],
-      //     // );
-      //     // dynamic db = FirebaseFirestore.instance; 
-      //     // return FutureBuilder(
-      //     //   future: db.collection('Pictures').orderBy("UploadDate", descending: true).limit(10).get(),
-      //     //   builder: ((BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-      //     //     Widget pc;
-      //     //     if (snapshot.connectionState == ConnectionState.done) {
-      //     //       if (snapshot.hasData) {
-      //     //         // somehow snapshot doesnt return any data from postCardBuilder
-      //     //         // once thats figured out, snapshot.data will contain all 10 queried docs
-      //     //         for (var doc in snapshot.data.docs) {
-      //     //           final docRef = db.collection("Pictures").doc(doc.id);
-      //     //             docRef.get().then(
-      //     //               (DocumentSnapshot docData) {
-      //     //                 print("Doc: ");
-      //     //                 Map pic = docData.data() as Map<String, dynamic>;
-      //     //                 print(pic);
-      //     //                 // Widget pc = PostCard(
-      //     //                 //   url: pic["Link"],
-      //     //                 //   userImagesUrls: pic["Link"],
-      //     //                 //   posts: pic["Description"]
-      //     //                 // );
-      //     //                 pc = PostCard(
-      //     //                   url: "https://firebasestorage.googleapis.com/v0/b/exerciseapp-e8a0e.appspot.com/o/techdiff.jpg?alt=media&token=9dde3ac8-5e8a-4331-9310%E2%80%A6",
-      //     //                   userImagesUrls: "https://firebasestorage.googleapis.com/v0/b/exerciseapp-e8a0e.appspot.com/o/techdiff.jpg?alt=media&token=9dde3ac8-5e8a-4331-9310%E2%80%A6",
-      //     //                   posts: "Test1",
-      //     //                 );
-      //     //                 return pc;
-      //     //               }
-      //     //               );
-      //     //           // print("doc:");
-      //     //           // print(doc.data as Map<String, dynamic>);
-      //     //         }
-      //     //         //print("Post: ${snapshot.data.docs[0]}");
-      //     //         /*
-      //     //         post = PostCard(
-      //     //           posts: snapshot.data[0]['Link'],
-      //     //           userImagesUrls: snapshot.data[0]['Link'],
-      //     //           temp: postData[0]['Comments']
-      //     //         )
-      //     //         */
-      //     //       }
-      //     //       else {
-      //     //         return const Expanded(child: Center(child: CircularProgressIndicator()));
-      //     //       }
-      //     //     }
-      //     //     else if (snapshot.hasError) {
-      //     //       return Text("Snapshot Error");
-      //     //     }
-      //     //     pc = const Text("Loading Posts");
-      //     //     return pc;
-      //     //   })
-      //     // );
-      //   },
-      // ),
     );
   }
   
@@ -243,14 +187,26 @@ class _Feed extends State<Feed> {
   
   Future<List> postCardBuilder(docs) async {
     dynamic db = FirebaseFirestore.instance;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UserID = prefs.getString("UserID")!;
     List pics = [];
     for (var doc in docs) {
       DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
       await docRef.get().then(
-        (DocumentSnapshot data) {
-          print("data");
-          print(data.data() as Map<String, dynamic>);
-          pics.add(data.data() as Map<String, dynamic>);
+        (DocumentSnapshot data) async {
+          Map pic = data.data() as Map<String, dynamic>;
+          pic["PostID"] = doc.id;
+          await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+            (querySnapshot) {
+              if (!querySnapshot.docs.isEmpty) {
+                pic["isLiked"] = true;
+              }
+              else {
+                pic["isLiked"] = false;
+              }
+            }
+          );
+          pics.add(pic);
         }
         );
     }
@@ -263,6 +219,7 @@ class _Feed extends State<Feed> {
           pics[i]["Username"] = data2["Username"];
           pics[i]["ProfilePicture"] = data2["ProfilePicture"];
           print(pics[i]["Username"]);
+          print(pics[i]);
           i = i + 1;
         }
       );

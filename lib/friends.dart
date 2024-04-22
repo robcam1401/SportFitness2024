@@ -44,9 +44,24 @@ class _Friends extends State<Friends> {
             }
           );
         }
+      }
+    );
+    await db.collection("Friends").where("User1ID", isEqualTo: UserID).get().then(
+      (querySnapshot) async {
+        for (var doc in querySnapshot.docs) {
+          Map friend = doc.data() as Map<String, dynamic>;
+          await db.collection("UserAccount").doc(friend["User2ID"]).get().then(
+            (DocumentSnapshot doc2) {
+              loading = "Completed";
+              Map user = doc2.data() as Map<String, dynamic>;
+              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],));
+            }
+          );
+        }
         return _widgets;
       }
     );
+    
     return _widgets;
   }
   // Future<dynamic> addPeople2(friendPair) {
@@ -56,21 +71,27 @@ class _Friends extends State<Friends> {
   // }
 
 
-  Future<dynamic> addGroups() async {
+  Future<List<Widget>> addGroups() async {
       dynamic db = FirebaseFirestore.instance;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       UserID = prefs.getString("UserID");
-      // await db.collection("GroupMembers").where("UserID", isEqualTo: UserID).get().where(
-      //   (querySnapshot) {
-      //     print("Completed");
-      //     dynamic groupData = querySnapshot.data;
-      //     return groupData;
-      //   }
-      // );
-
-
-    //Map _locals_groups = await Query().groups_list(_account_number);
-    return [];
+      List<Widget> _widgets = [];
+      await db.collection("GroupMembers").where("UserID", isEqualTo: UserID).get().then(
+        (querySnapshot) async {
+          for (var doc in querySnapshot.docs) {
+            Map member = doc.data() as Map<String, dynamic>;
+            print(member);
+            await db.collection("Groups").doc(member["GroupID"]).get().then(
+              (DocumentSnapshot doc2) {
+                Map group = doc2.data() as Map<String, dynamic>;
+                 _widgets.add(MyCircle(name: group["Name"], groupPicture: group["GroupPicture"],));
+              }
+            );
+           
+          }
+        }
+      );
+    return _widgets;
   }
   // sample data for the list
   //  will be updated with data in the database later
@@ -116,7 +137,6 @@ class _Friends extends State<Friends> {
       body: 
       Column(
         children: [
-          // I really don't know how this works, hopefully it works perfectly
           // future builder for the friends
           FutureBuilder(
             future: addPeople(),
@@ -124,55 +144,56 @@ class _Friends extends State<Friends> {
               if (snapshot.connectionState == ConnectionState.done){
                 if (snapshot.hasData) {
                   List<Widget> _widgets = snapshot.data;
-                  return Expanded(
-                    flex: 80,
-                    child: ListView(
-                      children: _widgets
-                    )
-                  );
-                    
+                  if (!_widgets.isEmpty) {
+                    return Expanded(
+                      flex: 80,
+                      child: ListView(
+                        children: _widgets
+                      )
+                    );
+                  }
+                  else {
+                    return const Expanded(child: Center(child: Text("No friends? :(")));
+                  }
                 }
                 else {
                   return Text("Loading Friends");
                 }
               }
               else {
-                return CircularProgressIndicator();
+                return const Expanded(child: Center(child: CircularProgressIndicator()));
               }
             })
           ),
           // future builder for the groups
           FutureBuilder<dynamic>(
-            future: FirebaseFirestore.instance.collection("Friends").where("User2ID", isEqualTo: UserID).get(),
+            future: addGroups(),
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot){
               if (snapshot.connectionState == ConnectionState.done){
                 if (snapshot.hasData) {
-                  final _groups = [];
-                  if (_groups.length == 0) {
-                    return const Expanded(child: Center(child: Text('No Groups? :( ')));
-                  }
-                  else {
+                  List<Widget> _widgets = snapshot.data;
+                  if (!_widgets.isEmpty) {
                     return Expanded(
                       flex: 20,
-                      child:Container(
-                        child:  ListView.builder(
+                      child: Container(
+                        child: ListView(
                           scrollDirection: Axis.horizontal,
-                          itemCount: _groups.length,
-                          itemBuilder: (context, index) {
-                            return MyCircle(
-                              child: "in progress",
-                            );
-                          }
-                        ),
+                          children: _widgets
+                        )
                       )
                     );
                   }
+                  else {
+                    return const Expanded(child: Center(child: Text("No Groups? :(")));
+                  }
+                }
+                else {
+                  return Text("Groups Loading");
                 }
               }
-              else if (snapshot.hasError) {
-                return Text("Snapshot Error");
+              else {
+                return const Expanded(child: Center(child: CircularProgressIndicator()));
               }
-              return const Expanded(child: Center(child: CircularProgressIndicator()));
             }
           ),
         ],

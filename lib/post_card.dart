@@ -26,11 +26,14 @@ class PostCard extends StatefulWidget {
   final String postUrl;
   final String description;
   final Timestamp timestamp;
-  final int likes;
-  final int comments;
+  int likes;
+  int comments;
   final String text = "hello";
+  final String UserID;
+  final String postID;
+  bool isLiked;
 
-  const PostCard({
+  PostCard({
     Key? key,
     required this.userImage,
     required this.username,
@@ -38,7 +41,10 @@ class PostCard extends StatefulWidget {
     required this.description,
     required this.timestamp,
     required this.likes,
-    required this.comments
+    required this.comments,
+    required this.UserID,
+    required this.postID,
+    required this.isLiked
   }) : super(key: key);
 
   
@@ -49,7 +55,7 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool showComments = false; //boolean for comment state
-  bool isLiked = false; //boolean variable for like state
+  //bool isLiked = false; //boolean variable for like state
   List userInfo = [];
   TextEditingController _commentController = TextEditingController();
 
@@ -133,14 +139,32 @@ class _PostCardState extends State<PostCard> {
           Row(
             children: [
               IconButton(
-                onPressed: () {
+                onPressed: () async {
+                  dynamic db = FirebaseFirestore.instance;
+                  if (!widget.isLiked){
+                    db.collection("Likes").add({"PostID" : widget.postID, "UserID" : widget.UserID});
+                    db.collection("Pictures").doc(widget.postID).update({"Likes" : widget.likes + 1});
+                    widget.likes = widget.likes + 1;
+                    widget.isLiked = true;
+                  }
+                  else {
+                    await db.collection("Likes").where("PostID", isEqualTo: widget.postID).where("UserID", isEqualTo: widget.UserID).get().then(
+                      (querySnapshot) {
+                        for (var doc in querySnapshot.docs) {
+                          db.collection("Likes").doc(doc.id).delete();
+                        }
+                      }
+                    );
+                    db.collection("Pictures").doc(widget.postID).update({"Likes" : widget.likes - 1});
+                    widget.likes = widget.likes - 1;
+                    widget.isLiked = false;
+                  }
                   setState(() {
-                    isLiked = !isLiked;
                   });
                 },
                 icon: Icon(
                   Icons.thumb_up,
-                  color: isLiked ? Colors.blue : Colors.grey,
+                  color: widget.isLiked ? Colors.blue : Colors.grey,
                 ),
               ),
               IconButton(
@@ -243,6 +267,10 @@ class _PostCardState extends State<PostCard> {
                               onPressed: () {
                                 final commentText = _commentController.text;
                                 // Here, you'd  send the comment to your backend or handle it as needed
+                                dynamic db = FirebaseFirestore.instance;
+                                db.collection("Comments").add({"PostID" : widget.postID, "Comment" : commentText});
+                                widget.comments = widget.comments + 1;
+                                db.collection("Pictures").doc(widget.postID).update({"Comments" : widget.comments});
                                 print(
                                     'Comment: $commentText'); // For demonstration only
                                 _commentController.clear();

@@ -17,7 +17,7 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String userName = '';
-  String? UserID = ''; // Replace with actual account number
+  String UserID = ''; // Replace with actual account number
   int followingCount = 0;
   int followerCount = 0;
   String profilePicture = '';
@@ -31,10 +31,52 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     _tabController = TabController(length: 2, vsync: this);
   }
 
+  Future<List> postCardBuilder(docs) async {
+    dynamic db = FirebaseFirestore.instance;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UserID = prefs.getString("UserID")!;
+    List pics = [];
+    for (var doc in docs) {
+      DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
+      await docRef.get().then(
+        (DocumentSnapshot data) async {
+          Map pic = data.data() as Map<String, dynamic>;
+          pic["PostID"] = doc.id;
+          await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+            (querySnapshot) {
+              if (!querySnapshot.docs.isEmpty) {
+                pic["isLiked"] = true;
+              }
+              else {
+                pic["isLiked"] = false;
+              }
+            }
+          );
+          pics.add(pic);
+        }
+        );
+    }
+    int i = 0;
+    for (var item in pics) {
+      DocumentReference docRef = await db.collection("UserAccount").doc(item["Poster"]);
+      await docRef.get().then(
+        (DocumentSnapshot data) {
+          final data2 = data.data() as Map<String, dynamic>;
+          pics[i]["Username"] = data2["Username"];
+          pics[i]["ProfilePicture"] = data2["ProfilePicture"];
+          print(pics[i]["Username"]);
+          print(pics[i]);
+          i = i + 1;
+        }
+      );
+    }
+    return pics;
+  }
+
   Future<String> fetchUserInfo() async {
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    UserID = prefs.getString("UserID");
+    UserID = prefs.getString("UserID")!;
     await db.collection("UserAccount").doc(UserID).get().then(
       (DocumentSnapshot doc) {
         Map data = doc.data() as Map<String, dynamic>;
@@ -48,16 +90,12 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
       }
     );
     await db.collection("Pictures").where("Poster", isEqualTo: UserID).get().then(
-      (querySnapshot) {
-        for (var doc in querySnapshot.docs) {
-          db.collection("Pictures").doc(doc.id).get().then(
-            (DocumentSnapshot doc2) {
-              pics.add(doc2.data() as Map<String, dynamic>); 
-            }
-          );
-        }
+      (querySnapshot) async {
+            pics = await postCardBuilder(querySnapshot.docs);
       }
+
     );
+
     return ("Profile Loading");
   }
 
@@ -201,13 +239,22 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
+                                print("opening post card");
+                                print(pics[index]);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PostCardScreen(
-                                      image: postImages[index],
-                                      name: 'Ilana Tetruashvili',
-                                      profilePicture: AssetImage('assets/Images/profile_picture.jpg'),
+                                      postUrl: pics[index]["Link"],
+                                      userImage: pics[index]["ProfilePicture"],
+                                      description: pics[index]["Description"],
+                                      username: pics[index]["Username"],
+                                      likes: pics[index]["Likes"],
+                                      comments: pics[index]["Comments"],
+                                      timestamp: pics[index]["UploadDate"],
+                                      UserID: UserID,
+                                      postID: pics[index]["PostID"],
+                                      isLiked: pics[index]["isLiked"]
                                     ),
                                   ),
                                 );
@@ -216,7 +263,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                 width: 200, // Adjust width as needed
                                 height: 200, // Adjust height as needed
                                 child: Image(
-                                  image: postImages[index],
+                                  image: NetworkImage(pics[index]["Link"]),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -310,7 +357,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     fetchUser() async {
       dynamic db = FirebaseFirestore.instance;
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      UserID = prefs.getString("UserID");
+      UserID = prefs.getString("UserID")!;
       await db.collection("UserAccount").doc(UserID).get().then(
         (DocumentSnapshot doc) {
           Map data = doc.data() as Map<String, dynamic>;
@@ -346,206 +393,40 @@ class Resource {
 }
 
 class PostCardScreen extends StatelessWidget {
-  final ImageProvider image;
-  final String name;
-  final ImageProvider profilePicture;
+  final String userImage;
+  final String username;
+  final String postUrl;
+  final String description;
+  final Timestamp timestamp;
+  int likes;
+  int comments;
+  final String text = "hello";
+  final String UserID;
+  final String postID;
+  bool isLiked;
 
-  const PostCardScreen({
-    required this.image,
-    required this.name,
-    required this.profilePicture,
+  PostCardScreen({
+    required this.userImage,
+    required this.username,
+    required this.postUrl,
+    required this.description,
+    required this.timestamp,
+    required this.likes,
+    required this.comments,
+    required this.UserID,
+    required this.postID,
+    required this.isLiked
   });
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Post'),
+        title: Text("Post"),
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          children: [
-            // Header Section
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16)
-                  .copyWith(right: 0),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundImage: profilePicture,
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          // Add more children here if necessary
-                        ],
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => Dialog(
-                          child: ListView(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                            ),
-                            shrinkWrap: true,
-                            children: [
-                              'Delete',
-                            ]
-                                .map(
-                                  (e) => InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12, horizontal: 16),
-                                      child: Text(e),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                      );
-                    },
-                    icon: Icon(Icons.more_vert),
-                  ),
-                  // Add more widgets here if necessary
-                ],
-              ),
-            ),
-            // Image Section
-            Container(
-              height: MediaQuery.of(context).size.height * 0.50,
-              width: double.infinity,
-              child: Image(
-                image: image,
-                fit: BoxFit.cover,
-              ),
-            ),
-            // Like, Comment, and Share section
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.thumb_up,
-                    color: Colors.blue,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.comment_outlined,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.send,
-                  ),
-                ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: IconButton(
-                      icon: Icon(Icons.bookmark_border),
-                      onPressed: () {},
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Caption and number of comments
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DefaultTextStyle(
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle2!
-                        .copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                    child: Text(
-                      '509 likes',
-                      style: Theme.of(context).textTheme.bodyText2,
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.only(
-                      top: 8,
-                    ),
-                    child: RichText(
-                      text: TextSpan(
-                        style: const TextStyle(color: Colors.black),
-                        children: [
-                          TextSpan(
-                            text: name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' Great day to play some tennis!',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {},
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        'View all 5 comments',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      '2/25/2024',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: PostCard(userImage: userImage, username: username, postUrl: postUrl, description: description, timestamp: timestamp, likes: likes, comments: comments, UserID: UserID, postID: postID, isLiked: isLiked),
     );
+    
   }
 }
