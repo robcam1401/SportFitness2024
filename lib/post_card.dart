@@ -1,9 +1,11 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/other_profile.dart';
 import 'package:exercise_app/profile.dart';
 import 'package:share_plus/share_plus.dart';
 import 'profile.dart';
 import 'package:flutter/material.dart';
+import 'package:exercise_app/feed.dart';
 
 // final List<String> userImagesUrls = [
 //   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
@@ -29,6 +31,7 @@ class PostCard extends StatefulWidget {
   final int likes;
   final int comments;
   final String text = "hello";
+  final String poster;
 
   const PostCard({
     Key? key,
@@ -38,7 +41,8 @@ class PostCard extends StatefulWidget {
     required this.description,
     required this.timestamp,
     required this.likes,
-    required this.comments
+    required this.comments,
+    required this.poster,
   }) : super(key: key);
 
   
@@ -104,7 +108,7 @@ class _PostCardState extends State<PostCard> {
                                 ),
                               ),
                               InkWell(
-                                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
+                                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile(posterID: widget.poster)));},
                                 child: Container(
                                   height: 50,
                                   child: const Center(child: Text('Profile')),

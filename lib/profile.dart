@@ -165,7 +165,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             tabs: [
               Tab(text: 'Feed'),
               Tab(text: 'Resources'),
-              Tab(text: 'Saved'),
+              // Tab(text: 'Saved'),
             ],
           ),
           Expanded(

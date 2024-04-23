@@ -9,6 +9,8 @@ class MySquare extends StatelessWidget{
 final String child;
 
 MySquare({required this.child});
+
+
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -21,7 +23,7 @@ MySquare({required this.child});
             flex:10,
             child: Container(
               child: InkWell(
-                onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile())); },
+                onLongPress: () { },
                 child: const CircleAvatar(backgroundImage:NetworkImage('assets/train.jpg'),
                 radius: 37.5,
                 

@@ -126,7 +126,7 @@ class _Feed extends State<Feed> {
           builder: ((BuildContext context, AsyncSnapshot snapshot) {
             Widget pc;
             if (snapshot.hasData) {
-              print(snapshot.data.docs[0].id);
+              // print(snapshot.data.docs[0].id);
               pc = FutureBuilder(
                 future: postCardBuilder(snapshot.data.docs),
                 builder: ((BuildContext context, AsyncSnapshot snapshot2) {
@@ -142,7 +142,8 @@ class _Feed extends State<Feed> {
                             username: pics[index]["Username"],
                             likes: pics[index]['Likes'],
                             comments: pics[index]['Comments'],
-                            timestamp: pics[index]["UploadDate"]
+                            timestamp: pics[index]["UploadDate"],
+                            poster: pics[index]['Poster'],
                           );
                         }
                       );
@@ -248,8 +249,8 @@ class _Feed extends State<Feed> {
       DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
       await docRef.get().then(
         (DocumentSnapshot data) {
-          print("data");
-          print(data.data() as Map<String, dynamic>);
+          // print("data");
+          // print(data.data() as Map<String, dynamic>);
           pics.add(data.data() as Map<String, dynamic>);
         }
         );
@@ -261,7 +262,7 @@ class _Feed extends State<Feed> {
         (DocumentSnapshot data) {
           final data2 = data.data() as Map<String, dynamic>;
           pics[i]["Username"] = data2["Username"];
-          print(pics[i]["Username"]);
+          // print(pics[i]["Username"]);
           i = i + 1;
         }
       );
