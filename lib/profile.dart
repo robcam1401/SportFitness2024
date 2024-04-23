@@ -232,7 +232,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             crossAxisSpacing: 4.0,
                             mainAxisSpacing: 4.0,
                           ),
-                          itemCount: postImages.length,
+                          itemCount: pics.length,
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
