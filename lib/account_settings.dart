@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   @override
@@ -75,11 +77,17 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
-  void _updateAccountSettings() {
+  void _updateAccountSettings() async {
     // Implement logic to update account settings
     print('Updated Username: $_username');
     print('Updated Email: $_email');
     print('Updated Phone Number: $_phoneNumber');
+        dynamic db = FirebaseFirestore.instance;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String UserID = prefs.getString("UserID")!;
+    await db.collection("UserAccount").doc(UserID).update({"Username": "$_username"}); 
+    await db.collection("UserAccount").doc(UserID).update({"Email": "$_email"});    
+    await db.collection("UserAccount").doc(UserID).update({"PhoneNumber": "$_phoneNumber"});    
   }
 }
 
