@@ -49,7 +49,18 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
         title: const Text('Other User Profiles'),
         centerTitle: true,
         backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            onPressed: () {
+                  setState(() {
+                    
+                  });
+                },
+            icon: Icon(Icons.person_add_alt_1_outlined),
+          ),
+        ],
       ),
+      
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
