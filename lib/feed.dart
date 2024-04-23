@@ -146,7 +146,9 @@ class _Feed extends State<Feed> {
                             timestamp: pics[index]["UploadDate"],
                             UserID: UserID,
                             postID: pics[index]["PostID"],
-                            isLiked: pics[index]["isLiked"]
+                            isLiked: pics[index]["isLiked"],
+                            isBookmarked: pics[index]["isBookmarked"],
+                            posterID: pics[index]["Poster"]
                           );
                         }
                       );
@@ -202,6 +204,16 @@ class _Feed extends State<Feed> {
               }
               else {
                 pic["isLiked"] = false;
+              }
+            }
+          );
+          await db.collection("Bookmarks").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+            (querySnapshot) {
+              if (!querySnapshot.docs.isEmpty) {
+                pic["isBookmarked"] = true;
+              }
+              else {
+                pic["isBookmarked"] = false;
               }
             }
           );

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:url_launcher/link.dart';
 import 'lesson_booking_page.dart';
 import 'video_analysis_page.dart';
 import 'post_card.dart';
@@ -24,6 +24,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   int followerCount = 0;
   String profilePicture = '';
   String biography = '';
+  String website = 'www.google.com';
   List pics = [];
   List<Map<String, dynamic>> _bookedResources = [];
 
@@ -51,6 +52,16 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               }
               else {
                 pic["isLiked"] = false;
+              }
+            }
+          );
+          await db.collection("Bookmarks").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+            (querySnapshot) {
+              if (!querySnapshot.docs.isEmpty) {
+                pic["isBookmarked"] = true;
+              }
+              else {
+                pic["isBookmarked"] = false;
               }
             }
           );
@@ -85,6 +96,9 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         followingCount = data["Following"];
         profilePicture = data["ProfilePicture"];
         biography = data["Biography"];
+        if (data["Website"] != null) {
+          website = data["Website"];
+        }
         return ("Profile Completed");
       }
     );
@@ -222,6 +236,11 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           fontSize: 16,
                         ),
                       ),
+                      Link(uri: Uri.parse(website), builder: (BuildContext context, FollowLink? followLink) => ElevatedButton(
+                        onPressed: followLink,
+                        child: Text("My Website"),
+                        ),
+                      )
                     ],
                   ),
                   SizedBox(height: 20),
@@ -261,7 +280,9 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                       timestamp: pics[index]["UploadDate"],
                                       UserID: UserID,
                                       postID: pics[index]["PostID"],
-                                      isLiked: pics[index]["isLiked"]
+                                      isLiked: pics[index]["isLiked"],
+                                      isBookmarked: pics[index]["isBookmarked"],
+                                      posterID: pics[index]["Poster"]
                                     ),
                                   ),
                                 );
@@ -409,6 +430,8 @@ class PostCardScreen extends StatelessWidget {
   final String UserID;
   final String postID;
   bool isLiked;
+  bool isBookmarked;
+  String posterID;
 
   PostCardScreen({
     required this.userImage,
@@ -420,7 +443,9 @@ class PostCardScreen extends StatelessWidget {
     required this.comments,
     required this.UserID,
     required this.postID,
-    required this.isLiked
+    required this.isLiked,
+    required this.isBookmarked,
+    required this.posterID,
   });
 
   @override
@@ -430,7 +455,7 @@ class PostCardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Post"),
       ),
-      body: PostCard(userImage: userImage, username: username, postUrl: postUrl, description: description, timestamp: timestamp, likes: likes, comments: comments, UserID: UserID, postID: postID, isLiked: isLiked),
+      body: PostCard(userImage: userImage, username: username, postUrl: postUrl, description: description, timestamp: timestamp, likes: likes, comments: comments, UserID: UserID, postID: postID, isLiked: isLiked, isBookmarked: isBookmarked, posterID: posterID),
     );
     
   }
