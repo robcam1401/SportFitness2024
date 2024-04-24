@@ -1,11 +1,17 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/friends.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/v1.dart';
 import 'post_card.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 
 const LatLng sourceLocation = LatLng(32.53021599903092, -92.65212084047921);
 
@@ -73,8 +79,52 @@ class _Feed extends State<Feed> {
                             color: Colors.white, // Text color
                           ),
                         ),
-                        onPressed: () {
-                          filePicker();
+                        onPressed: () async {
+                          FilePickerResult? result = await FilePicker.platform.pickFiles();
+                          if (result != null) {
+                            File file = File(result.files.single.path!);
+                            print(file.path);
+                            final storageRef = FirebaseStorage.instance.ref();
+                            var uuid = Uuid();
+                            String fileName = "${uuid.v4()}.jpg";
+                            print("Uploading $fileName");
+                            final nameRef = storageRef.child(fileName);
+                            try {
+                               nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) {
+                                switch (taskSnapshot.state) {
+                              case TaskState.running:
+                              Fluttertoast.showToast(
+                                msg: "Upload In Progress",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                              );
+                                print("Uploading");
+                                break;
+                              case TaskState.paused:
+                                // ...
+                                break;
+                              case TaskState.success:
+                              Fluttertoast.showToast(
+                                msg: "Upload Done",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                              );
+                                print("Uploaded");
+                                break;
+                              case TaskState.canceled:
+                                // ...
+                                break;
+                              case TaskState.error:
+                                print("Upload Error");
+                                break;
+                            }
+                          });
+                            } on FirebaseException catch (e) {
+                              print("Upload Error $e");
+                            }
+                          } else {
+                            print("User Exited the Picker");
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors
@@ -146,7 +196,9 @@ class _Feed extends State<Feed> {
                             timestamp: pics[index]["UploadDate"],
                             UserID: UserID,
                             postID: pics[index]["PostID"],
-                            isLiked: pics[index]["isLiked"]
+                            isLiked: pics[index]["isLiked"],
+                            isBookmarked: pics[index]["isBookmarked"],
+                            posterID: pics[index]["Poster"]
                           );
                         }
                       );
@@ -184,7 +236,7 @@ class _Feed extends State<Feed> {
       }
   }
   
-  Future<List> postCardBuilder(docs) async {
+  Future<List> postCardBuilder(docs) async { 
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     UserID = prefs.getString("UserID")!;
@@ -202,6 +254,16 @@ class _Feed extends State<Feed> {
               }
               else {
                 pic["isLiked"] = false;
+              }
+            }
+          );
+          await db.collection("Bookmarks").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+            (querySnapshot) {
+              if (!querySnapshot.docs.isEmpty) {
+                pic["isBookmarked"] = true;
+              }
+              else {
+                pic["isBookmarked"] = false;
               }
             }
           );

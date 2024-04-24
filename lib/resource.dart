@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dbInterface.dart';
 import 'dart:convert';
 
@@ -10,9 +12,13 @@ class ResourceCreationScreen extends StatefulWidget {
 class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
   TextEditingController _resourceNameController = TextEditingController();
   TextEditingController _resourceDescriptionController = TextEditingController();
+  TextEditingController _resourceLimitController = TextEditingController();
   List<String> _selectedPrompts = [];
   List<String> _promptOptions = ['Number of People', 'Number of Hours', 'Date of Booking', 'Payment Option', 'File Upload'];
   bool _isButtonEnabled = false;
+  int bookingLimit = 0;
+  int pricePerson = 0;
+  int priceHour = 0;
 
   @override
   void initState() {
@@ -72,6 +78,31 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
               ),
               SizedBox(height: 16),
               Text(
+                'Booking Limit:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 8),
+              Center(child:
+                DropdownButton<int>(
+                value: bookingLimit,
+                onChanged: (value) {
+                  setState(() {
+                    bookingLimit = value!;
+                  });
+                },
+                items: [0, 1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text('$value'),
+                  );      
+                  }).toList(),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
                 'Select Prompts:',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -98,6 +129,56 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                     },
                   );
                 },
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Price per Person:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 8),
+              Center(child:
+                DropdownButton<int>(
+                value: pricePerson,
+                onChanged: (value) {
+                  setState(() {
+                    pricePerson = value!;
+                  });
+                },
+                items: [0, 1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text('$value'),
+                  );      
+                  }).toList(),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Price per Hour:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 8),
+              Center(child:
+                DropdownButton<int>(
+                value: priceHour,
+                onChanged: (value) {
+                  setState(() {
+                    priceHour = value!;
+                  });
+                },
+                items: [0, 1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text('$value'),
+                  );      
+                  }).toList(),
+                ),
               ),
               
               SizedBox(height: 20),
@@ -160,40 +241,41 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
   }
 
   void _createResource() async {
-    String accountNumber = '1'; // Replace with actual account number
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String UserID = prefs.getString("UserID")!;
 
     // Extract data from controllers and selected prompts
     String resourceName = _resourceNameController.text;
     String resourceDescription = _resourceDescriptionController.text;
-    int peopleAmount = _selectedPrompts.contains('Number of People') ? 1 : 0;
-    int hoursAmount = _selectedPrompts.contains('Number of Hours') ? 1 : 0;
-    String dateOfBooking = _selectedPrompts.contains('Date of Booking') ? '2024-04-05' : ''; 
-    bool payment = _selectedPrompts.contains('Payment Option');
-    bool fileUpload = _selectedPrompts.contains('File Upload');
+    bool peopleAmount = _selectedPrompts.contains('Number of People') ? true : false;
+    bool hoursAmount = _selectedPrompts.contains('Number of Hours') ? true : false;
+    bool dateOfBooking = _selectedPrompts.contains('Date of Booking') ? true : false; 
+    bool payment = _selectedPrompts.contains('Payment Option') ? true : false;
+    bool fileUpload = _selectedPrompts.contains('File Upload') ? true : false;
 
     // Create the dictionary (Map)
     Map<String, dynamic> resourceData = {
-      'AccountNumber': accountNumber,
-      'ResourceName': resourceName,
-      'Resource_Description': resourceDescription,
-      'People_amount': peopleAmount,
-      'Hours_amount': hoursAmount,
-      'Date_of_Booking': dateOfBooking,
+      'UserID': UserID,
+      'Name': resourceName,
+      'Description': resourceDescription,
+      'PeopleAmount': peopleAmount,
+      'HoursAmount': hoursAmount,
+      'Date': dateOfBooking,
       'Payment': payment,
-      'File_Upload': fileUpload,
+      'FileUpload': fileUpload,
+      'isBooked' : false,
+      'BookingLimit' : bookingLimit,
+      'PricePerson' : pricePerson,
+      'PriceHour' : priceHour
     };
 
       // Call the function to send the resource data to the server
-    Map response = await Insert().new_resource(resourceData);
-
-    // Optionally, handle the response from the server
-    if (response['success']) {
-      // Resource created successfully, you can navigate back to the previous screen
-      Navigator.pop(context, resourceData); // Pass resourceData to the previous screen
-    } else {
-      // Resource creation failed, handle the error
-      // You can display an error message or take appropriate action
+    dynamic db = FirebaseFirestore.instance;
+    db.collection("Resources").add(resourceData).then((documentSnapshot) {
+      print("Resource Added"); 
+      Navigator.pop(context, resourceData);
     }
+    );
   }
 
   @override

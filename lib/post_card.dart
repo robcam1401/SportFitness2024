@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/other_profile.dart';
 import 'package:exercise_app/profile.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'profile.dart';
 import 'package:flutter/material.dart';
 
@@ -32,6 +33,8 @@ class PostCard extends StatefulWidget {
   final String UserID;
   final String postID;
   bool isLiked;
+  bool isBookmarked;
+  String posterID;
 
   PostCard({
     Key? key,
@@ -44,7 +47,9 @@ class PostCard extends StatefulWidget {
     required this.comments,
     required this.UserID,
     required this.postID,
-    required this.isLiked
+    required this.isLiked,
+    required this.isBookmarked,
+    required this.posterID,
   }) : super(key: key);
 
   
@@ -93,8 +98,38 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
                 IconButton(
-                    onPressed: () {
-                      showDialog(
+                    onPressed: () async {
+                      if (widget.UserID == widget.posterID) {
+                        print("True");
+                        showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                            child: ListView(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                              ),
+                              shrinkWrap: true,
+                              children: <Widget>[
+                                InkWell(
+                                  child: Container(
+                                    height: 50,
+                                    child: const Center (child: Text('Delete'))
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
+                                  child: Container(
+                                    height: 50,
+                                    child: const Center(child: Text('Profile')),
+                                  ),
+                                )
+                              ]
+                            ),
+                          ),
+                        );
+                      }
+                      else {
+                        showDialog(
                         context: context,
                         builder: (context) => Dialog(
                           child: ListView(
@@ -103,12 +138,14 @@ class _PostCardState extends State<PostCard> {
                             ),
                             shrinkWrap: true,
                             children: <Widget>[
+
                               // InkWell(
                               //   child: Container(
                               //     height: 50,
                               //     child: const Center (child: Text('Delete'))
                               //   ),
                               // ),
+
                               InkWell(
                                 onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
                                 child: Container(
@@ -120,7 +157,9 @@ class _PostCardState extends State<PostCard> {
                           ),
                         ),
                       );
+                      }
                     },
+
                     icon: Icon(Icons.more_vert)),
                 // Add more widgets here if necessary
               ],
@@ -185,8 +224,26 @@ class _PostCardState extends State<PostCard> {
                 child: Align(
                   alignment: Alignment.bottomRight,
                   child: IconButton(
-                    icon: const Icon(Icons.bookmark_border),
-                    onPressed: () {},
+                    icon: Icon(Icons.bookmark_border, color: widget.isBookmarked ? Colors.blue : Colors.grey),
+                    onPressed: () async {
+                      dynamic db = FirebaseFirestore.instance;
+                      if (!widget.isBookmarked){
+                        db.collection("Bookmarks").add({"PostID" : widget.postID, "UserID" : widget.UserID});
+                        widget.isBookmarked = true;
+                      }
+                      else {
+                        await db.collection("Bookmarks").where("PostID", isEqualTo: widget.postID).where("UserID", isEqualTo: widget.UserID).get().then(
+                          (querySnapshot) {
+                            for (var doc in querySnapshot.docs) {
+                              db.collection("Bookmarks").doc(doc.id).delete();
+                            }
+                          }
+                        );
+                        widget.isBookmarked = false;
+                      }
+                      setState(() {
+                      });
+                  },
                   ),
                 ),
               ),
