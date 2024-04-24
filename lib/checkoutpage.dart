@@ -10,10 +10,10 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   Future<void> _launchPayPalWebsite() async {
-    const String url = 'https://www.paypal.com'; // URL for PayPal login page
+    Uri url = Uri.parse('https://www.paypal.com'); // URL for PayPal login page
 
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     } else {
       throw 'Could not launch $url';
     }

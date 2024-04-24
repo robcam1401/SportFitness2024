@@ -90,7 +90,15 @@ class _Chatscreen extends State<ChatScreen> {
           }
         ),
         MessageBar(
-          onSend: (_) => {FirebaseFirestore.instance.collection("FriendMessages").add({"MessageBody" : _, "PairID" : widget.pairID, "SentUser" : widget.UserID, "SentStamp" : DateTime.timestamp()})},
+          onSend: (_) => {
+            FirebaseFirestore.instance.collection("FriendMessages").add(
+              {
+                "MessageBody" : _, 
+              "PairID" : widget.pairID, 
+              "SentUser" : widget.UserID, 
+              "SentStamp" : DateTime.timestamp()
+              }
+              ), setState(() {})},
           actions: [
             InkWell(
               child: const Icon(

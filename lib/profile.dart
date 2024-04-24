@@ -3,6 +3,7 @@ import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/link.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'lesson_booking_page.dart';
 import 'video_analysis_page.dart';
 import 'post_card.dart';
@@ -24,7 +25,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   int followerCount = 0;
   String profilePicture = '';
   String biography = '';
-  String website = 'www.google.com';
+  String website = 'https://www.google.com';
   List pics = [];
   List<Map<String, dynamic>> _bookedResources = [];
 
@@ -115,32 +116,28 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
 
   @override
     Widget build(BuildContext context) {
-      List<Resource> resources = [
-        Resource(
-          id: '1',
-          name: 'Private Lessons',
-          description: 'Personalised tennis sessions to up to 3 players! Work on your shot teqnique, feet movement, strategy...',
-          available: true,
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage()));
-          },
-        ),
-        Resource(
-          id: '2',
-          name: 'Video Analysis',
-          description: 'Personalised Video Anlaysis...',
-          available: true,
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => VideoAnalysisPage()));
-          },
-        ),
-        // Add more resources as needed
-      ];
+      // List<Resource> resources = [
+      //   Resource(
+      //     id: '1',
+      //     name: 'Private Lessons',
+      //     description: 'Personalised tennis sessions to up to 3 players! Work on your shot teqnique, feet movement, strategy...',
+      //     available: true,
+      //     onPressed: () {
+      //       Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage()));
+      //     },
+      //   ),
+      //   Resource(
+      //     id: '2',
+      //     name: 'Video Analysis',
+      //     description: 'Personalised Video Anlaysis...',
+      //     available: true,
+      //     onPressed: () {
+      //       Navigator.push(context, MaterialPageRoute(builder: (context) => VideoAnalysisPage()));
+      //     },
+      //   ),
+      //   // Add more resources as needed
+      // ];
 
-      List<ImageProvider> postImages = [
-        AssetImage('assets/Images/post_image1.jpg'),
-        // Add more post images as needed
-      ];
 
       return Scaffold(
         appBar: AppBar(
@@ -236,11 +233,13 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           fontSize: 16,
                         ),
                       ),
-                      Link(uri: Uri.parse(website), builder: (BuildContext context, FollowLink? followLink) => ElevatedButton(
-                        onPressed: followLink,
-                        child: Text("My Website"),
-                        ),
-                      )
+                      ElevatedButton(
+                        onPressed:() async {
+                          Uri url = Uri.parse(website); // personal website url
+                          await launchUrl(url);
+                        },
+                        child: Text("My Website")
+                      ),
                     ],
                   ),
                   SizedBox(height: 20),
@@ -266,7 +265,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
-                                print(pics[index]);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -304,33 +302,76 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               SizedBox(height: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: resources.map((resource) {
-                                  return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      ListTile(
-                                        title: Text(
-                                          resource.name,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 17,
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          resource.description, // Assuming description exists in your Resource class
-                                        ),
-                                        trailing: ElevatedButton(
-                                          onPressed: resource.onPressed,
-                                          child: Text('Select'),
-                                        ),
-                                      ),
-                                      Divider(), 
-                                    ],
-                                  );
-                                }).toList(),
+                              FutureBuilder(
+                                future: buildResources(),
+                                builder: ((BuildContext context, AsyncSnapshot snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.done) {
+                                    List<Resource> resources = snapshot.data;
+                                    Widget rl = Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: resources.map((resource) {
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            ListTile(
+                                              title: Text(
+                                                resource.name,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 17,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                resource.description, // Assuming description exists in your Resource class
+                                              ),
+                                              trailing: ElevatedButton(
+                                                onPressed: resource.onPressed,
+                                                child: Text('Select'),
+                                              ),
+                                            ),
+                                            Divider(), 
+                                          ],
+                                        );
+                                      }).toList(),
+                                    );
+                                    return rl;
+                                  }
+                                  else if (snapshot.hasError) {
+                                    print("Resource List Snapshot Error");
+                                    return Text("Resource List Snapshot Error");
+                                  }
+                                  else {
+                                    return CircularProgressIndicator();
+                                  }
+                                })
                               ),
+                              // Column(
+                                // crossAxisAlignment: CrossAxisAlignment.center,
+                                // children: resources.map((resource) {
+                                //   return Column(
+                                //     crossAxisAlignment: CrossAxisAlignment.center,
+                                //     children: [
+                                //       ListTile(
+                                //         title: Text(
+                                //           resource.name,
+                                //           style: TextStyle(
+                                //             fontWeight: FontWeight.bold,
+                                //             fontSize: 17,
+                                //           ),
+                                //         ),
+                                //         subtitle: Text(
+                                //           resource.description, // Assuming description exists in your Resource class
+                                //         ),
+                                //         trailing: ElevatedButton(
+                                //           onPressed: resource.onPressed,
+                                //           child: Text('Select'),
+                                //         ),
+                                //       ),
+                                //       Divider(), 
+                                //     ],
+                                //   );
+                                // }).toList(),
+                              // ),
                               SizedBox(height: 20),
                               ElevatedButton(
                                 onPressed: () {
@@ -374,7 +415,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               return pc;
             }
             else {
-              return CircularProgressIndicator();
+              return const Expanded(child: Center(child: CircularProgressIndicator()));
             }
             
           })
@@ -382,22 +423,28 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
       );
     }
     
-    fetchUser() async {
-      dynamic db = FirebaseFirestore.instance;
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      UserID = prefs.getString("UserID")!;
-      await db.collection("UserAccount").doc(UserID).get().then(
-        (DocumentSnapshot doc) {
-          Map data = doc.data() as Map<String, dynamic>;          userName = data["Username"];
-          followerCount = data["Followers"];
-          followingCount = data["Following"];
-          profilePicture = data["ProfilePicture"];
-          biography = data["Biography"];
-          return ("Profile Completed");
-        }
-      );
-    return ("Profile Loading");
-    }
+      Future<List<Resource>> buildResources() async {
+        List<Resource> resources = [];
+        dynamic db = FirebaseFirestore.instance;
+        await db.collection("Resources").where("UserID", isEqualTo: UserID).get().then(
+          (querySnapshot) async {
+            for (var doc in querySnapshot.docs) {
+              Map resource = doc.data() as Map<String, dynamic>;
+              Resource rc = Resource(
+                id: doc.id,
+                name: resource["Name"],
+                description: resource["Description"],
+                available: true,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name: resource["Name"], resourceID: doc.id, numPlayers: resource["PeopleAmount"], bookDate: resource["Date"], duration: resource["HoursAmount"], priceHour: resource["PriceHour"],pricePerson: resource["PricePerson"],)));
+                },
+              );
+            resources.add(rc);
+            }
+          }
+        );
+        return resources;
+      }
 }
 
 
