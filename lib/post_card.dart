@@ -138,6 +138,14 @@ class _PostCardState extends State<PostCard> {
                             ),
                             shrinkWrap: true,
                             children: <Widget>[
+
+                              // InkWell(
+                              //   child: Container(
+                              //     height: 50,
+                              //     child: const Center (child: Text('Delete'))
+                              //   ),
+                              // ),
+
                               InkWell(
                                 onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
                                 child: Container(

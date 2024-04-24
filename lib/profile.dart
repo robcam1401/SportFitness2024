@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
@@ -264,6 +266,35 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           itemCount: pics.length,
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
+                              onLongPress: () {
+                                showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          child: ListView(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                            ),
+                            shrinkWrap: true,
+                            children: <Widget>[
+                              // InkWell(
+                              //   child: Container(
+                              //     height: 50,
+                              //     child: const Center (child: Text('Delete'))
+                              //   ),
+                              // ),
+                              InkWell(
+                                onTap: () {FirebaseFirestore.instance.collection("Pictures").doc(pics[index]["PostID"]).delete();
+                                          Navigator.of(context).pop();},
+                                child: Container(
+                                  height: 50,
+                                  child: const Center(child: Text('Delete')),
+                                ),
+                              )
+                            ]
+                          ),
+                        ),
+                        );
+                              },
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -282,6 +313,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                       isBookmarked: pics[index]["isBookmarked"],
                                       posterID: pics[index]["Poster"]
                                     ),
+                                    
                                   ),
                                 );
                               },
