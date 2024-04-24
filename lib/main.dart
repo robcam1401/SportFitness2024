@@ -6,11 +6,16 @@ import 'package:exercise_app/profile.dart';
 import 'package:exercise_app/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:exercise_app/near_you.dart';
+import 'package:firebase_core/firebase_core.dart';
 //import 'package:uni_links/uni_links.dart';
 //import 'dart:async';
 //import 'WelcomeScreen.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override

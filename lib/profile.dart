@@ -1,44 +1,62 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:exercise_app/notifications.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'lesson_booking_page.dart';
 import 'video_analysis_page.dart';
-import 'post_card.dart';
-import 'dart:convert';
-import 'dbInterface.dart';
 import 'resource.dart';
 import 'myresources.dart';
 
 class Profile extends StatefulWidget {
+  const Profile({super.key});
   @override
   State<Profile> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String userName = '';
-  int myAccountNumber = 1; // Replace with actual account number
-  List<Map<String, dynamic>> _bookedResources = [];
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    fetchUserName();
+    _fetchUserData(); // Call method to fetch username when the state is initialized
   }
+  String userName = ''; 
+  String fullName = ''; 
+  String bio = ''; 
+  int followers = 0;
+  int following = 0;
+  Future<void> _fetchUserData() async {
+    // Access Firestore collection 'users' and document with userID (e.g., 'myAccountNumber')
+    try {
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('UserAccount')
+          .doc('vq5eKKU3grdnIcQrUE47') 
+          .get();
 
-  void fetchUserName() async {
-    Query query = Query();
-    Map response = await Query().account_name(myAccountNumber);
-    String firstName = response['first'];
-    String lastName = response['last'];
-    // Update the state with the user's name
-    setState(() {
-      userName = '$firstName $lastName';
-    });
+      if (userSnapshot.exists) {
+        setState(() {
+          userName = userSnapshot['Username']; 
+          fullName = userSnapshot['FullName']; 
+          bio = userSnapshot['Biography']; 
+          followers = userSnapshot['Followers']; 
+          following = userSnapshot['Following'];
+        });
+      } else {
+        // Handle scenario where user document does not exist
+        if (kDebugMode) {
+          print('User document not found');
+        }
+      }
+    } catch (e) {
+      // Handle any potential errors with fetching data
+      if (kDebugMode) {
+        print('Error fetching user data: $e');
+      }
+    }
   }
-
-  int followingCount = 100;
-
   @override
   Widget build(BuildContext context) {
     List<Resource> resources = [
@@ -64,10 +82,9 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     ];
 
     List<ImageProvider> postImages = [
-      AssetImage('assets/Images/post_image1.jpg'),
+      const AssetImage('assets/Images/post_image1.jpg'),
       // Add more post images as needed
     ];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -79,56 +96,56 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               Navigator.push(
                   context, MaterialPageRoute(builder: (context) => Notifications()));
             },
-            icon: Icon(Icons.add_alert_rounded),
+            icon: const Icon(Icons.add_alert_rounded),
           ),
         ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(width: 20), // Adding space for better alignment
-              CircleAvatar(
+              const SizedBox(width: 20), // Adding space for better alignment
+              const CircleAvatar(
                 radius: 40,
                 // Your profile picture
                 backgroundImage: AssetImage('assets/Images/profile_picture.jpg'),
               ),
-              SizedBox(width: 20), // Adding space between bio and counts
+              const SizedBox(width: 20), // Adding space between bio and counts
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       Text(
-                        'Following: ',
+                        'Following:',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        followingCount.toString(), // Your following count
-                        style: TextStyle(
+                        following.toString(), // Your following count
+                        style: const TextStyle(
                           fontSize: 16,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
                       Text(
-                        'Followers: ',
+                        'Followers:',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        '100K', // Your followers count
+                        followers.toString(), // Your following count
                         style: TextStyle(
                           fontSize: 16,
                         ),
@@ -139,33 +156,33 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               ),
             ],
           ),
-          SizedBox(width: 20), // Adding space between profile picture and name
+          const SizedBox(width: 20), // Adding space between profile picture and name
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '\t\t$userName',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
-                '  Your go-to tennis coach! Louisiana Tech Alumn.',
+                '\t\tBio:$bio',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
+                  color: Colors.black,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           TabBar(
             controller: _tabController,
-            tabs: [
+            tabs: const [
               Tab(text: 'Feed'),
               Tab(text: 'Resources'),
-              Tab(text: 'Saved'),
             ],
           ),
           Expanded(
@@ -174,7 +191,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               children: [
                 // Feed Tab
                 GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 4.0,
                     mainAxisSpacing: 4.0,
@@ -189,12 +206,12 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             builder: (context) => PostCardScreen(
                               image: postImages[index],
                               name: 'Ilana Tetruashvili',
-                              profilePicture: AssetImage('assets/Images/profile_picture.jpg'),
+                              profilePicture: const AssetImage('assets/Images/profile_picture.jpg'),
                             ),
                           ),
                         );
                       },
-                      child: Container(
+                      child: SizedBox(
                         width: 200, // Adjust width as needed
                         height: 200, // Adjust height as needed
                         child: Image(
@@ -205,12 +222,13 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                     );
                   },
                 ),
+                
                 // Resources Tab
                 SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: resources.map((resource) {
@@ -220,7 +238,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                               ListTile(
                                 title: Text(
                                   resource.name,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 17,
                                   ),
@@ -230,15 +248,15 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                 ),
                                 trailing: ElevatedButton(
                                   onPressed: resource.onPressed,
-                                  child: Text('Select'),
+                                  child: const Text('Select'),
                                 ),
                               ),
-                              Divider(), 
+                              const Divider(), 
                             ],
                           );
                         }).toList(),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
                           showModalBottomSheet(
@@ -249,7 +267,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     ListTile(
-                                      title: Text('Create a Resource'),
+                                      title: const Text('Create a Resource'),
                                       onTap: () {
                                         Navigator.pop(context); // Close the modal bottom sheet
                                         Navigator.push(context, MaterialPageRoute(builder: (context) => ResourceCreationScreen()));
@@ -261,14 +279,14 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             },
                           );
                         },
-                        child: Text('+'),
+                        child: const Text('+'),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => MyResourcesScreen()));
                         },
-                        child: Text('My Resources'), // Button labeled "My Resources"
+                        child: const Text('My Resources'), // Button labeled "My Resources"
                       ),
                     ],
                   ),
@@ -281,8 +299,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     );
   }
 }
-
-
 
 class Resource {
   final String id;
@@ -305,7 +321,7 @@ class PostCardScreen extends StatelessWidget {
   final String name;
   final ImageProvider profilePicture;
 
-  const PostCardScreen({
+  const PostCardScreen({super.key, 
     required this.image,
     required this.name,
     required this.profilePicture,
@@ -315,7 +331,7 @@ class PostCardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Post'),
+        title: const Text('Post'),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -340,7 +356,7 @@ class PostCardScreen extends StatelessWidget {
                         children: [
                           Text(
                             name,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -377,14 +393,14 @@ class PostCardScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: Icon(Icons.more_vert),
+                    icon: const Icon(Icons.more_vert),
                   ),
                   // Add more widgets here if necessary
                 ],
               ),
             ),
             // Image Section
-            Container(
+            SizedBox(
               height: MediaQuery.of(context).size.height * 0.50,
               width: double.infinity,
               child: Image(
@@ -397,20 +413,20 @@ class PostCardScreen extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.thumb_up,
                     color: Colors.blue,
                   ),
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.comment_outlined,
                   ),
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.send,
                   ),
                 ),
@@ -418,7 +434,7 @@ class PostCardScreen extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: IconButton(
-                      icon: Icon(Icons.bookmark_border),
+                      icon: const Icon(Icons.bookmark_border),
                       onPressed: () {},
                     ),
                   ),
@@ -438,13 +454,13 @@ class PostCardScreen extends StatelessWidget {
                   DefaultTextStyle(
                     style: Theme.of(context)
                         .textTheme
-                        .subtitle2!
+                        .titleSmall!
                         .copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                     child: Text(
                       '509 likes',
-                      style: Theme.of(context).textTheme.bodyText2,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                   Container(
@@ -462,9 +478,9 @@ class PostCardScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          TextSpan(
+                          const TextSpan(
                             text: ' Great day to play some tennis!',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.normal,
                             ),
                           ),
@@ -476,9 +492,9 @@ class PostCardScreen extends StatelessWidget {
                     onTap: () {},
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
+                      child: const Text(
                         'View all 5 comments',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
                         ),
@@ -487,9 +503,9 @@ class PostCardScreen extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
+                    child: const Text(
                       '2/25/2024',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey,
                       ),
