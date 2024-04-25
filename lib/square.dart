@@ -10,8 +10,9 @@ final String username;
 final String profilePicture;
 final String UserID;
 final String pairID;
+final String posterID;
 
-MySquare({required this.username, required this.profilePicture, required this.UserID, required this.pairID});
+MySquare({required this.username, required this.profilePicture, required this.UserID, required this.pairID, required this.posterID});
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -24,7 +25,7 @@ MySquare({required this.username, required this.profilePicture, required this.Us
             flex:10,
             child: Container(
               child: InkWell(
-                onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile())); },
+                 onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile(posterID: posterID))); },
                 child: CircleAvatar(backgroundImage:NetworkImage(profilePicture),
                 radius: 37.5,
                 
