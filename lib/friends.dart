@@ -40,7 +40,7 @@ class _Friends extends State<Friends> {
             (DocumentSnapshot doc2) {
               loading = "Completed";
               Map user = doc2.data() as Map<String, dynamic>;
-              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id));
+              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id, posterID: friend["User1ID"]));
             }
           );
         }
@@ -54,7 +54,7 @@ class _Friends extends State<Friends> {
             (DocumentSnapshot doc2) {
               loading = "Completed";
               Map user = doc2.data() as Map<String, dynamic>;
-              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id));
+              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id,posterID: friend["User2ID"]));
             }
           );
         }

@@ -35,17 +35,18 @@ class _Groups extends State<Groups> {
       Column(
         children: [
           Expanded(
-            child: ListView.builder(
-                itemCount: _people.length,
-                itemBuilder: (context, index) {
-                  return MySquare(
-                    username: _people[index],
-                    profilePicture: "group pic",
-                    UserID: "",
-                    pairID: ""
-                  );
-                }
-            ),
+            child: Container(),
+            // child: ListView.builder(
+            //     itemCount: _people.length,
+            //     itemBuilder: (context, index) {
+            //       return MySquare(
+            //         username: _people[index],
+            //         profilePicture: "group pic",
+            //         UserID: "",
+            //         pairID: ""
+            //       );
+            //     }
+            // ),
           ),
         ],
       )

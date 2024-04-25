@@ -46,7 +46,7 @@ List<Marker> myMarker = [];
                         padding: const EdgeInsets.all(20),
                         color: Colors.green,
                         child: ElevatedButton(
-                          onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Groups()));},
+                          onPressed: () {},
                           child: const Text("group list"),
                         ),
                       ),
