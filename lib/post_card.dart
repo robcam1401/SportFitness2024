@@ -135,7 +135,7 @@ class _PostCardState extends State<PostCard> {
 
 
                               InkWell(
-                                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile(posterID: widget.posterID)));},
+                                onTap: () {Navigator.of(context).pop();Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile(posterID: widget.posterID)));},
                                 child: Container(
                                   height: 50,
                                   child: const Center(child: Text('Profile')),
@@ -146,6 +146,7 @@ class _PostCardState extends State<PostCard> {
                         ),
                       );
                       }
+                      
                     },
 
                     icon: Icon(Icons.more_vert)),
