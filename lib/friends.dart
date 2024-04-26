@@ -32,7 +32,7 @@ class _Friends extends State<Friends> {
     UserID = prefs.getString("UserID")!;
     String loading = "Loading";
     List<Widget> _widgets = [];
-    await db.collection("Friends").where("User2ID", isEqualTo: UserID).get().then(
+    await db.collection("Friends").where("User2ID", isEqualTo: UserID).where("User2Accepted", isEqualTo: "true").get().then(
       (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
           Map friend = doc.data() as Map<String, dynamic>;
@@ -46,7 +46,7 @@ class _Friends extends State<Friends> {
         }
       }
     );
-    await db.collection("Friends").where("User1ID", isEqualTo: UserID).get().then(
+    await db.collection("Friends").where("User1ID", isEqualTo: UserID).where("User1Accepted", isEqualTo: "true").get().then(
       (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
           Map friend = doc.data() as Map<String, dynamic>;

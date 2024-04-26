@@ -154,9 +154,40 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
           backgroundColor: Colors.blue,
           actions: [
           IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => Notifications()));
+            onPressed: () async {
+              dynamic db = FirebaseFirestore.instance;
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              String User = prefs.getString("UserID")!;
+              String User2ID = widget.posterID;
+              dynamic requestCheck1 = await db.collection("Friends").doc("$User$User2ID").get();
+              dynamic requestCheck2 = await db.collection("Friends").doc("$User2ID$User").get();
+              //means owner sent request
+              if(requestCheck1.exists){  
+                
+              }
+              //means friend sent request
+              else if (requestCheck2.exists){
+                dynamic acceptfriend = await db.collection("Friends").doc("$User2ID$User");
+                acceptfriend.update({"User2Accepted":"true"});
+              }       
+              // no request 
+              else{
+                Map friendinfo = <String, dynamic>{
+                  'User1ID' : User,
+                  'User2ID' : User2ID,
+                  'User1Accepted' : "true",
+                  'User2Accepted' : "false",
+                };
+                db.collection("Friends").doc("$User$User2ID").set(friendinfo);
+                Map sendNotification = <String, dynamic>{
+                  'Owner' : User2ID,
+                  'Time' : Timestamp.now(),
+                  'Type' : "friend request",
+                };
+                db.collection("Notifications").doc().set(sendNotification);
+              
+              
+              }   
             },
             icon: Icon(Icons.person_add),
           ),
