@@ -18,6 +18,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   String _email = "";
   String _phoneNumber = "";
   String _download = "";
+  bool _isButtonEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +85,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                 ),
               ),
               onPressed: () async {
+                _isButtonEnabled = false;
                 FilePickerResult? result = await FilePicker.platform.pickFiles();
                 if (result != null) {
                   File file = File(result.files.single.path!);
@@ -114,6 +116,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.CENTER,
                       );
+                      _isButtonEnabled = true;
                       print("Uploaded");
                       break;
                     case TaskState.canceled:
@@ -128,6 +131,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                     print("Upload Error $e");
                   }
                 } else {
+                  _isButtonEnabled = true;
                   print("User Exited the Picker");
                 }
               },
@@ -144,7 +148,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             ElevatedButton(
               onPressed: () {
                 // Implement logic to update account settings
-                _updateAccountSettings();
+                _isButtonEnabled ? _updateAccountSettings() : null;
               },
               child: Text('Save Changes'),
             ),
