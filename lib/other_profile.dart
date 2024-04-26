@@ -41,7 +41,7 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
   List<Map<String, dynamic>> _bookedResources = [];
 
   @override
-  void initState()  {
+  void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
   }

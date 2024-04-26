@@ -232,6 +232,7 @@ class _Feed extends State<Feed> {
     UserID = prefs.getString("UserID")!;
     List pics = [];
     for (var doc in docs) {
+      print(doc.data() as Map<String, dynamic>);
       DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
       await docRef.get().then(
         (DocumentSnapshot data) async {
