@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'faq_page.dart';
 import 'package:exercise_app/loginScreen.dart';
 import 'package:flutter/material.dart';
@@ -174,7 +176,10 @@ class Settings extends StatelessWidget {
                       ),
                       TextButton(
                         child: Text('Yes'),
-                        onPressed: () {
+                        onPressed: () async {
+                          // remove the user id from the shared preferences cache
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          prefs.remove("UserID");
                           Navigator.of(context).pop(); //Dismissing the dialog
                           Navigator.pushAndRemoveUntil(
                             context,

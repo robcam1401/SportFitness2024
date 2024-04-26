@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'checkoutpage.dart'; // Import the CheckoutPage widget
 
 class LessonBookingPage extends StatelessWidget {
@@ -170,12 +172,35 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
                 content: Text('\$$price'),
                 actions: [
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Navigate to CheckoutPage
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => CheckoutPage()),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (context) => CheckoutPage()),
+                      // );
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      String UserID = prefs.getString("UserID")!;
+                      dynamic db = FirebaseFirestore.instance;
+                      Map<String, dynamic> booked;
+                      if (widget.bookDate) {
+                        booked = {
+                          "Resource" : widget.resourceID,
+                          "UserID" : UserID,
+                          "Accepted" : false,
+                          "Date" : _selectedDate
+                        };
+                      }
+                      else {
+                        booked = {
+                          "Resource" : widget.resourceID,
+                          "UserID" : UserID,
+                          "Accepted" : false,
+                        };
+                      }
+                      db.collection("BookedResources").add(booked);
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+
                     },
                     child: Text('Book Lesson'),
                   ),

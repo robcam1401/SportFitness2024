@@ -83,7 +83,7 @@ class _Friends extends State<Friends> {
             await db.collection("Groups").doc(member["GroupID"]).get().then(
               (DocumentSnapshot doc2) {
                 Map group = doc2.data() as Map<String, dynamic>;
-                 _widgets.add(MyCircle(name: group["Name"], groupPicture: group["GroupPicture"],));
+                 _widgets.add(MyCircle(name: group["Name"], groupPicture: group["GroupPicture"],UserID: UserID, groupID: member["GroupID"],));
               }
             );
            
