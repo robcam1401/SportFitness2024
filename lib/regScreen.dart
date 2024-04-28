@@ -6,6 +6,11 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'dbInterface.dart';
 
+class AlwaysDisabledFocusNode extends FocusNode {
+  @override
+  bool get hasFocus => false;
+}
+
 class regScreen extends StatefulWidget {
   const regScreen({Key? key}) : super(key: key);
   @override
@@ -18,13 +23,14 @@ class _RegScreenState extends State<regScreen> {
   final TextEditingController _gmailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  // gonna make more, too. For phone number and birthdate
+  final TextEditingController _DOBController = TextEditingController();
 
   bool _showFullNameCheck = false;
   bool _showGmailCheck = false;
   bool _showUsernameCheck = false;
   bool _showPasswordCheck = false;
   bool isSendingEmail = false;
+  bool _showDOBCheck = false;
 
   @override
   void initState() {
@@ -47,13 +53,30 @@ class _RegScreenState extends State<regScreen> {
       setState(() => _showUsernameCheck = showCheck);
     });
 
+    _DOBController.addListener(() {
+      final text = _DOBController.text;
+      setState(() => _showDOBCheck = text.isNotEmpty);
+    });
+
     _passwordController.addListener(() {
       final text = _passwordController.text;
       final showCheck = text.length >= 5 && text.length <= 30;
       setState(() => _showPasswordCheck = showCheck);
     });
+  }
 
-    // add a listener for phone number and dob
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null && pickedDate != DateTime.now()) {
+      setState(() {
+        _DOBController.text = "${pickedDate.toLocal()}".split(' ')[0];
+      });
+    }
   }
 
   void _togglePasswordVisibility() {
@@ -188,6 +211,22 @@ class _RegScreenState extends State<regScreen> {
                           )),
                     ),
                     TextField(
+                      focusNode: AlwaysDisabledFocusNode(),
+                      controller: _DOBController,
+                      decoration: InputDecoration(
+                          suffixIcon: _showDOBCheck
+                              ? Icon(Icons.check, color: Colors.green)
+                              : null,
+                          label: Text(
+                            'Date Of Birth',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
+                            ),
+                          )),
+                      onTap: () => _selectDate(context),
+                    ),
+                    TextField(
                       controller: _passwordController,
                       obscureText: _isObscured,
                       decoration: InputDecoration(
@@ -219,18 +258,18 @@ class _RegScreenState extends State<regScreen> {
                       onPressed: () {
                         // create the account_info map and pass into new_account
                         Map account_info = {
-                          'Username' : _usernameController.text,
-                          'Email' : _gmailController.text,
-                          'Name' : _fullNameController.text,
-                          'PasswordHash' : _passwordController.text,
-                          'PhoneNumber' : 16,
-                          'DoB' : '1111-11-11 11:11:11'
+                          'Username': _usernameController.text,
+                          'Email': _gmailController.text,
+                          'Name': _fullNameController.text,
+                          'PasswordHash': _passwordController.text,
+                          'PhoneNumber': 16,
+                          'DoB': '1111-11-11 11:11:11'
                         };
                         // because inserts do send a response,
                         // make a future builder, or maybe use completer class???
                         //Future<Map> _info = Insert().new_account(account_info);
                         Insert().new_account(account_info);
-                        Map _info_test = {'success' : true};
+                        Map _info_test = {'success': true};
                         //check if the email has not aldready been sent and checks for valid gamial address
                         if (_showGmailCheck && !isSendingEmail) {
                           // calling sendVerificationCode
@@ -285,6 +324,7 @@ class _RegScreenState extends State<regScreen> {
     _gmailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _DOBController.dispose();
     super.dispose();
   }
 }
