@@ -8,8 +8,10 @@ import 'package:flutter/material.dart';
 class MyCircle extends StatelessWidget{
 final String name;
 final String groupPicture;
+final String UserID;
+final String groupID;
 
-MyCircle({required this.name, required this.groupPicture});
+MyCircle({required this.name, required this.groupPicture, required this.UserID, required this.groupID});
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -23,10 +25,10 @@ MyCircle({required this.name, required this.groupPicture});
             child: Container(
               width: 60,
               child: InkWell(
-                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: "", pairID: "", username: "", profilePicture: ""))); },
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: groupID, username: name, profilePicture: groupPicture, friends: false))); },
                 child: CircleAvatar(backgroundImage:NetworkImage(groupPicture),
                 radius: 60,
-                
                 ),
               )
               ),

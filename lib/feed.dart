@@ -1,14 +1,11 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/friends.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/v1.dart';
 import 'post_card.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
@@ -90,7 +87,7 @@ class _Feed extends State<Feed> {
                             print("Uploading $fileName");
                             final nameRef = storageRef.child(fileName);
                             try {
-                               nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) {
+                               nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) async {
                                 switch (taskSnapshot.state) {
                               case TaskState.running:
                               Fluttertoast.showToast(
@@ -104,6 +101,7 @@ class _Feed extends State<Feed> {
                                 // ...
                                 break;
                               case TaskState.success:
+                              String download = await nameRef.getDownloadURL(); 
                               Fluttertoast.showToast(
                                 msg: "Upload Done",
                                 toastLength: Toast.LENGTH_SHORT,
@@ -227,14 +225,6 @@ class _Feed extends State<Feed> {
     );
   }
   
-  void filePicker() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-      if (result != null) {
-        File file = File(result.files.single.path!);
-      } else {
-        // User canceled the picker
-      }
-  }
   
   Future<List> postCardBuilder(docs) async { 
     dynamic db = FirebaseFirestore.instance;
@@ -242,6 +232,7 @@ class _Feed extends State<Feed> {
     UserID = prefs.getString("UserID")!;
     List pics = [];
     for (var doc in docs) {
+      print(doc.data() as Map<String, dynamic>);
       DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
       await docRef.get().then(
         (DocumentSnapshot data) async {

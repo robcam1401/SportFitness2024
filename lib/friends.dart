@@ -32,9 +32,11 @@ class _Friends extends State<Friends> {
     UserID = prefs.getString("UserID")!;
     String loading = "Loading";
     List<Widget> _widgets = [];
+    print("Here");
     await db.collection("Friends").where("User2ID", isEqualTo: UserID).where("User2Accepted", isEqualTo: "true").get().then(
       (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
+          print(doc.data());
           Map friend = doc.data() as Map<String, dynamic>;
           await db.collection("UserAccount").doc(friend["User1ID"]).get().then(
             (DocumentSnapshot doc2) {
@@ -83,7 +85,7 @@ class _Friends extends State<Friends> {
             await db.collection("Groups").doc(member["GroupID"]).get().then(
               (DocumentSnapshot doc2) {
                 Map group = doc2.data() as Map<String, dynamic>;
-                 _widgets.add(MyCircle(name: group["Name"], groupPicture: group["GroupPicture"],));
+                 _widgets.add(MyCircle(name: group["Name"], groupPicture: group["GroupPicture"],UserID: UserID, groupID: member["GroupID"],));
               }
             );
            

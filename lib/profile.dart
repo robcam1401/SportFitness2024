@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'feed.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +34,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   Future<List> postCardBuilder(docs) async {
@@ -250,6 +250,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                     tabs: [
                       Tab(text: 'Feed'),
                       Tab(text: 'Resources'),
+                      Tab(text: 'Bookmarks'),
                     ],
                   ),
                   Expanded(
@@ -439,6 +440,59 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             ],
                           ),
                         ),
+                        FutureBuilder(
+                          future: FirebaseFirestore.instance.collection("Bookmarks").where("UserID", isEqualTo: UserID).get(),
+                          builder: ((BuildContext context, AsyncSnapshot snapshot) {
+                            if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                              dynamic docs = snapshot.data.docs;
+                              if (docs.isEmpty) {
+                                return Text("No Bookmarks? :(");
+                              }
+                              for (var doc in docs) {
+                                print(doc.data() as Map<String, dynamic>);
+                              }
+                              return FutureBuilder(
+                                future: bookmarkBuilder(docs),
+                                builder: ((BuildContext context, AsyncSnapshot snapshot2) {
+                                  if (snapshot2.connectionState == ConnectionState.done && snapshot2.hasData) {
+                                    List pics = snapshot2.data;
+                                    print(pics);
+                                    return ListView.builder(
+                                      itemCount: snapshot.data.docs.length,
+                                      itemBuilder: (context, index) {
+                                        return PostCard(
+                                          postUrl: pics[index]["Link"],
+                                          userImage: pics[index]["ProfilePicture"],
+                                          description: pics[index]["Description"],
+                                          username: pics[index]["Username"],
+                                          likes: pics[index]["Likes"],
+                                          comments: pics[index]["Comments"],
+                                          timestamp: pics[index]["UploadDate"],
+                                          UserID: UserID,
+                                          postID: pics[index]["PostID"],
+                                          isLiked: pics[index]["isLiked"],
+                                          isBookmarked: true,
+                                          posterID: pics[index]["Poster"]
+                                        );
+                                      }
+                                    );
+                                    
+                                  }
+                                  else {
+                                    return const Center(child:Expanded(child: CircularProgressIndicator()));
+                                  }
+                                })
+                              );
+                        
+                            }
+                            else if (snapshot.hasError) {
+                              return Center(child:Text("Bookmarks Snapshot Error"));
+                            }
+                            else {
+                              return const Center(child:Expanded(child:CircularProgressIndicator()));
+                            }
+                          })),
+                        
                       ],
                     ),
                   ),
@@ -477,6 +531,55 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         );
         return resources;
       }
+      
+        Future<List> bookmarkBuilder(docs) async {
+          dynamic db = FirebaseFirestore.instance;
+          List pics = [];
+          for (var doc in docs) {
+            Map data = doc.data();
+            await db.collection("Pictures").doc(data["PostID"]).get().then(
+              (DocumentSnapshot doc2) async {
+                Map pic = doc2.data() as Map<String, dynamic>;
+                pic["PostID"] = data["PostID"];
+                await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+                  (querySnapshot) {
+                    if (!querySnapshot.docs.isEmpty) {
+                      pic["isLiked"] = true;
+                    }
+                    else {
+                      pic["isLiked"] = false;
+                    }
+                  }
+                );
+                await db.collection("Bookmarks").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+                  (querySnapshot) {
+                    if (!querySnapshot.docs.isEmpty) {
+                      pic["isBookmarked"] = true;
+                    }
+                    else {
+                      pic["isBookmarked"] = false;
+                    }
+                  }
+                );
+                pics.add(pic);
+
+              }
+            );
+          }
+          int i = 0;
+          for (var item in pics) {
+            DocumentReference docRef = await db.collection("UserAccount").doc(item["Poster"]);
+            await docRef.get().then(
+              (DocumentSnapshot data) {
+                final data2 = data.data() as Map<String, dynamic>;
+                pics[i]["Username"] = data2["Username"];
+                pics[i]["ProfilePicture"] = data2["ProfilePicture"];
+                i = i + 1;
+              }
+            );
+          }
+          return pics;
+        }
 }
 
 
