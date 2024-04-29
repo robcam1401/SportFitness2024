@@ -43,7 +43,6 @@ getId() async {
   await FirebaseFirestore.instance.collection("Notifications").where("Owner" ,isEqualTo: id).get().then(
     (snapshot) => snapshot.docs.forEach(
       (document) {
-        print(document.reference);
         docIDs.add(document.reference.id);
       },
     ),
@@ -69,6 +68,7 @@ getId() async {
               return NotificationsBlock(
                           child: docIDs[index],
                         );
+                        
             }
             );
               }
