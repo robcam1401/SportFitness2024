@@ -23,6 +23,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
   
 class Notifications extends StatelessWidget {
   @override
+
+List<String> docIDs = [];
+
+getId() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  id = prefs.get('UserID').toString();
+  await FirebaseFirestore.instance.collection("Notifications").where("Owner" ,isEqualTo: id).get().then(
+    (snapshot) => snapshot.docs.forEach(
+      (document) {
+        docIDs.add(document.reference.id);
+      },
+    ),
+      );
+}
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -42,6 +57,7 @@ class Notifications extends StatelessWidget {
               return NotificationsBlock(
                           child: docIDs[index],
                         );
+                        
             }
             );
               }

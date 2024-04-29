@@ -29,6 +29,10 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
   String website = 'https://www.google.com';
   List pics = [];
 
+  List<Map<String, dynamic>> _bookedResources = [];
+  bool isFriend = false;
+
+
   @override
   void initState() {
     super.initState();
@@ -136,15 +140,17 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
               dynamic requestCheck2 = await db.collection("Friends").doc("$User2ID$User").get();
               //means owner sent request
               if(requestCheck1.exists){  
-                
+                isFriend = true;
               }
               //means friend sent request
               else if (requestCheck2.exists){
                 dynamic acceptfriend = await db.collection("Friends").doc("$User2ID$User");
                 acceptfriend.update({"User2Accepted":"true"});
+                isFriend = false;
               }       
               // no request 
               else{
+                isFriend = true;
                 Map friendinfo = <String, dynamic>{
                   'User1ID' : User,
                   'User2ID' : User2ID,
@@ -156,13 +162,16 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
                   'Owner' : User2ID,
                   'Time' : Timestamp.now(),
                   'Type' : "friend request",
+                  'Sender': User
                 };
                 db.collection("Notifications").doc().set(sendNotification);
               
               
               }   
             },
-            icon: Icon(Icons.person_add),
+            icon: Icon(
+              (isFriend) ? Icons.person: Icons.person_add 
+            ),
           ),
         ],
         ),
