@@ -36,7 +36,7 @@ MySquare({required this.username, required this.profilePicture, required this.Us
           Expanded(
             flex:90,
             child: InkWell(
-              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: pairID, username: username, profilePicture: profilePicture))); },
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: pairID, username: username, profilePicture: profilePicture, friends: true))); },
               child: Container(
                 height: 75,
                 padding: EdgeInsets.all(5),

@@ -6,21 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'profile.dart';
 import 'package:flutter/material.dart';
 
-// final List<String> userImagesUrls = [
-//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-//   'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-// ];
-
-// final List<String> posts = [
-//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-//   'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-//   'https://firebasestorage.googleapis.com/v0/b/exerciseapp-e8a0e.appspot.com/o/techdiff.jpg?alt=media&token=9dde3ac8-5e8a-4331-9310-f9fb76daa876',
-// ];
-
 class PostCard extends StatefulWidget {
   final String userImage;
   final String username;

@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'lesson_booking_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'video_analysis_page.dart';
 import 'post_card.dart';
 import 'dart:convert';
@@ -15,6 +17,7 @@ import 'resource.dart';
 import 'myresources.dart';
 
 class otherProfile extends StatefulWidget {
+
   @override
   State<otherProfile> createState() => _otherProfile();
     String posterID;
@@ -45,7 +48,6 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
 
   Future<List> postCardBuilder(docs) async {
     dynamic db = FirebaseFirestore.instance;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     UserID = widget.posterID;
     List pics = [];
     for (var doc in docs) {
@@ -95,7 +97,6 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
 
   Future<String> fetchUserInfo() async {
     dynamic db = FirebaseFirestore.instance;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     UserID = widget.posterID;
     await db.collection("UserAccount").doc(UserID).get().then(
       (DocumentSnapshot doc) {
@@ -121,31 +122,44 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
     return ("Profile Loading");
   }
 
+  //int followingCount = 100;
+  String profileID = 'abc';
+  //String UserID = 'abc';
+  String confirmation = 'abc';
+  bool isAdded = false;
 
   @override
-    Widget build(BuildContext context) {
-      // List<Resource> resources = [
-      //   Resource(
-      //     id: '1',
-      //     name: 'Private Lessons',
-      //     description: 'Personalised tennis sessions to up to 3 players! Work on your shot teqnique, feet movement, strategy...',
-      //     available: true,
-      //     onPressed: () {
-      //       Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage()));
-      //     },
-      //   ),
-      //   Resource(
-      //     id: '2',
-      //     name: 'Video Analysis',
-      //     description: 'Personalised Video Anlaysis...',
-      //     available: true,
-      //     onPressed: () {
-      //       Navigator.push(context, MaterialPageRoute(builder: (context) => VideoAnalysisPage()));
-      //     },
-      //   ),
-      //   // Add more resources as needed
-      // ];
 
+  Widget build(BuildContext context) {
+    List<Service> services = [
+      Service(
+        id: '1',
+        name: 'One-on-One Lessons',
+        resources: [
+          Resource(
+            id: '1',
+            name: 'Tennis Lesson',
+            description: '',
+            available: true,
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name:'1',resourceID:'test', numPlayers: false, bookDate: false,duration: false,priceHour: 1,pricePerson: 1,)));
+            },
+          ),
+        ],
+      ),
+      Service(
+        id: '2',
+        name: 'Video Analysis',
+        resources: [
+          Resource(
+            id: '2', 
+            name: 'Video Analysis Session', 
+            description: '',
+            available: true),
+        ],
+      ),
+      // Add more services as needed
+    ];
 
       return Scaffold(
         appBar: AppBar(
@@ -414,35 +428,6 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
                                   }
                                 })
                               ),
-                              // Column(
-                                // crossAxisAlignment: CrossAxisAlignment.center,
-                                // children: resources.map((resource) {
-                                //   return Column(
-                                //     crossAxisAlignment: CrossAxisAlignment.center,
-                                //     children: [
-                                //       ListTile(
-                                //         title: Text(
-                                //           resource.name,
-                                //           style: TextStyle(
-                                //             fontWeight: FontWeight.bold,
-                                //             fontSize: 17,
-                                //           ),
-                                //         ),
-                                //         subtitle: Text(
-                                //           resource.description, // Assuming description exists in your Resource class
-                                //         ),
-                                //         trailing: ElevatedButton(
-                                //           onPressed: resource.onPressed,
-                                //           child: Text('Select'),
-                                //         ),
-                                //       ),
-                                //       Divider(), 
-                                //     ],
-                                //   );
-                                // }).toList(),
-                              // ),
-                             
-                            
                             ],
                           ),
                         ),
@@ -485,8 +470,50 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
         return resources;
       }
 }
+  
 
+class PostWidget extends StatelessWidget {
+  final ImageProvider image;
+  final String caption;
 
+  const PostWidget({
+    required this.image,
+    required this.caption,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Post image
+          Image(image: image),
+          SizedBox(height: 10),
+          // Caption
+          Text(
+            caption,
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Service {
+  final String id;
+  final String name;
+  final List<Resource> resources;
+
+  Service({required this.id, required this.name, required this.resources});
+}
 
 class Resource {
   final String id;
