@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'checkoutpage.dart'; // Import the CheckoutPage widget
 
 class LessonBookingPage extends StatelessWidget {
   final String name;
@@ -57,6 +56,7 @@ class LessonBookingForm extends StatefulWidget {
 
 class _LessonBookingFormState extends State<LessonBookingForm> {
   late DateTime _selectedDate;
+  // these are initial values for the dropdowns
   int _numberOfPlayers = 1;
   int _lessonDuration = 1; // Default duration is 1 hour
 
@@ -68,10 +68,12 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
 
   @override
   Widget build(BuildContext context) {
+    // the widget list is dynamically built based on the features op gave to the resource
     List<Widget> np; // the list of widgets for the number of players
     List<Widget> ld; // the list of widgets for the lesson duration
     List<Widget> bd; // the list of widgets for the book date
     List<Widget> pc; // the list of widgets to calculate the price
+    // these are initial values for the two prices. they are changed when grabbing the resource data
     int ppp = 0; // price per person
     int pph = 0; // price per hour
     if (widget.numPlayers) {
@@ -173,11 +175,15 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
                 actions: [
                   TextButton(
                     onPressed: () async {
+                      // for now, not going to nav to the checkout page
+                      // bluescreens windows when ran on an emulator
+                      // works on android hardware
                       // Navigate to CheckoutPage
                       // Navigator.push(
                       //   context,
                       //   MaterialPageRoute(builder: (context) => CheckoutPage()),
                       // );
+                      // insert the booked resource into the database
                       SharedPreferences prefs = await SharedPreferences.getInstance();
                       String UserID = prefs.getString("UserID")!;
                       dynamic db = FirebaseFirestore.instance;
@@ -197,6 +203,7 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
                           "Accepted" : false,
                         };
                       }
+                      // return to the profile page
                       db.collection("BookedResources").add(booked);
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -221,96 +228,6 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
         children: bd+np+ld+pc
       )
     );
-    // return Padding(
-    //   padding: EdgeInsets.all(20.0),
-    //   child: Column(
-    //     mainAxisAlignment: MainAxisAlignment.center,
-    //     children: [
-    //       Text('Select Date:'),
-    //       SizedBox(height: 10),
-    //       ElevatedButton(
-    //         onPressed: () {
-    //           _selectDate(context);
-    //         },
-    //         child: Text('Select Date'),
-    //       ),
-    //       SizedBox(height: 20),
-    //       Text('Number of Players:'),
-    //       SizedBox(height: 10),
-    //       Row(
-    //         mainAxisAlignment: MainAxisAlignment.center,
-    //         children: [
-    //           IconButton(
-    //             icon: Icon(Icons.remove),
-    //             onPressed: () {
-    //               setState(() {
-    //                 if (_numberOfPlayers > 1) {
-    //                   _numberOfPlayers--;
-    //                 }
-    //               });
-    //             },
-    //           ),
-    //           Text('$_numberOfPlayers'),
-    //           IconButton(
-    //             icon: Icon(Icons.add),
-    //             onPressed: () {
-    //               setState(() {
-    //                 _numberOfPlayers++;
-    //               });
-    //             },
-    //           ),
-    //         ],
-    //       ),
-    //       SizedBox(height: 20),
-    //       Text('Lesson Duration (hours):'),
-    //       SizedBox(height: 10),
-    //       DropdownButton<int>(
-    //         value: _lessonDuration,
-    //         onChanged: (value) {
-    //           setState(() {
-    //             _lessonDuration = value!;
-    //           });
-    //         },
-    //         items: [1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
-    //           return DropdownMenuItem<int>(
-    //             value: value,
-    //             child: Text('$value'),
-    //           );
-    //         }).toList(),
-    //       ),
-    //       SizedBox(height: 20),
-    //       ElevatedButton(
-    //         onPressed: () {
-    //           // Calculate price based on number of players and lesson duration
-    //           int price = calculatePrice();
-    //           // Show price or further booking steps
-    //           showDialog(
-    //             context: context,
-    //             builder: (BuildContext context) {
-    //               return AlertDialog(
-    //                 title: Text('Lesson Price'),
-    //                 content: Text('\$$price'),
-    //                 actions: [
-    //                   TextButton(
-    //                     onPressed: () {
-    //                       // Navigate to CheckoutPage
-    //                       Navigator.push(
-    //                         context,
-    //                         MaterialPageRoute(builder: (context) => CheckoutPage()),
-    //                       );
-    //                     },
-    //                     child: Text('Book Lesson'),
-    //                   ),
-    //                 ],
-    //               );
-    //             },
-    //           );
-    //         },
-    //         child: Text('Book Lesson'),
-    //       ),
-    //     ],
-    //   ),
-    // );
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -329,9 +246,9 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
 
   int calculatePrice(int ppp,int pph, int players, int hours) {
     // Define price rates
-    const int pricePerHour1Player = 30;
-    const int pricePerHour2Players = 50;
-    const int pricePerExtraPlayer = 25;
+    // const int pricePerHour1Player = 30;
+    // const int pricePerHour2Players = 50;
+    // const int pricePerExtraPlayer = 25;
 
     print("ppp: $ppp");
     print("pph: $pph");

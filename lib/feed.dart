@@ -18,6 +18,8 @@ class Feed extends StatefulWidget {
 }
 
 class _Feed extends State<Feed> {
+  // postData will be populated with a list of posts to build the feed
+  // UserID is populated from the shared preferences cache
   dynamic postData;
   String UserID = '';
 
@@ -79,44 +81,45 @@ class _Feed extends State<Feed> {
                         onPressed: () async {
                           FilePickerResult? result = await FilePicker.platform.pickFiles();
                           if (result != null) {
+                            // grab the path of the selected file
                             File file = File(result.files.single.path!);
-                            print(file.path);
                             final storageRef = FirebaseStorage.instance.ref();
+                            // create a new link-safe random name for the file
                             var uuid = Uuid();
                             String fileName = "${uuid.v4()}.jpg";
-                            print("Uploading $fileName");
                             final nameRef = storageRef.child(fileName);
+                            // uploading the file
                             try {
-                               nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) async {
+                                nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) async {
                                 switch (taskSnapshot.state) {
-                              case TaskState.running:
-                              Fluttertoast.showToast(
-                                msg: "Upload In Progress",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                              );
-                                print("Uploading");
-                                break;
-                              case TaskState.paused:
-                                // ...
-                                break;
-                              case TaskState.success:
-                              String download = await nameRef.getDownloadURL(); 
-                              Fluttertoast.showToast(
-                                msg: "Upload Done",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                              );
-                                print("Uploaded");
-                                break;
-                              case TaskState.canceled:
-                                // ...
-                                break;
-                              case TaskState.error:
-                                print("Upload Error");
-                                break;
-                            }
-                          });
+                                  case TaskState.running:
+                                  Fluttertoast.showToast(
+                                    msg: "Upload In Progress",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                  );
+                                    print("Uploading");
+                                    break;
+                                  case TaskState.paused:
+                                    // ...
+                                    break;
+                                  case TaskState.success:
+                                  //String download = await nameRef.getDownloadURL(); 
+                                  Fluttertoast.showToast(
+                                    msg: "Upload Done",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                  );
+                                    print("Uploaded");
+                                    break;
+                                  case TaskState.canceled:
+                                    // ...
+                                    break;
+                                  case TaskState.error:
+                                    print("Upload Error");
+                                    break;
+                                }
+                                });
                             } on FirebaseException catch (e) {
                               print("Upload Error $e");
                             }
@@ -171,6 +174,9 @@ class _Feed extends State<Feed> {
         backgroundColor: Colors.red[600],
       ),
       //  body: ListView.builder(
+        // future builder to build the feed
+        // made of two future builders, the first gets the posts from the database
+        // the second passes the posts into a function to create the post card list
         body: FutureBuilder(
           future: FirebaseFirestore.instance.collection("Pictures").orderBy("UploadDate",descending: true).limit(10).get(),
           builder: ((BuildContext context, AsyncSnapshot snapshot) {
@@ -225,21 +231,25 @@ class _Feed extends State<Feed> {
     );
   }
   
-  
+  // given the list of firebase docs, builds the post data list
   Future<List> postCardBuilder(docs) async { 
+    // init the database and get the user id from cache
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     UserID = prefs.getString("UserID")!;
     List pics = [];
+    // iterating through the docs, grab the necessary data
     for (var doc in docs) {
       print(doc.data() as Map<String, dynamic>);
       DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
       await docRef.get().then(
         (DocumentSnapshot data) async {
           Map pic = data.data() as Map<String, dynamic>;
+          // post id uniquely identifies each post. it is used to count likes, bookmarks, and comments
           pic["PostID"] = doc.id;
           await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
             (querySnapshot) {
+              // find if the user has previously liked or bookmarkes the post
               if (!querySnapshot.docs.isEmpty) {
                 pic["isLiked"] = true;
               }
@@ -263,6 +273,7 @@ class _Feed extends State<Feed> {
         );
     }
     int i = 0;
+    // for each item in pics, grab the username and profile picture of the user that uploaded the post
     for (var item in pics) {
       DocumentReference docRef = await db.collection("UserAccount").doc(item["Poster"]);
       await docRef.get().then(

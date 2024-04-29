@@ -21,19 +21,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
   
-class Notifications extends StatefulWidget {
-
-    @override
-  _NotificationsState createState() => _NotificationsState();
-
-}
-
-class _NotificationsState extends State<Notifications> {
-  String id = "";
+class Notifications extends StatelessWidget {
   @override
-
-
-
 
 List<String> docIDs = [];
 

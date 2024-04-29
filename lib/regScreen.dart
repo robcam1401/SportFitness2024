@@ -10,6 +10,11 @@ import 'package:crypto/crypto.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class AlwaysDisabledFocusNode extends FocusNode {
+  @override
+  bool get hasFocus => false;
+}
+
 class regScreen extends StatefulWidget {
   const regScreen({Key? key}) : super(key: key);
   @override
@@ -24,6 +29,7 @@ class _RegScreenState extends State<regScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordController2 = TextEditingController();
   // gonna make more, too. For phone number and birthdate
+  final TextEditingController _DOBController = TextEditingController();
 
   bool _showFullNameCheck = false;
   bool _showGmailCheck = false;
@@ -32,6 +38,7 @@ class _RegScreenState extends State<regScreen> {
   bool isSendingEmail = false;
   bool passwordMatch = false;
   bool inserted = false;
+  bool _showDOBCheck = false;
 
   @override
   void initState() {
@@ -54,6 +61,11 @@ class _RegScreenState extends State<regScreen> {
       setState(() => _showUsernameCheck = showCheck);
     });
 
+    _DOBController.addListener(() {
+      final text = _DOBController.text;
+      setState(() => _showDOBCheck = text.isNotEmpty);
+    });
+
     _passwordController.addListener(() {
       final text = _passwordController.text;
       final showCheck = text.length >= 5 && text.length <= 30;
@@ -64,8 +76,20 @@ class _RegScreenState extends State<regScreen> {
       final showCheck = text.length >= 5 && text.length <= 30;
       setState(() => _showPasswordCheck = showCheck);
     });
+  }
 
-    // add a listener for phone number and dob
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null && pickedDate != DateTime.now()) {
+      setState(() {
+        _DOBController.text = "${pickedDate.toLocal()}".split(' ')[0];
+      });
+    }
   }
 
   void _togglePasswordVisibility() {
@@ -200,6 +224,22 @@ class _RegScreenState extends State<regScreen> {
                           )),
                     ),
                     TextField(
+                      focusNode: AlwaysDisabledFocusNode(),
+                      controller: _DOBController,
+                      decoration: InputDecoration(
+                          suffixIcon: _showDOBCheck
+                              ? Icon(Icons.check, color: Colors.green)
+                              : null,
+                          label: Text(
+                            'Date Of Birth',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
+                            ),
+                          )),
+                      onTap: () => _selectDate(context),
+                    ),
+                    TextField(
                       controller: _passwordController,
                       obscureText: _isObscured,
                       decoration: InputDecoration(
@@ -287,6 +327,7 @@ class _RegScreenState extends State<regScreen> {
                           }
                         }
                         else {
+                          //showing toast message if the Gmail address is not valid
                           Fluttertoast.showToast(
                             msg : "Passwords do not match",
                             toastLength: Toast.LENGTH_SHORT,
@@ -336,6 +377,7 @@ class _RegScreenState extends State<regScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     _passwordController2.dispose();
+    _DOBController.dispose();
     super.dispose();
   }
   

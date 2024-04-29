@@ -1,8 +1,6 @@
 import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dbInterface.dart';
 
 class ChatScreen extends StatefulWidget{
   final String pairID;
@@ -21,6 +19,7 @@ class ChatScreen extends StatefulWidget{
 
 class _Chatscreen extends State<ChatScreen> {
     // future functions
+    // grabs the messages from the pair or group and creates the widget list
     Future<List<Widget>> addFriendMessages() async {
       dynamic db = FirebaseFirestore.instance;
       List<Widget> _messages = [];
@@ -123,6 +122,7 @@ class _Chatscreen extends State<ChatScreen> {
             ),
             MessageBar(
               onSend: (_) => {
+                // create a doc in the db for the message
                 FirebaseFirestore.instance.collection("FriendMessages").add(
                   {
                     "MessageBody" : _, 
@@ -130,6 +130,7 @@ class _Chatscreen extends State<ChatScreen> {
                   "SentUser" : widget.UserID, 
                   "SentStamp" : DateTime.timestamp()
                   }
+                  // setState refreshes the page and adds the sent message into the widget list
                   ), setState(() {})},
               actions: [
                 InkWell(

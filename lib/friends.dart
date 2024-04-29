@@ -12,9 +12,6 @@ class Friends extends StatefulWidget{
 class _Friends extends State<Friends> {
   // account variables
   String UserID = '';
-  List<String> _friends = [];
-  List<String> _pfps = [];
-  List<String> _pairs = [];
 
   // void initState() {
   //   super.initState();
@@ -26,21 +23,20 @@ class _Friends extends State<Friends> {
     UserID = prefs.getString("UserID")!;
   }
 
+  // creates the list of widgets that populate the friends list
   Future<List<Widget>> addPeople() async {
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     UserID = prefs.getString("UserID")!;
-    String loading = "Loading";
     List<Widget> _widgets = [];
-    print("Here");
-    await db.collection("Friends").where("User2ID", isEqualTo: UserID).where("User2Accepted", isEqualTo: "true").get().then(
+    // find the pairs of friends where the active user is user2 and create the widgets
+    await db.collection("Friends").where("User2ID", isEqualTo: UserID).where("User1Accepted", isEqualTo: 'true').where("User2Accepted", isEqualTo: "true").get().then(
       (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
-          print(doc.data());
           Map friend = doc.data() as Map<String, dynamic>;
+          // grab the user info of the friend
           await db.collection("UserAccount").doc(friend["User1ID"]).get().then(
             (DocumentSnapshot doc2) {
-              loading = "Completed";
               Map user = doc2.data() as Map<String, dynamic>;
               _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id, posterID: friend["User1ID"]));
             }
@@ -48,13 +44,13 @@ class _Friends extends State<Friends> {
         }
       }
     );
-    await db.collection("Friends").where("User1ID", isEqualTo: UserID).where("User1Accepted", isEqualTo: "true").get().then(
+    // grab the pair info where the current user is user1
+    await db.collection("Friends").where("User1ID", isEqualTo: UserID).where("User1Accepted", isEqualTo: "true").where("User2Accepted", isEqualTo : 'true').get().then(
       (querySnapshot) async {
         for (var doc in querySnapshot.docs) {
           Map friend = doc.data() as Map<String, dynamic>;
           await db.collection("UserAccount").doc(friend["User2ID"]).get().then(
             (DocumentSnapshot doc2) {
-              loading = "Completed";
               Map user = doc2.data() as Map<String, dynamic>;
               _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id,posterID: friend["User2ID"]));
             }
@@ -72,7 +68,7 @@ class _Friends extends State<Friends> {
 
   // }
 
-
+  // same logic as the addPeople, just with groupID and no user1/2
   Future<List<Widget>> addGroups() async {
       dynamic db = FirebaseFirestore.instance;
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -94,35 +90,7 @@ class _Friends extends State<Friends> {
       );
     return _widgets;
   }
-  // sample data for the list
-  //  will be updated with data in the database later
-  // final List _people = _locals['_people'];
-  // final List _pairs = _locals['_pairs'];
 
-  // this query returns a list of lists
-  // the _people list contains usernames of friends
-  // the _pairs list contains pair IDs of friends
-
-  // final List _people = [
-  //   'nabinta',
-  //   'cam',
-  //   'zach',
-  //   'olga',
-  //   'person 5',
-  //   user1,
-  // ];
-
-  // final List _groups = [
-  //   'nabinta',
-  //   'cam',
-  //   'zach',
-  //   'olga',
-  //   'person 5',
-  //   '1',
-  //   '2',
-  //   '3',
-  //   '4',
-  // ];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder

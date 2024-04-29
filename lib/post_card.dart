@@ -1,11 +1,11 @@
+// ignore_for_file: non_constant_identifier_names, use_super_parameters, library_private_types_in_public_api
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/other_profile.dart';
-import 'package:exercise_app/profile.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'profile.dart';
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class PostCard extends StatefulWidget {
   final String userImage;
   final String username;
@@ -84,8 +84,9 @@ class _PostCardState extends State<PostCard> {
                 ),
                 IconButton(
                     onPressed: () async {
+                      // this boolean checks if the user is the same as the poster
+                      // if so, the delete option can be shown
                       if (widget.UserID == widget.posterID) {
-                        print("True");
                         showDialog(
                           context: context,
                           builder: (context) => Dialog(
@@ -155,12 +156,14 @@ class _PostCardState extends State<PostCard> {
                 onPressed: () async {
                   dynamic db = FirebaseFirestore.instance;
                   if (!widget.isLiked){
+                    // extra fireabase logic is required to like a post and update in the database
                     db.collection("Likes").add({"PostID" : widget.postID, "UserID" : widget.UserID});
                     db.collection("Pictures").doc(widget.postID).update({"Likes" : widget.likes + 1});
                     widget.likes = widget.likes + 1;
                     widget.isLiked = true;
                   }
                   else {
+                    // if the post is already liked and becomes un-liked, remove the like doc in the db and decrement the like counter
                     await db.collection("Likes").where("PostID", isEqualTo: widget.postID).where("UserID", isEqualTo: widget.UserID).get().then(
                       (querySnapshot) {
                         for (var doc in querySnapshot.docs) {
@@ -201,6 +204,7 @@ class _PostCardState extends State<PostCard> {
                     icon: Icon(Icons.bookmark_border, color: widget.isBookmarked ? Colors.blue : Colors.grey),
                     onPressed: () async {
                       dynamic db = FirebaseFirestore.instance;
+                      // same logic as the likes, not including an integer counter
                       if (!widget.isBookmarked){
                         db.collection("Bookmarks").add({"PostID" : widget.postID, "UserID" : widget.UserID});
                         widget.isBookmarked = true;

@@ -85,6 +85,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                 ),
               ),
               onPressed: () async {
+                // this is the same logic as the file picker in the feed
+                // _isButtonEnabled is used to deactivate the submit button until the upload is done
                 _isButtonEnabled = false;
                 FilePickerResult? result = await FilePicker.platform.pickFiles();
                 if (result != null) {
