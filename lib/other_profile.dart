@@ -1,21 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'lesson_booking_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'video_analysis_page.dart';
 import 'post_card.dart';
-import 'dart:convert';
-import 'dbInterface.dart';
-import 'resource.dart';
-import 'myresources.dart';
 
+// ignore: must_be_immutable
 class otherProfile extends StatefulWidget {
 
   @override
@@ -38,7 +28,6 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
   String biography = '';
   String website = 'https://www.google.com';
   List pics = [];
-  List<Map<String, dynamic>> _bookedResources = [];
 
   @override
   void initState() {
@@ -131,36 +120,6 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
   @override
 
   Widget build(BuildContext context) {
-    List<Service> services = [
-      Service(
-        id: '1',
-        name: 'One-on-One Lessons',
-        resources: [
-          Resource(
-            id: '1',
-            name: 'Tennis Lesson',
-            description: '',
-            available: true,
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name:'1',resourceID:'test', numPlayers: false, bookDate: false,duration: false,priceHour: 1,pricePerson: 1,)));
-            },
-          ),
-        ],
-      ),
-      Service(
-        id: '2',
-        name: 'Video Analysis',
-        resources: [
-          Resource(
-            id: '2', 
-            name: 'Video Analysis Session', 
-            description: '',
-            available: true),
-        ],
-      ),
-      // Add more services as needed
-    ];
-
       return Scaffold(
         appBar: AppBar(
           title: const Text('Profile'),
@@ -531,6 +490,7 @@ class Resource {
   });
 }
 
+// ignore: must_be_immutable
 class PostCardScreen extends StatelessWidget {
   final String userImage;
   final String username;
@@ -539,7 +499,6 @@ class PostCardScreen extends StatelessWidget {
   final Timestamp timestamp;
   int likes;
   int comments;
-  final String text = "hello";
   final String UserID;
   final String postID;
   bool isLiked;

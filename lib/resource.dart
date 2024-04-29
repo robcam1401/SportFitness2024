@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dbInterface.dart';
-import 'dart:convert';
 
 class ResourceCreationScreen extends StatefulWidget {
   @override
@@ -12,10 +10,11 @@ class ResourceCreationScreen extends StatefulWidget {
 class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
   TextEditingController _resourceNameController = TextEditingController();
   TextEditingController _resourceDescriptionController = TextEditingController();
-  TextEditingController _resourceLimitController = TextEditingController();
   List<String> _selectedPrompts = [];
   List<String> _promptOptions = ['Number of People', 'Number of Hours', 'Date of Booking', 'Payment Option', 'File Upload'];
+  // disables the submit button until all forms have been filled
   bool _isButtonEnabled = false;
+  // booking limit represents the amount of times a specific resource can be booked
   int bookingLimit = 0;
   int pricePerson = 0;
   int priceHour = 0;
@@ -269,10 +268,11 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
       'PriceHour' : priceHour
     };
 
-      // Call the function to send the resource data to the server
+    // Call the function to send the resource data to the server
     dynamic db = FirebaseFirestore.instance;
     db.collection("Resources").add(resourceData).then((documentSnapshot) {
       print("Resource Added"); 
+      // go back to the profile page
       Navigator.pop(context, resourceData);
     }
     );

@@ -1,16 +1,10 @@
-import 'dart:ui';
-import 'feed.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'lesson_booking_page.dart';
-import 'video_analysis_page.dart';
 import 'post_card.dart';
-import 'dart:convert';
-import 'dbInterface.dart';
 import 'resource.dart';
 import 'myresources.dart';
 
@@ -21,15 +15,16 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  // required data for the profile information
+  // initialized here, but replaced with information from the profile builder
   String userName = '';
-  String UserID = ''; // Replace with actual account number
+  String UserID = '';
   int followingCount = 0;
   int followerCount = 0;
   String profilePicture = '';
   String biography = '';
   String website = 'https://www.google.com';
   List pics = [];
-  List<Map<String, dynamic>> _bookedResources = [];
 
   @override
   void initState() {
@@ -37,6 +32,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     _tabController = TabController(length: 3, vsync: this);
   }
 
+  // this creates the list of posts the user uploaded, similar to the feed
   Future<List> postCardBuilder(docs) async {
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -87,6 +83,8 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     return pics;
   }
 
+  // this is called when the page loads and grabs the user info from the db
+  // populates the previously initialized profile variables
   Future<String> fetchUserInfo() async {
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -105,6 +103,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         return ("Profile Completed");
       }
     );
+    // this creates the list of pictures the user uploaded and gets the post card list made
     await db.collection("Pictures").where("Poster", isEqualTo: UserID).get().then(
       (querySnapshot) async {
             pics = await postCardBuilder(querySnapshot.docs);
@@ -118,29 +117,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
 
   @override
     Widget build(BuildContext context) {
-      // List<Resource> resources = [
-      //   Resource(
-      //     id: '1',
-      //     name: 'Private Lessons',
-      //     description: 'Personalised tennis sessions to up to 3 players! Work on your shot teqnique, feet movement, strategy...',
-      //     available: true,
-      //     onPressed: () {
-      //       Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage()));
-      //     },
-      //   ),
-      //   Resource(
-      //     id: '2',
-      //     name: 'Video Analysis',
-      //     description: 'Personalised Video Anlaysis...',
-      //     available: true,
-      //     onPressed: () {
-      //       Navigator.push(context, MaterialPageRoute(builder: (context) => VideoAnalysisPage()));
-      //     },
-      //   ),
-      //   // Add more resources as needed
-      // ];
-
-
       return Scaffold(
         appBar: AppBar(
           title: const Text('Profile'),
@@ -277,12 +253,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             ),
                             shrinkWrap: true,
                             children: <Widget>[
-                              // InkWell(
-                              //   child: Container(
-                              //     height: 50,
-                              //     child: const Center (child: Text('Delete'))
-                              //   ),
-                              // ),
                               InkWell(
                                 onTap: () {FirebaseFirestore.instance.collection("Pictures").doc(pics[index]["PostID"]).delete();
                                           Navigator.of(context).pop();},
@@ -300,6 +270,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
+                                    // the post card screen acts as a singular post card
                                     builder: (context) => PostCardScreen(
                                       postUrl: pics[index]["Link"],
                                       userImage: pics[index]["ProfilePicture"],
@@ -340,6 +311,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                 builder: ((BuildContext context, AsyncSnapshot snapshot) {
                                   if (snapshot.connectionState == ConnectionState.done) {
                                     List<Resource> resources = snapshot.data;
+                                    // rl means resource list and becomes the populated widget list of resources offered by the user
                                     Widget rl = Column(
                                       crossAxisAlignment: CrossAxisAlignment.center,
                                       children: resources.map((resource) {
@@ -378,33 +350,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                                   }
                                 })
                               ),
-                              // Column(
-                                // crossAxisAlignment: CrossAxisAlignment.center,
-                                // children: resources.map((resource) {
-                                //   return Column(
-                                //     crossAxisAlignment: CrossAxisAlignment.center,
-                                //     children: [
-                                //       ListTile(
-                                //         title: Text(
-                                //           resource.name,
-                                //           style: TextStyle(
-                                //             fontWeight: FontWeight.bold,
-                                //             fontSize: 17,
-                                //           ),
-                                //         ),
-                                //         subtitle: Text(
-                                //           resource.description, // Assuming description exists in your Resource class
-                                //         ),
-                                //         trailing: ElevatedButton(
-                                //           onPressed: resource.onPressed,
-                                //           child: Text('Select'),
-                                //         ),
-                                //       ),
-                                //       Divider(), 
-                                //     ],
-                                //   );
-                                // }).toList(),
-                              // ),
                               SizedBox(height: 20),
                               ElevatedButton(
                                 onPressed: () {
@@ -441,6 +386,8 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                           ),
                         ),
                         FutureBuilder(
+                          // if the user has bookmarked content, this builder creates a scrolling post card list like the feed
+                          // built of two future builders, the first grabs the docs and the second creates the list
                           future: FirebaseFirestore.instance.collection("Bookmarks").where("UserID", isEqualTo: UserID).get(),
                           builder: ((BuildContext context, AsyncSnapshot snapshot) {
                             if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
@@ -531,7 +478,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         );
         return resources;
       }
-      
+        // this is exactly like any of the other post builder functions, just using bookmarks as the base data
         Future<List> bookmarkBuilder(docs) async {
           dynamic db = FirebaseFirestore.instance;
           List pics = [];
@@ -599,7 +546,8 @@ class Resource {
     this.onPressed,
   });
 }
-
+// post card screen is a single post card
+// ignore: must_be_immutable
 class PostCardScreen extends StatelessWidget {
   final String userImage;
   final String username;
@@ -608,7 +556,6 @@ class PostCardScreen extends StatelessWidget {
   final Timestamp timestamp;
   int likes;
   int comments;
-  final String text = "hello";
   final String UserID;
   final String postID;
   bool isLiked;
