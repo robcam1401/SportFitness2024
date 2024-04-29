@@ -18,25 +18,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 //       .join('&');
 // }
 
-
-
-  
 class Notifications extends StatelessWidget {
   @override
+  List<String> docIDs = [];
 
-List<String> docIDs = [];
-
-getId() async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  id = prefs.get('UserID').toString();
-  await FirebaseFirestore.instance.collection("Notifications").where("Owner" ,isEqualTo: id).get().then(
-    (snapshot) => snapshot.docs.forEach(
-      (document) {
-        docIDs.add(document.reference.id);
-      },
-    ),
-      );
-}
+  getId() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String id = prefs.get('UserID').toString();
+    await FirebaseFirestore.instance
+        .collection("Notifications")
+        .where("Owner", isEqualTo: id)
+        .get()
+        .then(
+          (snapshot) => snapshot.docs.forEach(
+            (document) {
+              docIDs.add(document.reference.id);
+            },
+          ),
+        );
+  }
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,27 +46,23 @@ getId() async {
         backgroundColor: Colors.red[600],
       ),
       body: Column(
-        children:[
+        children: [
           Expanded(
             child: FutureBuilder(
-              future: getId() , 
-              builder: (context, snapshot){
-                return  ListView.builder(
-              itemCount: docIDs.length,
-              itemBuilder: (context,index){
-              return NotificationsBlock(
+                future: getId(),
+                builder: (context, snapshot) {
+                  return ListView.builder(
+                      itemCount: docIDs.length,
+                      itemBuilder: (context, index) {
+                        return NotificationsBlock(
                           child: docIDs[index],
                         );
-                        
-            }
-            );
-              }
-          ),
+                      });
+                }),
           ),
         ],
-          ),
+      ),
     );
-          
   }
 }
 
