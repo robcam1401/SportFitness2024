@@ -114,7 +114,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     return ("Profile Loading");
   }
 
-
   @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -131,13 +130,22 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             icon: Icon(Icons.add_alert_rounded),
           ),
         ],
-        ),
-        body: FutureBuilder(
-          future: fetchUserInfo(),
-          builder: ((BuildContext context, AsyncSnapshot snapshot) {
-            Widget pc;
-            if (snapshot.connectionState == ConnectionState.done) {
-              pc = Column(
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 20), // Adding space for better alignment
+              CircleAvatar(
+                radius: 40,
+                // Your profile picture
+                backgroundImage: AssetImage('assets/Images/profile_picture.jpg'),
+              ),
+              SizedBox(width: 20), // Adding space between bio and counts
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20),
