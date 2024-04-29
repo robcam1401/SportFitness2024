@@ -1,4 +1,3 @@
-import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
 
 
@@ -9,16 +8,6 @@ class Groups extends StatefulWidget{
 }
 
 class _Groups extends State<Groups> {
-// sample data for the list
-  //  will be updated with data in the database later
-  final List _people = [
-    'workout 1',
-    'workout 2',
-    'latech gym',
-    'football tech',
-    'intramural team 6',
-    
-  ];
   @override
 // made an appbar to label the screen
 // followed by the list that is created with LiastView.builder
@@ -35,14 +24,18 @@ class _Groups extends State<Groups> {
       Column(
         children: [
           Expanded(
-            child: ListView.builder(
-                itemCount: _people.length,
-                itemBuilder: (context, index) {
-                  return MySquare(
-                    child: _people[index],
-                  );
-                }
-            ),
+            child: Container(),
+            // child: ListView.builder(
+            //     itemCount: _people.length,
+            //     itemBuilder: (context, index) {
+            //       return MySquare(
+            //         username: _people[index],
+            //         profilePicture: "group pic",
+            //         UserID: "",
+            //         pairID: ""
+            //       );
+            //     }
+            // ),
           ),
         ],
       )

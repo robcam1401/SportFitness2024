@@ -1,14 +1,15 @@
 import 'package:exercise_app/chat.dart';
-import 'package:exercise_app/other_profile.dart';
-import 'package:exercise_app/settings.dart';
 import 'package:flutter/material.dart';
 
 
 
 class MyCircle extends StatelessWidget{
-final String child;
+final String name;
+final String groupPicture;
+final String UserID;
+final String groupID;
 
-MyCircle({required this.child});
+MyCircle({required this.name, required this.groupPicture, required this.UserID, required this.groupID});
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -22,10 +23,11 @@ MyCircle({required this.child});
             child: Container(
               width: 60,
               child: InkWell(
-                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen())); },
-                child: const CircleAvatar(backgroundImage:NetworkImage('assets/train.jpg'),
+                onTap: () {
+                  // pushes an instance of other profile onto the navigator stack when the pfp is clicked
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: groupID, username: name, profilePicture: groupPicture, friends: false))); },
+                child: CircleAvatar(backgroundImage:NetworkImage(groupPicture),
                 radius: 60,
-                
                 ),
               )
               ),
@@ -33,8 +35,8 @@ MyCircle({required this.child});
           Expanded(
             flex: 2,
             child: Container(
-              child: Text(child,
-              style: TextStyle(fontSize: 15)),
+              child: Text(name,
+              style: TextStyle(fontSize: 20)),
             )
 
           ),

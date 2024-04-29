@@ -1,33 +1,43 @@
-import 'package:exercise_app/other_profile.dart';
-import 'package:exercise_app/profile.dart';
-import 'package:share_plus/share_plus.dart';
+// ignore_for_file: non_constant_identifier_names, use_super_parameters, library_private_types_in_public_api
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:exercise_app/other_profile.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/material.dart';
 
-final List<String> userImagesUrls = [
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-  'http://www.dumpaday.com/wp-content/uploads/2017/01/random-pictures-109.jpg',
-];
-
-final List<String> posts = [
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-  'https://tse1.mm.bing.net/th?id=OIP.fOrOyNQkXAfA6-tqSe0rwgHaEo&pid=Api&P=0&h=180',
-];
-
+// ignore: must_be_immutable
 class PostCard extends StatefulWidget {
-  final String userImagesUrls;
-  final String posts;
+  final String userImage;
+  final String username;
+  final String postUrl;
+  final String description;
+  final Timestamp timestamp;
+  int likes;
+  int comments;
   final String text = "hello";
+  final String UserID;
+  final String postID;
+  bool isLiked;
+  bool isBookmarked;
+  String posterID;
 
-  const PostCard({
+  PostCard({
     Key? key,
-    required this.userImagesUrls,
-    required this.posts,
+    required this.userImage,
+    required this.username,
+    required this.postUrl,
+    required this.description,
+    required this.timestamp,
+    required this.likes,
+    required this.comments,
+    required this.UserID,
+    required this.postID,
+    required this.isLiked,
+    required this.isBookmarked,
+    required this.posterID,
   }) : super(key: key);
+
+  
 
   @override
   _PostCardState createState() => _PostCardState();
@@ -35,10 +45,10 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool showComments = false; //boolean for comment state
-  bool isLiked = false; //boolean variable for like state
+  //bool isLiked = false; //boolean variable for like state
+  List userInfo = [];
   TextEditingController _commentController = TextEditingController();
 
-  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -52,7 +62,7 @@ class _PostCardState extends State<PostCard> {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundImage: NetworkImage(widget.userImagesUrls),
+                  backgroundImage: NetworkImage(widget.userImage),
                 ),
                 Expanded(
                   child: Padding(
@@ -62,7 +72,7 @@ class _PostCardState extends State<PostCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Username',
+                          widget.username,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -73,8 +83,33 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
                 IconButton(
-                    onPressed: () {
-                      showDialog(
+                    onPressed: () async {
+                      // this boolean checks if the user is the same as the poster
+                      // if so, the delete option can be shown
+                      if (widget.UserID == widget.posterID) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                            child: ListView(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                              ),
+                              shrinkWrap: true,
+                              children: <Widget>[
+                                InkWell(
+                                  child: Container(
+                                    height: 50,
+                                    child: const Center (child: Text('Delete'))
+                                  ),
+                                ),
+                                
+                              ]
+                            ),
+                          ),
+                        );
+                      }
+                      else {
+                        showDialog(
                         context: context,
                         builder: (context) => Dialog(
                           child: ListView(
@@ -83,14 +118,10 @@ class _PostCardState extends State<PostCard> {
                             ),
                             shrinkWrap: true,
                             children: <Widget>[
+
+
                               InkWell(
-                                child: Container(
-                                  height: 50,
-                                  child: const Center (child: Text('Delete'))
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile()));},
+                                onTap: () {Navigator.of(context).pop();Navigator.push(context, MaterialPageRoute(builder: (context)=>otherProfile(posterID: widget.posterID)));},
                                 child: Container(
                                   height: 50,
                                   child: const Center(child: Text('Profile')),
@@ -100,33 +131,56 @@ class _PostCardState extends State<PostCard> {
                           ),
                         ),
                       );
+                      }
+                      
                     },
+
                     icon: Icon(Icons.more_vert)),
                 // Add more widgets here if necessary
               ],
             ),
           ),
           //Image Section
-          /*SizedBox(
+          SizedBox(
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
             child: Image.network(
-              posts,
+              widget.postUrl,
               fit: BoxFit.cover,
             ),
-          ),*/
+          ),
           // Like Comment and Share section
           Row(
             children: [
               IconButton(
-                onPressed: () {
+                onPressed: () async {
+                  dynamic db = FirebaseFirestore.instance;
+                  if (!widget.isLiked){
+                    // extra fireabase logic is required to like a post and update in the database
+                    db.collection("Likes").add({"PostID" : widget.postID, "UserID" : widget.UserID});
+                    db.collection("Pictures").doc(widget.postID).update({"Likes" : widget.likes + 1});
+                    widget.likes = widget.likes + 1;
+                    widget.isLiked = true;
+                  }
+                  else {
+                    // if the post is already liked and becomes un-liked, remove the like doc in the db and decrement the like counter
+                    await db.collection("Likes").where("PostID", isEqualTo: widget.postID).where("UserID", isEqualTo: widget.UserID).get().then(
+                      (querySnapshot) {
+                        for (var doc in querySnapshot.docs) {
+                          db.collection("Likes").doc(doc.id).delete();
+                        }
+                      }
+                    );
+                    db.collection("Pictures").doc(widget.postID).update({"Likes" : widget.likes - 1});
+                    widget.likes = widget.likes - 1;
+                    widget.isLiked = false;
+                  }
                   setState(() {
-                    isLiked = !isLiked;
                   });
                 },
                 icon: Icon(
                   Icons.thumb_up,
-                  color: isLiked ? Colors.blue : Colors.grey,
+                  color: widget.isLiked ? Colors.blue : Colors.grey,
                 ),
               ),
               IconButton(
@@ -147,8 +201,27 @@ class _PostCardState extends State<PostCard> {
                 child: Align(
                   alignment: Alignment.bottomRight,
                   child: IconButton(
-                    icon: const Icon(Icons.bookmark_border),
-                    onPressed: () {},
+                    icon: Icon(Icons.bookmark_border, color: widget.isBookmarked ? Colors.blue : Colors.grey),
+                    onPressed: () async {
+                      dynamic db = FirebaseFirestore.instance;
+                      // same logic as the likes, not including an integer counter
+                      if (!widget.isBookmarked){
+                        db.collection("Bookmarks").add({"PostID" : widget.postID, "UserID" : widget.UserID});
+                        widget.isBookmarked = true;
+                      }
+                      else {
+                        await db.collection("Bookmarks").where("PostID", isEqualTo: widget.postID).where("UserID", isEqualTo: widget.UserID).get().then(
+                          (querySnapshot) {
+                            for (var doc in querySnapshot.docs) {
+                              db.collection("Bookmarks").doc(doc.id).delete();
+                            }
+                          }
+                        );
+                        widget.isBookmarked = false;
+                      }
+                      setState(() {
+                      });
+                  },
                   ),
                 ),
               ),
@@ -169,7 +242,7 @@ class _PostCardState extends State<PostCard> {
                           fontWeight: FontWeight.w800,
                         ),
                     child: Text(
-                      '509 likes',
+                      "${widget.likes}",
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                   ),
@@ -183,13 +256,13 @@ class _PostCardState extends State<PostCard> {
                           style: const TextStyle(color: Colors.black),
                           children: [
                             TextSpan(
-                              text: 'Username',
+                              text: widget.username,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             TextSpan(
-                              text: ' Just a grey Color for now !!!',
+                              text: " ${widget.description}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.normal,
                               ),
@@ -202,7 +275,8 @@ class _PostCardState extends State<PostCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Text(
-                        'View all 5 comments',
+                        // the number of comments are stored in posts[i][Comments]
+                        'View all ${widget.comments} comments',
                         style:
                             const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
@@ -211,7 +285,8 @@ class _PostCardState extends State<PostCard> {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Text(
-                      '2/25/2024',
+                      // the upload date is stored in posts[i][UploadDate]
+                      "${widget.timestamp.toDate()}",
                       style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                   ),
@@ -227,8 +302,10 @@ class _PostCardState extends State<PostCard> {
                               onPressed: () {
                                 final commentText = _commentController.text;
                                 // Here, you'd  send the comment to your backend or handle it as needed
-                                print(
-                                    'Comment: $commentText'); // For demonstration only
+                                dynamic db = FirebaseFirestore.instance;
+                                db.collection("Comments").add({"PostID" : widget.postID, "Comment" : commentText});
+                                widget.comments = widget.comments + 1;
+                                db.collection("Pictures").doc(widget.postID).update({"Comments" : widget.comments});
                                 _commentController.clear();
                               },
                             ),

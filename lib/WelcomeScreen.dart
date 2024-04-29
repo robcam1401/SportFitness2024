@@ -28,7 +28,7 @@ class WelcomeScreen extends StatelessWidget {
               height: 70,
             ),
             Text(
-              'Fitness & Sports',
+              'Sport Trainer',
               style: TextStyle(fontSize: 30, color: Colors.white),
             ),
             SizedBox(

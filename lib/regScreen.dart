@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'codeScreen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
-import 'dbInterface.dart';
+import 'package:crypto/crypto.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlwaysDisabledFocusNode extends FocusNode {
   @override
@@ -23,6 +27,8 @@ class _RegScreenState extends State<regScreen> {
   final TextEditingController _gmailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController2 = TextEditingController();
+  // gonna make more, too. For phone number and birthdate
   final TextEditingController _DOBController = TextEditingController();
 
   bool _showFullNameCheck = false;
@@ -30,6 +36,8 @@ class _RegScreenState extends State<regScreen> {
   bool _showUsernameCheck = false;
   bool _showPasswordCheck = false;
   bool isSendingEmail = false;
+  bool passwordMatch = false;
+  bool inserted = false;
   bool _showDOBCheck = false;
 
   @override
@@ -60,6 +68,11 @@ class _RegScreenState extends State<regScreen> {
 
     _passwordController.addListener(() {
       final text = _passwordController.text;
+      final showCheck = text.length >= 5 && text.length <= 30;
+      setState(() => _showPasswordCheck = showCheck);
+    });
+    _passwordController2.addListener(() {
+      final text = _passwordController2.text;
       final showCheck = text.length >= 5 && text.length <= 30;
       setState(() => _showPasswordCheck = showCheck);
     });
@@ -248,6 +261,28 @@ class _RegScreenState extends State<regScreen> {
                             ),
                           )),
                     ),
+                    TextField(
+                      controller: _passwordController2,
+                      obscureText: _isObscured,
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscured
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                            onPressed: _togglePasswordVisibility,
+                          ),
+                          // Call this method when the icon is pressed
+                          label: Text(
+                            'Confirm Password',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffB81736),
+                            ),
+                          )),
+                    ),
                     SizedBox(
                       height: 10,
                     ),
@@ -256,28 +291,45 @@ class _RegScreenState extends State<regScreen> {
                     ),
                     ElevatedButton(
                       onPressed: () {
+                        // check to see the passwords match
+                        if (_passwordController.text == _passwordController2.text) {
                         // create the account_info map and pass into new_account
-                        Map account_info = {
-                          'Username': _usernameController.text,
-                          'Email': _gmailController.text,
-                          'Name': _fullNameController.text,
-                          'PasswordHash': _passwordController.text,
-                          'PhoneNumber': 16,
-                          'DoB': '1111-11-11 11:11:11'
-                        };
-                        // because inserts do send a response,
-                        // make a future builder, or maybe use completer class???
-                        //Future<Map> _info = Insert().new_account(account_info);
-                        Insert().new_account(account_info);
-                        Map _info_test = {'success': true};
-                        //check if the email has not aldready been sent and checks for valid gamial address
-                        if (_showGmailCheck && !isSendingEmail) {
-                          // calling sendVerificationCode
-                          sendVerificationCode(_gmailController.text);
-                        } else {
+                          Map accountInfo = <String, dynamic>{
+                            'Username' : _usernameController.text,
+                            'Email' : _gmailController.text,
+                            'FullName' : _fullNameController.text,
+                            'PasswordHash' : _passwordController.text,
+                            'Following' : 0,
+                            'Followers' : 0,
+                          };
+                          newAccount(accountInfo);
+                          // check if the new account is inserted
+                          if (inserted) {
+                            //check if the email has not aldready been sent and checks for valid gamial address
+                            if (_showGmailCheck && !isSendingEmail) {
+                              // calling sendVerificationCode
+                              sendVerificationCode(_gmailController.text);
+                            } else {
+                              //showing toast message if the Gmail address is not valid
+                              Fluttertoast.showToast(
+                                msg: "Please enter a valid Gmail address",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                              );
+                            }
+                          }
+                          else {
+                            Fluttertoast.showToast(
+                            msg : "Please try again later",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                          }
+                        }
+                        else {
                           //showing toast message if the Gmail address is not valid
                           Fluttertoast.showToast(
-                            msg: "Please enter a valid Gmail address",
+                            msg : "Passwords do not match",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.CENTER,
                           );
@@ -324,7 +376,24 @@ class _RegScreenState extends State<regScreen> {
     _gmailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _passwordController2.dispose();
     _DOBController.dispose();
     super.dispose();
+  }
+  
+  void newAccount(userInfo) async {
+    dynamic db = FirebaseFirestore.instance;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // get the password hash with sha-256
+    var bytes = utf8.encode(userInfo['PasswordHash']);
+    String digest = sha256.convert(bytes).toString();
+    print('Password Digest: $digest');
+    userInfo['PasswordHash'] = digest;
+    db.collection("UserAccount").add(userInfo).then((DocumentReference doc) =>
+    //print('DocumentSnapshot added with ID: ${doc.id}'));
+    prefs.setString('UserID', doc.id), 
+    onError: (e) => print('Error Registering: $e'),
+    );
+    inserted = true;
   }
 }

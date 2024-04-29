@@ -6,9 +6,13 @@ import 'package:flutter/material.dart';
 
 
 class MySquare extends StatelessWidget{
-final String child;
+final String username;
+final String profilePicture;
+final String UserID;
+final String pairID;
+final String posterID;
 
-MySquare({required this.child});
+MySquare({required this.username, required this.profilePicture, required this.UserID, required this.pairID, required this.posterID});
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -21,8 +25,8 @@ MySquare({required this.child});
             flex:10,
             child: Container(
               child: InkWell(
-                onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile())); },
-                child: const CircleAvatar(backgroundImage:NetworkImage('assets/train.jpg'),
+                 onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile(posterID: posterID))); },
+                child: CircleAvatar(backgroundImage:NetworkImage(profilePicture),
                 radius: 37.5,
                 
                 ),
@@ -32,14 +36,14 @@ MySquare({required this.child});
           Expanded(
             flex:90,
             child: InkWell(
-              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen())); },
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: pairID, username: username, profilePicture: profilePicture, friends: true))); },
               child: Container(
                 height: 75,
                 padding: EdgeInsets.all(5),
                 child: Align(alignment: Alignment.centerLeft,
                   child: Text(
-                    child, 
-                    style: TextStyle(fontSize: 15)),
+                    username, 
+                    style: TextStyle(fontSize: 20)),
                     ),
               ),
             ),

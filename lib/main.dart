@@ -6,11 +6,19 @@ import 'package:exercise_app/profile.dart';
 import 'package:exercise_app/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:exercise_app/near_you.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
 //import 'package:uni_links/uni_links.dart';
 //import 'dart:async';
 //import 'WelcomeScreen.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  runApp(MyApp());
+  await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -20,14 +28,51 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Your App Title',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: WelcomeScreen(),
+    Widget ws = FutureBuilder(
+      future: getUser(),
+      builder: ((BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          bool user = snapshot.data;
+          print(user);
+          if (user) {
+            return MaterialApp(
+              title: 'Your App Title',
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+                useMaterial3: true,
+              ),
+              home: Home(),
+            );
+          }
+          else {
+            return MaterialApp(
+              title: 'Your App Title',
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+                useMaterial3: true,
+              ),
+              home: WelcomeScreen(),
+            );
+          }
+        }
+        else {
+          return const Expanded(child: Center(child: CircularProgressIndicator()));
+        }
+      })
     );
+    return ws;
+  }
+  
+  Future<bool> getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? UserID = prefs.getString("UserID");
+    //print("$UserID");
+    if (UserID == null) {
+      return false;
+    }
+    else {
+      return true;
+    }
   }
 }
 
