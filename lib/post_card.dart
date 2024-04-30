@@ -351,7 +351,8 @@ class _PostCardState extends State<PostCard> {
                 if (_widgets.isEmpty) {
                   return Expanded(child: Center(child: Text("No Comments? :(")));
                 }
-                return ListView(children: _widgets);
+                return ListView(
+                  children: _widgets);
               }
               else if (snapshot.hasError) {
                 return Text("Comment Snapshot Error");
