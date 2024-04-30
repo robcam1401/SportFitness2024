@@ -114,6 +114,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     return ("Profile Loading");
   }
 
+
   @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -130,22 +131,13 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             icon: Icon(Icons.add_alert_rounded),
           ),
         ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(width: 20), // Adding space for better alignment
-              CircleAvatar(
-                radius: 40,
-                // Your profile picture
-                backgroundImage: AssetImage('assets/Images/profile_picture.jpg'),
-              ),
-              SizedBox(width: 20), // Adding space between bio and counts
-              Column(
+        ),
+        body: FutureBuilder(
+          future: fetchUserInfo(),
+          builder: ((BuildContext context, AsyncSnapshot snapshot) {
+            Widget pc;
+            if (snapshot.connectionState == ConnectionState.done) {
+              pc = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20),
@@ -262,7 +254,22 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                             shrinkWrap: true,
                             children: <Widget>[
                               InkWell(
-                                onTap: () {FirebaseFirestore.instance.collection("Pictures").doc(pics[index]["PostID"]).delete();
+                                onTap: () async {FirebaseFirestore.instance.collection("Pictures").doc(pics[index]["PostID"]).delete();
+                                          await FirebaseFirestore.instance.collection("Bookmarks").where("PostID", isEqualTo: pics[index]["PostID"]).get().then(
+                                            (querySnapshot) {
+                                              for (var doc in querySnapshot.docs) {
+                                                FirebaseFirestore.instance.collection("Bookmarks").doc(doc.id).delete();
+                                              }
+                                            }
+                                          );
+                                          await FirebaseFirestore.instance.collection("Likes").where("PostID", isEqualTo: pics[index]["PostID"]).get().then(
+                                            (querySnapshot) {
+                                              for (var doc in querySnapshot.docs) {
+                                                FirebaseFirestore.instance.collection("Likes").doc(doc.id).delete();
+                                              }
+                                            }
+                                          );
+
                                           Navigator.of(context).pop();},
                                 child: Container(
                                   height: 50,
@@ -403,9 +410,9 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                               if (docs.isEmpty) {
                                 return Text("No Bookmarks? :(");
                               }
-                              for (var doc in docs) {
-                                print(doc.data() as Map<String, dynamic>);
-                              }
+                              // for (var doc in docs) {
+                              //   print("Here: ${doc.data() as Map<String, dynamic>}");
+                              // }
                               return FutureBuilder(
                                 future: bookmarkBuilder(docs),
                                 builder: ((BuildContext context, AsyncSnapshot snapshot2) {
@@ -444,7 +451,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                               return Center(child:Text("Bookmarks Snapshot Error"));
                             }
                             else {
-                              return const Center(child:Expanded(child:CircularProgressIndicator()));
+                              return const Center(child:Expanded(child: CircularProgressIndicator()));
                             }
                           })),
                         
@@ -490,35 +497,39 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         Future<List> bookmarkBuilder(docs) async {
           dynamic db = FirebaseFirestore.instance;
           List pics = [];
+          print("Here: $docs");
           for (var doc in docs) {
             Map data = doc.data();
+            print(data);
+            print(data["PostID"]);
             await db.collection("Pictures").doc(data["PostID"]).get().then(
               (DocumentSnapshot doc2) async {
-                Map pic = doc2.data() as Map<String, dynamic>;
-                pic["PostID"] = data["PostID"];
-                await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
-                  (querySnapshot) {
-                    if (!querySnapshot.docs.isEmpty) {
-                      pic["isLiked"] = true;
+                  print("Here: ${doc2.data()}");
+                  Map pic = doc2.data() as Map<String, dynamic>;
+                  pic["PostID"] = data["PostID"];
+                  await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+                    (querySnapshot) {
+                      if (!querySnapshot.docs.isEmpty) {
+                        pic["isLiked"] = true;
+                      }
+                      else {
+                        pic["isLiked"] = false;
+                      }
                     }
-                    else {
-                      pic["isLiked"] = false;
+                  );
+                  await db.collection("Bookmarks").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
+                    (querySnapshot) {
+                      if (!querySnapshot.docs.isEmpty) {
+                        pic["isBookmarked"] = true;
+                      }
+                      else {
+                        pic["isBookmarked"] = false;
+                      }
                     }
-                  }
-                );
-                await db.collection("Bookmarks").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(
-                  (querySnapshot) {
-                    if (!querySnapshot.docs.isEmpty) {
-                      pic["isBookmarked"] = true;
-                    }
-                    else {
-                      pic["isBookmarked"] = false;
-                    }
-                  }
-                );
-                pics.add(pic);
+                  );
+                  pics.add(pic);
+                }
 
-              }
             );
           }
           int i = 0;

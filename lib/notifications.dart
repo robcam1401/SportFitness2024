@@ -28,7 +28,7 @@ List<String> docIDs = [];
 
 getId() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  id = prefs.get('UserID').toString();
+  String id = prefs.get('UserID').toString();
   await FirebaseFirestore.instance.collection("Notifications").where("Owner" ,isEqualTo: id).get().then(
     (snapshot) => snapshot.docs.forEach(
       (document) {

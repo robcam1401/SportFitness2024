@@ -271,7 +271,9 @@ class _PostCardState extends State<PostCard> {
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      _showCommentSheet();
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Text(
@@ -303,10 +305,11 @@ class _PostCardState extends State<PostCard> {
                                 final commentText = _commentController.text;
                                 // Here, you'd  send the comment to your backend or handle it as needed
                                 dynamic db = FirebaseFirestore.instance;
-                                db.collection("Comments").add({"PostID" : widget.postID, "Comment" : commentText});
+                                db.collection("Comments").add({"PostID" : widget.postID, "Comment" : commentText, "UserID" : widget.UserID});
                                 widget.comments = widget.comments + 1;
                                 db.collection("Pictures").doc(widget.postID).update({"Comments" : widget.comments});
                                 _commentController.clear();
+                                setState(() {});
                               },
                             ),
                           ),
@@ -324,5 +327,109 @@ class _PostCardState extends State<PostCard> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+  
+  void _showCommentSheet() {
+    showModalBottomSheet(
+      context: context, 
+      builder: (BuildContext bc) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25),
+              topRight: Radius.circular(25),
+            ),
+          ),
+          child: FutureBuilder(
+            future: commentBuilder(),
+            builder: ((BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                List<Widget> _widgets = snapshot.data;
+                print(_widgets.length);
+                if (_widgets.isEmpty) {
+                  return Expanded(child: Center(child: Text("No Comments? :(")));
+                }
+                return ListView(children: _widgets);
+              }
+              else if (snapshot.hasError) {
+                return Text("Comment Snapshot Error");
+              }
+              else {
+                return const Expanded(child: Center(child: CircularProgressIndicator()));
+              }
+            })
+          ),
+        );
+      });
+  }
+  
+  Future<List<Widget>> commentBuilder() async {
+    List<Widget> _widgets = [];
+    dynamic db = FirebaseFirestore.instance;
+    await db.collection("Comments").where("PostID", isEqualTo: widget.postID).get().then(
+      (querySnapshot) async {
+        for (var doc in querySnapshot.docs) {
+          Map data = doc.data() as Map<String, dynamic>;
+          await db.collection("UserAccount").doc(data["UserID"]).get().then(
+            (DocumentSnapshot doc2) {
+              Map data2 = doc2.data() as Map<String, dynamic>;
+              Widget cm = Column(
+                children: [
+                SizedBox(height: 20),
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: "${data2["Username"]}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: " ${data["Comment"]}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ]),
+                  ),
+              ]
+              );
+              // Widget cm = Container(
+              //   width: double.infinity,
+              //   padding: const EdgeInsets.only(
+              //     top: 8,
+              //   ),
+              //   child: RichText(
+              //     text: TextSpan(
+              //         style: const TextStyle(color: Colors.black),
+              //         children: [
+              //           TextSpan(
+              //             text: data2["Username"],
+              //             style: const TextStyle(
+              //               fontWeight: FontWeight.bold,
+              //             ),
+              //           ),
+              //           TextSpan(
+              //             text: " ${data["Comment"]}",
+              //             style: const TextStyle(
+              //               fontWeight: FontWeight.normal,
+              //             ),
+              //           ),
+              //         ]),
+              //   ),
+              // );
+              _widgets.add(cm);
+              print(_widgets.length);
+            }
+          );
+        }
+        return _widgets;
+      }
+    );
+    return _widgets;
   }
 }
