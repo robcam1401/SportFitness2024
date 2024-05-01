@@ -130,6 +130,12 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             },
             icon: Icon(Icons.add_alert_rounded),
           ),
+          IconButton(
+            onPressed: () {
+              setState((){});
+            },
+            icon: Icon(Icons.refresh),
+          ),
         ],
         ),
         body: FutureBuilder(

@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 
 class MySquare extends StatelessWidget{
 final String username;
+final String friendID;
 final String profilePicture;
 final String UserID;
 final String pairID;
 final String posterID;
 
-MySquare({required this.username, required this.profilePicture, required this.UserID, required this.pairID, required this.posterID});
+MySquare({required this.username, required this.friendID, required this.profilePicture, required this.UserID, required this.pairID, required this.posterID});
 //creates the format for the list boxes and circleavatar widgets used 
 //in the freind list and group list
   @override
@@ -25,7 +26,7 @@ MySquare({required this.username, required this.profilePicture, required this.Us
             flex:10,
             child: Container(
               child: InkWell(
-                 onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile(posterID: posterID))); },
+                onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile(posterID: posterID))); },
                 child: CircleAvatar(backgroundImage:NetworkImage(profilePicture),
                 radius: 37.5,
                 
@@ -36,7 +37,7 @@ MySquare({required this.username, required this.profilePicture, required this.Us
           Expanded(
             flex:90,
             child: InkWell(
-              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: pairID, username: username, profilePicture: profilePicture, friends: true))); },
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID,friendID: friendID, pairID: pairID, username: username, profilePicture: profilePicture, friends: true))); },
               child: Container(
                 height: 75,
                 padding: EdgeInsets.all(5),

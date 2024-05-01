@@ -25,7 +25,7 @@ MyCircle({required this.name, required this.groupPicture, required this.UserID, 
               child: InkWell(
                 onTap: () {
                   // pushes an instance of other profile onto the navigator stack when the pfp is clicked
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, pairID: groupID, username: name, profilePicture: groupPicture, friends: false))); },
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, friendID: '', pairID: groupID, username: name, profilePicture: groupPicture, friends: false))); },
                 child: CircleAvatar(backgroundImage:NetworkImage(groupPicture),
                 radius: 60,
                 ),

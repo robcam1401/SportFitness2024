@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/friends.dart';
+import 'package:exercise_app/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,6 +10,191 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'post_card.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
+
+class CaptionAndShareScreen extends StatefulWidget {
+  final File imageFile;
+  final String UserID;
+
+  const CaptionAndShareScreen({Key? key, required this.imageFile, required this.UserID})
+      : super(key: key);
+
+  @override
+  _CaptionAndShareScreenState createState() => _CaptionAndShareScreenState();
+}
+
+class _CaptionAndShareScreenState extends State<CaptionAndShareScreen> {
+  final TextEditingController _captionController = TextEditingController();
+
+  _print2() {
+    print("pressed");
+    return;
+  }
+
+  _uploadAndShare2() {
+    // TODO: Implement the upload and share functionality
+    print("Caption: ${_captionController.text}");
+    bool completed = false;
+    try {
+      final storageRef = FirebaseStorage.instance.ref();
+      var uuid = Uuid();
+      String filename = "${uuid.v4()}.jpg";
+      final nameRef = storageRef.child(filename);
+      nameRef.putFile(widget.imageFile).snapshotEvents.listen((taskSnapshot) async {
+      switch (taskSnapshot.state) {
+        case TaskState.running:
+        Fluttertoast.showToast(
+          msg: "Upload In Progress",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+          print("Uploading");
+          break;
+        case TaskState.paused:
+          // ...
+          break;
+        case TaskState.success:
+        String download = await nameRef.getDownloadURL(); 
+        Fluttertoast.showToast(
+          msg: "Upload Done",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+          print("Uploaded");
+          if (!completed)
+          {  FirebaseFirestore.instance.collection("Pictures").add(
+              {
+                "Comments" : 0,
+                "Description" : _captionController.text,
+                "Likes" : 0,
+                "Link" : download,
+                "Poster" : widget.UserID,
+                "UploadDate" : DateTime.timestamp()
+              }
+          );
+          completed = true;
+          }
+        case TaskState.canceled:
+          // ...
+          break;
+        case TaskState.error:
+          print("Upload Error");
+      }
+      });
+    }
+    on FirebaseException catch (e) {
+      print(e);
+    }
+    // Upload image and caption to your backend or Firebase
+    Navigator.pop(context); 
+  }
+
+  _uploadAndShare(file, String UserID) {
+    // TODO: Implement the upload and share functionality
+    print("Caption: ${_captionController.text}");
+    bool completed = false;
+    try {
+      final storageRef = FirebaseStorage.instance.ref();
+      // create a new link-safe random name for the file
+      var uuid = Uuid();
+      String fileName = "${uuid.v4()}.jpg";
+      final nameRef = storageRef.child(fileName);
+      // upload the file
+      nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) async {
+      switch (taskSnapshot.state) {
+        case TaskState.running:
+        Fluttertoast.showToast(
+          msg: "Upload In Progress",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+          print("Uploading");
+          break;
+        case TaskState.paused:
+          // ...
+          break;
+        case TaskState.success:
+        String download = await nameRef.getDownloadURL(); 
+        Fluttertoast.showToast(
+          msg: "Upload Done",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+          print("Uploaded");
+          if (!completed)
+          {  FirebaseFirestore.instance.collection("Pictures").add(
+              {
+                "Comments" : 0,
+                "Description" : _captionController.text,
+                "Likes" : 0,
+                "Link" : download,
+                "Poster" : UserID,
+                "UploadDate" : DateTime.timestamp()
+              }
+          );
+          completed = true;
+          }
+        case TaskState.canceled:
+          // ...
+          break;
+        case TaskState.error:
+          print("Upload Error");
+      }
+      });
+  } on FirebaseException catch (e) {
+    print("Upload Error $e");
+  }
+    // Upload image and caption to your backend or Firebase
+    // Navigator.pop(context); // Return to the previous screen after sharing
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+        title: Text(
+          'Add Caption and Share',
+          style: TextStyle(
+            fontSize: 18,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: null
+            //onPressed: _uploadAndShare(widget.imageFile, widget.UserID),
+          ),
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          Expanded(child: Image.file(widget.imageFile)),
+          TextField(
+            controller: _captionController,
+            decoration: InputDecoration(
+              labelText: 'Write a caption...',
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _uploadAndShare2,
+            //onPressed: _uploadAndShare(widget.imageFile, widget.UserID),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: Text('Share'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 const LatLng sourceLocation = LatLng(32.53021599903092, -92.65212084047921);
 
@@ -83,46 +269,14 @@ class _Feed extends State<Feed> {
                           if (result != null) {
                             // grab the path of the selected file
                             File file = File(result.files.single.path!);
-                            final storageRef = FirebaseStorage.instance.ref();
-                            // create a new link-safe random name for the file
-                            var uuid = Uuid();
-                            String fileName = "${uuid.v4()}.jpg";
-                            final nameRef = storageRef.child(fileName);
                             // uploading the file
-                            try {
-                                nameRef.putFile(file).snapshotEvents.listen((taskSnapshot) async {
-                                switch (taskSnapshot.state) {
-                                  case TaskState.running:
-                                  Fluttertoast.showToast(
-                                    msg: "Upload In Progress",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.CENTER,
-                                  );
-                                    print("Uploading");
-                                    break;
-                                  case TaskState.paused:
-                                    // ...
-                                    break;
-                                  case TaskState.success:
-                                  //String download = await nameRef.getDownloadURL(); 
-                                  Fluttertoast.showToast(
-                                    msg: "Upload Done",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.CENTER,
-                                  );
-                                    print("Uploaded");
-                                    break;
-                                  case TaskState.canceled:
-                                    // ...
-                                    break;
-                                  case TaskState.error:
-                                    print("Upload Error");
-                                    break;
-                                }
-                                });
-                            } on FirebaseException catch (e) {
-                              print("Upload Error $e");
-                            }
+                            Navigator.pop(context); // Close the bottom sheet
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      CaptionAndShareScreen(imageFile: file, UserID: UserID,)),
+                            );
                           } else {
                             print("User Exited the Picker");
                           }
@@ -168,6 +322,12 @@ class _Feed extends State<Feed> {
                   context, MaterialPageRoute(builder: (context) => Friends()));
             },
             icon: Icon(Icons.messenger_outline),
+          ),
+          IconButton(
+            onPressed: () {
+              setState((){});
+            },
+            icon: Icon(Icons.refresh),
           ),
         ],
         centerTitle: true,
@@ -240,7 +400,7 @@ class _Feed extends State<Feed> {
     List pics = [];
     // iterating through the docs, grab the necessary data
     for (var doc in docs) {
-      print(doc.data() as Map<String, dynamic>);
+      //print(doc.data() as Map<String, dynamic>);
       DocumentReference docRef = await db.collection("Pictures").doc(doc.id);
       await docRef.get().then(
         (DocumentSnapshot data) async {

@@ -1,15 +1,17 @@
 import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:exercise_app/other_profile.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget{
   final String pairID;
+  final String friendID;
   final String UserID;
   final String username;
   final String profilePicture;
   final bool friends;
 
-  const ChatScreen({Key? key, required this.pairID, required this.UserID, required this.username, required this.profilePicture, required this.friends})
+  const ChatScreen({Key? key, required this.pairID, required this.friendID, required this.UserID, required this.username, required this.profilePicture, required this.friends})
       : super(key: key);
 
 
@@ -93,7 +95,8 @@ class _Chatscreen extends State<ChatScreen> {
             title:  Text(widget.username),
             centerTitle: true,
             backgroundColor: Colors.red[600],
-            actions: [CircleAvatar(backgroundImage: NetworkImage(widget.profilePicture))],
+            actions:  
+            [InkWell(onLongPress: () {Navigator.push(context, MaterialPageRoute(builder: (context) => otherProfile(posterID: widget.friendID))); },child: CircleAvatar(backgroundImage: NetworkImage(widget.profilePicture)))],
           ),
           body: Stack(
           children: [

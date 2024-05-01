@@ -38,7 +38,7 @@ class _Friends extends State<Friends> {
           await db.collection("UserAccount").doc(friend["User1ID"]).get().then(
             (DocumentSnapshot doc2) {
               Map user = doc2.data() as Map<String, dynamic>;
-              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id, posterID: friend["User1ID"]));
+              _widgets.add(MySquare(username: user["Username"],friendID: friend["User1ID"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id, posterID: friend["User1ID"]));
             }
           );
         }
@@ -52,7 +52,7 @@ class _Friends extends State<Friends> {
           await db.collection("UserAccount").doc(friend["User2ID"]).get().then(
             (DocumentSnapshot doc2) {
               Map user = doc2.data() as Map<String, dynamic>;
-              _widgets.add(MySquare(username: user["Username"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id,posterID: friend["User2ID"]));
+              _widgets.add(MySquare(username: user["Username"],friendID: friend["User2ID"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id,posterID: friend["User2ID"]));
             }
           );
         }
