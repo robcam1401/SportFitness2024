@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'lesson_booking_page.dart';
+import 'post_card.dart';
+import 'resource.dart';
+import 'myresources.dart';
 
 class DisplayProfile extends StatefulWidget {
   final String id;
@@ -80,6 +84,62 @@ class _DisplayProfileState extends State<DisplayProfile> with SingleTickerProvid
     var querySnapshot = await FirebaseFirestore.instance.collection("Comments").where("PostID", isEqualTo: postID).get();
     return querySnapshot.docs.length;
   }
+
+  Future<List<Resource>> buildResources(String userID) async {
+  List<Resource> resources = [];
+
+  try {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection("Resources")
+        .where("UserID", isEqualTo: userID)
+        .get();
+
+    for (var doc in querySnapshot.docs) {
+      Map<String, dynamic> resourceData = doc.data() as Map<String, dynamic>;
+      Resource rc = Resource(
+        id: doc.id,
+        name: resourceData["Name"],
+        description: resourceData["Description"],
+        available: true,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LessonBookingPage(
+                name: resourceData["Name"],
+                resourceID: doc.id,
+                numPlayers: resourceData["PeopleAmount"],
+                bookDate: resourceData["Date"],
+                duration: resourceData["HoursAmount"],
+                priceHour: resourceData["PriceHour"],
+                pricePerson: resourceData["PricePerson"],
+              ),
+            ),
+          );
+        },
+      );
+      resources.add(rc);
+    }
+  } catch (e) {
+    print('Error fetching resources: $e');
+  }
+
+  if (resources.isEmpty) {
+    // Create a temporary example resource for visualization
+    Resource exampleResource = Resource(
+      id: '1',
+      name: 'Private Lessons',
+      description: 'Offered from Monday to Sunday! Click for pricing, availability, and more.',
+      available: true,
+      onPressed: () {
+        // Implement onPressed behavior for the example resource if needed
+      },
+    );
+    resources.add(exampleResource);
+  }
+
+  return resources;
+}
 
 
   @override
@@ -195,11 +255,31 @@ class _DisplayProfileState extends State<DisplayProfile> with SingleTickerProvid
                             print('Post at index $index: $post');
                             return GestureDetector(
                               onTap: () {
-                                // Handle post tap
                                 print('Post tapped: ${post["PostID"]}');
+
+                                // Navigate to PostCardScreen with post details
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PostCardScreen(
+                                      postUrl: post["Link"] ?? '',
+                                      userImage: post["ProfilePicture"] ?? '',
+                                      description: post["Description"] ?? '',
+                                      username: post["Username"] ?? '',
+                                      likes: post["Likes"] ?? 0,
+                                      comments: post["Comments"] ?? 0,
+                                      timestamp: post["UploadDate"] ?? Timestamp.now(),
+                                      UserID: widget.id,
+                                      postID: post["PostID"] ?? '',
+                                      isLiked: post["isLiked"] ?? false,
+                                      isBookmarked: true, // Assuming this should be set based on logic
+                                      posterID: post["Poster"] ?? '',
+                                    ),
+                                  ),
+                                );
                               },
                               child: Image.network(
-                                post['Link'], // Image URL field from Firestore
+                                post['Link'] ?? '', // Image URL field from Firestore
                                 fit: BoxFit.cover,
                               ),
                             );
@@ -207,8 +287,59 @@ class _DisplayProfileState extends State<DisplayProfile> with SingleTickerProvid
                         ),
                       // Resources Tab
                       Center(
-                        child: Text('Resources Tab Content'),
-                      ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 10),
+                              FutureBuilder(
+                                future: buildResources("UserID"),
+                                builder: ((BuildContext context, AsyncSnapshot snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.done) {
+                                    List<Resource> resources = snapshot.data;
+                                    // rl means resource list and becomes the populated widget list of resources offered by the user
+                                    Widget rl = Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: resources.map((resource) {
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            ListTile(
+                                              title: Text(
+                                                resource.name,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 17,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                resource.description, // Assuming description exists in your Resource class
+                                              ),
+                                              trailing: ElevatedButton(
+                                                onPressed: resource.onPressed,
+                                                child: Text('Select'),
+                                              ),
+                                            ),
+                                            Divider(), 
+                                          ],
+                                        );
+                                      }).toList(),
+                                    );
+                                    return rl;
+                                  }
+                                  else if (snapshot.hasError) {
+                                    print("Resource List Snapshot Error");
+                                    return Text("Resource List Snapshot Error");
+                                  }
+                                  else {
+                                    return CircularProgressIndicator();
+                                  }
+                                })
+                              ),
+                              
+                            ],
+                          ),
+                        ),
+            
                     ],
                   ),
                 ),
@@ -218,5 +349,64 @@ class _DisplayProfileState extends State<DisplayProfile> with SingleTickerProvid
         },
       ),
     );
+  }
+}
+
+
+class Resource {
+  final String id;
+  final String name;
+  final String description;
+  final bool available;
+  final VoidCallback? onPressed;
+
+  Resource({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.available,
+    this.onPressed,
+  });
+}
+// post card screen is a single post card
+// ignore: must_be_immutable
+class PostCardScreen extends StatelessWidget {
+  final String userImage;
+  final String username;
+  final String postUrl;
+  final String description;
+  final Timestamp timestamp;
+  int likes;
+  int comments;
+  final String UserID;
+  final String postID;
+  bool isLiked;
+  bool isBookmarked;
+  String posterID;
+
+  PostCardScreen({
+    required this.userImage,
+    required this.username,
+    required this.postUrl,
+    required this.description,
+    required this.timestamp,
+    required this.likes,
+    required this.comments,
+    required this.UserID,
+    required this.postID,
+    required this.isLiked,
+    required this.isBookmarked,
+    required this.posterID,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Post"),
+      ),
+      body: PostCard(userImage: userImage, username: username, postUrl: postUrl, description: description, timestamp: timestamp, likes: likes, comments: comments, UserID: UserID, postID: postID, isLiked: isLiked, isBookmarked: isBookmarked, posterID: posterID),
+    );
+    
   }
 }
