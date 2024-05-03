@@ -9,15 +9,37 @@ class ResourceCreationScreen extends StatefulWidget {
 
 class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
   TextEditingController _resourceNameController = TextEditingController();
-  TextEditingController _resourceDescriptionController = TextEditingController();
+  TextEditingController _resourceDescriptionController =
+      TextEditingController();
   List<String> _selectedPrompts = [];
-  List<String> _promptOptions = ['Number of People', 'Number of Hours', 'Date of Booking', 'Payment Option', 'File Upload'];
+  List<String> _promptOptions = [
+    'Number of People',
+    'Number of Hours',
+    'Date of Booking',
+    'Payment Option',
+    'File Upload',
+    'Calendar'
+  ];
   // disables the submit button until all forms have been filled
   bool _isButtonEnabled = false;
   // booking limit represents the amount of times a specific resource can be booked
   int bookingLimit = 0;
   int pricePerson = 0;
   int priceHour = 0;
+  DateTime? _selectedDate;
+
+  void _presentDatePicker() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2021),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null && pickedDate != _selectedDate)
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+  }
 
   @override
   void initState() {
@@ -84,19 +106,20 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                 ),
               ),
               SizedBox(height: 8),
-              Center(child:
-                DropdownButton<int>(
-                value: bookingLimit,
-                onChanged: (value) {
-                  setState(() {
-                    bookingLimit = value!;
-                  });
-                },
-                items: [0, 1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: Text('$value'),
-                  );      
+              Center(
+                child: DropdownButton<int>(
+                  value: bookingLimit,
+                  onChanged: (value) {
+                    setState(() {
+                      bookingLimit = value!;
+                    });
+                  },
+                  items: [0, 1, 2, 3, 4, 5]
+                      .map<DropdownMenuItem<int>>((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text('$value'),
+                    );
                   }).toList(),
                 ),
               ),
@@ -119,8 +142,11 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                     value: _selectedPrompts.contains(prompt),
                     onChanged: (bool? value) {
                       setState(() {
-                        if (value!) {
+                        if (value == true) {
                           _selectedPrompts.add(prompt);
+                          if (prompt == 'Calendar') {
+                            _presentDatePicker(); // Call this method when 'Calendar' is added
+                          }
                         } else {
                           _selectedPrompts.remove(prompt);
                         }
@@ -129,6 +155,7 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                   );
                 },
               ),
+
               SizedBox(height: 16),
               Text(
                 'Price per Person:',
@@ -138,19 +165,20 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                 ),
               ),
               SizedBox(height: 8),
-              Center(child:
-                DropdownButton<int>(
-                value: pricePerson,
-                onChanged: (value) {
-                  setState(() {
-                    pricePerson = value!;
-                  });
-                },
-                items: [0, 1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: Text('$value'),
-                  );      
+              Center(
+                child: DropdownButton<int>(
+                  value: pricePerson,
+                  onChanged: (value) {
+                    setState(() {
+                      pricePerson = value!;
+                    });
+                  },
+                  items: [0, 1, 2, 3, 4, 5]
+                      .map<DropdownMenuItem<int>>((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text('$value'),
+                    );
                   }).toList(),
                 ),
               ),
@@ -163,29 +191,30 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                 ),
               ),
               SizedBox(height: 8),
-              Center(child:
-                DropdownButton<int>(
-                value: priceHour,
-                onChanged: (value) {
-                  setState(() {
-                    priceHour = value!;
-                  });
-                },
-                items: [0, 1, 2, 3, 4, 5].map<DropdownMenuItem<int>>((int value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: Text('$value'),
-                  );      
+              Center(
+                child: DropdownButton<int>(
+                  value: priceHour,
+                  onChanged: (value) {
+                    setState(() {
+                      priceHour = value!;
+                    });
+                  },
+                  items: [0, 1, 2, 3, 4, 5]
+                      .map<DropdownMenuItem<int>>((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text('$value'),
+                    );
                   }).toList(),
                 ),
               ),
-              
+
               SizedBox(height: 20),
               _buildCreatedResourceCard(), // Display created resource if available
               SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _isButtonEnabled ? _createResource : null,
-                  child: Text('Create'),
+              ElevatedButton(
+                onPressed: _isButtonEnabled ? _createResource : null,
+                child: Text('Create'),
               ),
             ],
           ),
@@ -246,9 +275,12 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
     // Extract data from controllers and selected prompts
     String resourceName = _resourceNameController.text;
     String resourceDescription = _resourceDescriptionController.text;
-    bool peopleAmount = _selectedPrompts.contains('Number of People') ? true : false;
-    bool hoursAmount = _selectedPrompts.contains('Number of Hours') ? true : false;
-    bool dateOfBooking = _selectedPrompts.contains('Date of Booking') ? true : false; 
+    bool peopleAmount =
+        _selectedPrompts.contains('Number of People') ? true : false;
+    bool hoursAmount =
+        _selectedPrompts.contains('Number of Hours') ? true : false;
+    bool dateOfBooking =
+        _selectedPrompts.contains('Date of Booking') ? true : false;
     bool payment = _selectedPrompts.contains('Payment Option') ? true : false;
     bool fileUpload = _selectedPrompts.contains('File Upload') ? true : false;
 
@@ -262,20 +294,20 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
       'Date': dateOfBooking,
       'Payment': payment,
       'FileUpload': fileUpload,
-      'isBooked' : false,
-      'BookingLimit' : bookingLimit,
-      'PricePerson' : pricePerson,
-      'PriceHour' : priceHour
+      'isBooked': false,
+      'BookingLimit': bookingLimit,
+      'PricePerson': pricePerson,
+      'PriceHour': priceHour,
+      'CalendarDate': _selectedDate?.toIso8601String(),
     };
 
     // Call the function to send the resource data to the server
     dynamic db = FirebaseFirestore.instance;
     db.collection("Resources").add(resourceData).then((documentSnapshot) {
-      print("Resource Added"); 
+      print("Resource Added");
       // go back to the profile page
       Navigator.pop(context, resourceData);
-    }
-    );
+    });
   }
 
   @override

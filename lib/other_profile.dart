@@ -165,7 +165,18 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
                   'Sender': User
                 };
                 db.collection("Notifications").doc().set(sendNotification);
-              
+                await db.collection("UserAccount").doc(User2ID).get().then(
+                  (DocumentSnapshot doc2) {
+                    Map data2 = doc2.data() as Map<String, dynamic>;
+                    db.collection("UserAccount").doc(doc2.id).update({"Followers" : data2["Followers"] + 1});
+                  }
+                );
+                await db.collection("UserAccount").doc(UserID).get().then(
+                  (DocumentSnapshot doc3) {
+                    Map data3 = doc3.data() as Map<String, dynamic>;
+                    db.collection("UserAccount").doc(doc3.id).update({"Followers" : data3["Followers"] + 1, "Following" : data3["Following"] + 1});
+                  }
+                );
               
               }   
             },
@@ -420,6 +431,8 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
         dynamic db = FirebaseFirestore.instance;
         await db.collection("Resources").where("UserID", isEqualTo: UserID).get().then(
           (querySnapshot) async {
+            print(querySnapshot.docs);
+            if (!querySnapshot.docs.isEmpty) {
             for (var doc in querySnapshot.docs) {
               Map resource = doc.data() as Map<String, dynamic>;
               Resource rc = Resource(
@@ -432,6 +445,7 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
                 },
               );
             resources.add(rc);
+            }
             }
           }
         );

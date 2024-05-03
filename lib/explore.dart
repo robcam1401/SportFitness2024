@@ -1,3 +1,4 @@
+import 'package:exercise_app/other_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/display_profile.dart';
@@ -119,7 +120,7 @@ class _ExploreState extends State<Explore> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DisplayProfile(id: userId),
+                builder: (context) => otherProfile(posterID: userId),
               ),
             );
           },

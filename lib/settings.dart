@@ -1,3 +1,4 @@
+import 'package:exercise_app/WelcomeScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'faq_page.dart';
@@ -184,7 +185,7 @@ class Settings extends StatelessWidget {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => loginScreen()),
+                                builder: (context) => WelcomeScreen()),
                             ModalRoute.withName('/login'),
                           );
                         },
