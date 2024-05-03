@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:exercise_app/display_profile.dart';
+import 'package:exercise_app/other_profile.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -119,7 +119,7 @@ class _ExploreState extends State<Explore> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DisplayProfile(id: userId),
+                builder: (context) => otherProfile(posterID: userId),
               ),
             );
           },
