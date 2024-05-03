@@ -21,6 +21,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   String UserID = '';
   int followingCount = 0;
   int followerCount = 0;
+  String fullName = '';
   String profilePicture = '';
   String biography = '';
   String website = 'https://www.google.com';
@@ -95,6 +96,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         userName = data["Username"];
         followerCount = data["Followers"];
         followingCount = data["Following"];
+        fullName = data["FullName"];
         profilePicture = data["ProfilePicture"];
         biography = data["Biography"];
         if (data["Website"] != null) {
@@ -144,87 +146,54 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
             Widget pc;
             if (snapshot.connectionState == ConnectionState.done) {
               pc = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
                   SizedBox(height: 20),
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundImage: NetworkImage(profilePicture),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    '$fullName',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    '@$userName',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    biography,
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 8),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(width: 20), // Adding space for better alignment
-                      CircleAvatar(
-                        radius: 40,
-                        // Your profile picture
-                        backgroundImage: NetworkImage(profilePicture),
+                      Text(
+                        'Followers: $followerCount',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(width: 20), // Adding space between bio and counts
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Following: ',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                followingCount.toString(), // Your following count
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            children: [
-                              Text(
-                                'Followers: ',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                "${followerCount}", // Your followers count
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      SizedBox(width: 20),
+                      Text(
+                        'Following: $followingCount',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  SizedBox(width: 20), // Adding space between profile picture and name
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '\t\t$userName',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        '  ${biography}',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed:() async {
-                          Uri url = Uri.parse(website); // personal website url
-                          await launchUrl(url);
-                        },
-                        child: Text("My Website")
-                      ),
-                    ],
+                  SizedBox(height: 5),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (website.isNotEmpty) {
+                        await launch(website);
+                      } else {
+                        print('No website provided');
+                      }
+                    },
+                    child: Text("My Website"),
                   ),
                   SizedBox(height: 20),
                   TabBar(
