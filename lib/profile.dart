@@ -90,6 +90,14 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     dynamic db = FirebaseFirestore.instance;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     UserID = prefs.getString("UserID")!;
+    print(UserID);
+    // this creates the list of pictures the user uploaded and gets the post card list made
+    await db.collection("Pictures").where("Poster", isEqualTo: UserID).get().then(
+      (querySnapshot) async {
+        pics = await postCardBuilder(querySnapshot.docs);
+      }
+
+    );
     await db.collection("UserAccount").doc(UserID).get().then(
       (DocumentSnapshot doc) {
         Map data = doc.data() as Map<String, dynamic>;
@@ -104,13 +112,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         }
         return ("Profile Completed");
       }
-    );
-    // this creates the list of pictures the user uploaded and gets the post card list made
-    await db.collection("Pictures").where("Poster", isEqualTo: UserID).get().then(
-      (querySnapshot) async {
-            pics = await postCardBuilder(querySnapshot.docs);
-      }
-
     );
 
     return ("Profile Loading");
@@ -472,14 +473,10 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         Future<List> bookmarkBuilder(docs) async {
           dynamic db = FirebaseFirestore.instance;
           List pics = [];
-          print("Here: $docs");
           for (var doc in docs) {
             Map data = doc.data();
-            print(data);
-            print(data["PostID"]);
             await db.collection("Pictures").doc(data["PostID"]).get().then(
               (DocumentSnapshot doc2) async {
-                  print("Here: ${doc2.data()}");
                   Map pic = doc2.data() as Map<String, dynamic>;
                   pic["PostID"] = data["PostID"];
                   await db.collection("Likes").where("PostID", isEqualTo: doc.id).where("UserID", isEqualTo: UserID).get().then(

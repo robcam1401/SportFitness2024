@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/chat.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,17 @@ MyCircle({required this.name, required this.groupPicture, required this.UserID, 
             child: Container(
               width: 60,
               child: InkWell(
+                onLongPress: () async {
+                  dynamic db = FirebaseFirestore.instance;
+                  await db.collection("GroupMembers").where("UserID", isEqualTo: UserID).where("GroupID", isEqualTo: groupID).get().then(
+                    (querySnapshot) {
+                      dynamic docs = querySnapshot.docs;
+                      if (docs[0] != null) {
+                        db.collection("GroupMembers").doc(docs[0].id).delete();
+                      }
+                    }
+                  );
+                },
                 onTap: () {
                   // pushes an instance of other profile onto the navigator stack when the pfp is clicked
                   Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(UserID: UserID, friendID: '', pairID: groupID, username: name, profilePicture: groupPicture, friends: false))); },

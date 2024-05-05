@@ -92,9 +92,11 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
   Future<String> fetchUserInfo() async {
     dynamic db = FirebaseFirestore.instance;
     UserID = widget.posterID;
+    print(widget.posterID);
     await db.collection("UserAccount").doc(UserID).get().then(
       (DocumentSnapshot doc) {
         Map data = doc.data() as Map<String, dynamic>;
+        print("Here: ${data}");
         userName = data["Username"];
         followerCount = data["Followers"];
         fullName = data["FullName"];
@@ -127,7 +129,7 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
   Widget build(BuildContext context) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Profile'),
+          title: Text(""),
           centerTitle: true,
           backgroundColor: Colors.blue,
           actions: [

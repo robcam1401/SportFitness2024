@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/WelcomeScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -56,10 +57,11 @@ class Settings extends StatelessWidget {
           ),
           ListTile(
             title: Text('Privacy Settings'),
-            onTap: () {
+            onTap: () async {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
+                  dynamic db = FirebaseFirestore.instance;
                   bool isPrivate = false; // Default value for the switch
                   return StatefulBuilder(
                     builder: (context, setState) {
@@ -78,6 +80,8 @@ class Settings extends StatelessWidget {
                                 onChanged: (bool value) {
                                   setState(() {
                                     isPrivate = value;
+                                    dynamic db = FirebaseFirestore.instance;
+                                    db.collection("UserAccount").update({"Private" : value});
                                   });
                                 },
                               ),

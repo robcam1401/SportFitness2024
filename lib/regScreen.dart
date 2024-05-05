@@ -272,6 +272,7 @@ class _RegScreenState extends State<regScreen> {
                             'PasswordHash' : _passwordController.text,
                             'Following' : 0,
                             'Followers' : 0,
+                            'ProfilePicture' : '',
                           };
                           newAccount(accountInfo);
                           // check if the new account is inserted
