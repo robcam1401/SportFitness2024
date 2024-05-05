@@ -142,7 +142,7 @@ class _PostCardState extends State<PostCard> {
           ),
           //Image Section
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.35,
+            height: MediaQuery.of(context).size.height * 0.50,
             width: double.infinity,
             child: Image.network(
               widget.postUrl,
