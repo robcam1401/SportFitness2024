@@ -131,7 +131,7 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
         appBar: AppBar(
           title: Text(""),
           centerTitle: true,
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.red,
           actions: [
           IconButton(
             onPressed: () async {

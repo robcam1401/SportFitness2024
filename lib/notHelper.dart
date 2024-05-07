@@ -115,7 +115,7 @@ readTime(timestamp)  {
                     },
                     child: Container(
                     height: 50,
-                    child: const Center (child: Text('add friend'))
+                    child: const Center (child: Text('Add Friend'))
                     ),
                     ),
                     InkWell(

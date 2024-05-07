@@ -26,7 +26,7 @@ class NearYouState extends State<NearYou> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
-        title: Text("Near You"),
+        title: Text(""),
 
       ),
       body: Stack(
@@ -43,25 +43,13 @@ class NearYouState extends State<NearYou> {
  Widget _zoomminusfunction() {
 
     return Align(
-      alignment: Alignment.topLeft,
-      child: IconButton(
-            icon: Icon(Icons.search,color:Color(0xff6200ee)),
-            onPressed: () {
-              zoomVal--;
-             _minus( zoomVal);
-            }),
+   
     );
  }
  Widget _zoomplusfunction() {
    
     return Align(
-      alignment: Alignment.topRight,
-      child: IconButton(
-            icon: Icon(Icons.search,color:Color(0xff6200ee)),
-            onPressed: () {
-              zoomVal++;
-              _plus(zoomVal);
-            }),
+
     );
  }
 
@@ -163,9 +151,9 @@ class NearYouState extends State<NearYou> {
           child: Container(
               child: Text(eventName,
             style: TextStyle(
-                color: Color(0xff6200ee),
+                color: Colors.black,
                 fontSize: 24.0,
-                fontWeight: FontWeight.bold),
+           ),
           )),
         ),
       ]

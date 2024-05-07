@@ -124,7 +124,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         appBar: AppBar(
           title: const Text('Profile'),
           centerTitle: true,
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.red,
           actions: [
           IconButton(
             onPressed: () {
