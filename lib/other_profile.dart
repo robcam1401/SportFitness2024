@@ -411,7 +411,7 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
                 description: resource["Description"],
                 available: true,
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name: resource["Name"], resourceID: doc.id, numPlayers: resource["PeopleAmount"], bookDate: resource["Date"], duration: resource["HoursAmount"], priceHour: resource["PriceHour"],pricePerson: resource["PricePerson"],)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name: resource["Name"], resourceID: doc.id, numPlayers: resource["PeopleAmount"], bookDate: resource["Date"], duration: resource["HoursAmount"], price: resource["Price"],)));
                 },
               );
             resources.add(rc);

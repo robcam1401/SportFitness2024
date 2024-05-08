@@ -8,8 +8,7 @@ class LessonBookingPage extends StatelessWidget {
   final bool numPlayers;
   final bool bookDate;
   final bool duration;
-  final int pricePerson;
-  final int priceHour;
+  final int price;
 
     const LessonBookingPage({Key? key, 
     required this.name, 
@@ -17,8 +16,7 @@ class LessonBookingPage extends StatelessWidget {
     required this.numPlayers,
     required this.bookDate,
     required this.duration,
-    required this.pricePerson,
-    required this.priceHour})
+    required this.price})
       : super(key: key);
 
   @override
@@ -27,7 +25,7 @@ class LessonBookingPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(name),
       ),
-      body: LessonBookingForm(name: name, resourceID: resourceID, numPlayers: numPlayers, bookDate: bookDate, duration: duration,priceHour: priceHour, pricePerson: pricePerson,),
+      body: LessonBookingForm(name: name, resourceID: resourceID, numPlayers: numPlayers, bookDate: bookDate, duration: duration,price: price,),
     );
   }
 }
@@ -38,8 +36,7 @@ class LessonBookingForm extends StatefulWidget {
     final bool numPlayers;
     final bool bookDate;
     final bool duration;
-    final int pricePerson;
-    final int priceHour;
+    final int price;
 
     const LessonBookingForm({Key? key, 
     required this.name, 
@@ -47,8 +44,7 @@ class LessonBookingForm extends StatefulWidget {
     required this.numPlayers,
     required this.bookDate,
     required this.duration,
-    required this.pricePerson,
-    required this.priceHour})
+    required this.price})
       : super(key: key);
   @override
   _LessonBookingFormState createState() => _LessonBookingFormState();
@@ -77,8 +73,8 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
     int ppp = 0; // price per person
     int pph = 0; // price per hour
     if (widget.numPlayers) {
-      ppp = widget.pricePerson;
-      np = [Text('Number of Players at \$$ppp per hour:'),
+      ppp = widget.price;
+      np = [Text('Number of Players at \$$ppp per person per hour:'),
         SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -131,12 +127,12 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
       bd = [];
     }
     if (widget.duration) {
-      pph = widget.priceHour;
+      pph = widget.price;
       ld = [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Lesson Duration (hours) at \$$pph per hour:'),
+            Text('Lesson Duration (hours): '),
             SizedBox(height: 20),
             DropdownButton<int>(
               value: _lessonDuration,
@@ -249,11 +245,8 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
     // const int pricePerHour1Player = 30;
     // const int pricePerHour2Players = 50;
     // const int pricePerExtraPlayer = 25;
-
-    print("ppp: $ppp");
-    print("pph: $pph");
     // Calculate total price based on number of players and lesson duration
-    int totalPrice = (ppp*players)+(pph*hours);
+    int totalPrice = (ppp*players*hours);
     // if (_numberOfPlayers == 1) {
     //   totalPrice = _lessonDuration * pricePerHour1Player;
     // } else {

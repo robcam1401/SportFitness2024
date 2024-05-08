@@ -79,7 +79,7 @@ class _ExploreState extends State<Explore> {
     if (query.isNotEmpty) {
       List<Map<String,dynamic>> docsU = [];
       _userService.searchUsers(query).then((results) {
-        setState(() {
+        setState(() async {
           // _searchResults = results;
           for (var doc in results) {
             doc["type"] = "U";
@@ -99,7 +99,8 @@ class _ExploreState extends State<Explore> {
             docsG.add(doc);
           }
           _searchResults = _searchResults + docsG;
-        });
+        }
+        );
       });
     } else {
       setState(() {
@@ -123,7 +124,7 @@ class _ExploreState extends State<Explore> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search by username...',
+                hintText: 'Search by name...',
                 suffixIcon: IconButton(
                   icon: Icon(Icons.clear),
                   onPressed: () {
@@ -151,6 +152,7 @@ class _ExploreState extends State<Explore> {
     }
     List searchResults = _searchResults;
     _searchResults = [];
+    bool isAdded = false;
     return ListView.builder(
       itemCount: searchResults.length,
       itemBuilder: (context, index) {
@@ -179,12 +181,14 @@ class _ExploreState extends State<Explore> {
           return Text("");
         }
         }
-        else {  
+        else {
+          print(userData);  
           return ListTile(
             leading: CircleAvatar(
               backgroundImage: NetworkImage(userData['GroupPicture']),
             ),
             title: Text(userData['Name']),
+            trailing: Icon(Icons.add_reaction_outlined, color: Colors.black),
             onTap: () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               String UserID = prefs.getString("UserID")!;
@@ -192,6 +196,9 @@ class _ExploreState extends State<Explore> {
               print("$UserID, $GroupID");
               dynamic db = FirebaseFirestore.instance;
               db.collection("GroupMembers").add({"GroupID" : GroupID, "UserID" : UserID}); // Extract user ID from userData map
+              setState(){
+                isAdded = true;
+              };
               
             },
           );

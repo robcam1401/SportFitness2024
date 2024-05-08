@@ -11,6 +11,8 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
   TextEditingController _resourceNameController = TextEditingController();
   TextEditingController _resourceDescriptionController =
       TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController limitController = TextEditingController();
   List<String> _selectedPrompts = [];
   List<String> _promptOptions = [
     'Number of People',
@@ -22,8 +24,7 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
   bool _isButtonEnabled = false;
   // booking limit represents the amount of times a specific resource can be booked
   int bookingLimit = 0;
-  int pricePerson = 0;
-  int priceHour = 0;
+  int pricePersonHour = 0;
   DateTime? _selectedDate;
 
   void _presentDatePicker() async {
@@ -95,31 +96,19 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 16),
-              Text(
-                'Booking Limit:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
               SizedBox(height: 8),
               Center(
-                child: DropdownButton<int>(
-                  value: bookingLimit,
-                  onChanged: (value) {
-                    setState(() {
-                      bookingLimit = value!;
-                    });
-                  },
-                  items: [0, 1, 2, 3, 4, 5]
-                      .map<DropdownMenuItem<int>>((int value) {
-                    return DropdownMenuItem<int>(
-                      value: value,
-                      child: Text('$value'),
-                    );
-                  }).toList(),
-                ),
+                child: TextField(
+                  controller: limitController,
+                  decoration: InputDecoration(
+                  label: Text(
+                    'Booking Limit',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  )),
+                )
               ),
               SizedBox(height: 16),
               Text(
@@ -153,58 +142,20 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
                   );
                 },
               ),
+              SizedBox(height: 8),
+              Center(
+                child: TextField(
+                  controller: priceController,
+                  decoration: InputDecoration(
+                  label: Text(
+                    'Price per Person Per Hour',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  )),
 
-              SizedBox(height: 16),
-              Text(
-                'Price per Person:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              SizedBox(height: 8),
-              Center(
-                child: DropdownButton<int>(
-                  value: pricePerson,
-                  onChanged: (value) {
-                    setState(() {
-                      pricePerson = value!;
-                    });
-                  },
-                  items: [0, 1, 2, 3, 4, 5]
-                      .map<DropdownMenuItem<int>>((int value) {
-                    return DropdownMenuItem<int>(
-                      value: value,
-                      child: Text('$value'),
-                    );
-                  }).toList(),
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Price per Hour:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              SizedBox(height: 8),
-              Center(
-                child: DropdownButton<int>(
-                  value: priceHour,
-                  onChanged: (value) {
-                    setState(() {
-                      priceHour = value!;
-                    });
-                  },
-                  items: [0, 1, 2, 3, 4, 5]
-                      .map<DropdownMenuItem<int>>((int value) {
-                    return DropdownMenuItem<int>(
-                      value: value,
-                      child: Text('$value'),
-                    );
-                  }).toList(),
-                ),
+                )
               ),
 
               SizedBox(height: 20),
@@ -293,9 +244,8 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
       'Payment': payment,
       'FileUpload': fileUpload,
       'isBooked': false,
-      'BookingLimit': bookingLimit,
-      'PricePerson': pricePerson,
-      'PriceHour': priceHour,
+      'BookingLimit': int.parse(limitController.text),
+      'Price' : int.parse(priceController.text),
       'CalendarDate': _selectedDate?.toIso8601String(),
     };
 

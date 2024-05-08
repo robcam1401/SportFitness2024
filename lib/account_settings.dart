@@ -171,9 +171,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         if (_username == "") {
           _username = data["Username"];
         } 
-        if (_email == "") {
-          _email = data["Email"];
-        }
         if (_phoneNumber == "") {
           _phoneNumber = data["PhoneNumber"];
         }
@@ -183,8 +180,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     print('Updated Username: $_username');
     print('Updated Email: $_email');
     print('Updated Phone Number: $_phoneNumber');
-    await db.collection("UserAccount").doc(UserID).update({"Username": _username}); 
-    await db.collection("UserAccount").doc(UserID).update({"Email": _email});    
+    await db.collection("UserAccount").doc(UserID).update({"Username": _username});  
     await db.collection("UserAccount").doc(UserID).update({"PhoneNumber": _phoneNumber});   
     if (_download != "") {
       await db.collection("UserAccount").doc(UserID).update({"ProfilePicture" : _download});

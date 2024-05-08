@@ -43,7 +43,10 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.check),
-            onPressed: _updateProfile,
+            onPressed:() {
+              _updateProfile();
+              Navigator.pop(context);
+            },
           ),
         ],
       ),

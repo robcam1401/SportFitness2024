@@ -24,7 +24,9 @@ NotificationsBlock({required this.child});
 
 class _NotificationsBlock extends State<NotificationsBlock> {
 
-
+  String done = '';
+  bool accepted = false;
+  bool deleted = false;
   String user = "";
 
 getNotification(id ,type) async {
@@ -107,9 +109,11 @@ readTime(timestamp)  {
                           Map data = doc.data() as Map<String, dynamic>;
                           String sender = data["Sender"];
                           String owner = data["Owner"];
-                          acceptfriend(owner, sender);                        
+                          acceptfriend(owner, sender);  
+                          accepted = true;                      
                           db.collection("Notifications").doc(widget.child).delete();
-
+                          Navigator.pop(context);
+                          setState(){};
                         },
                       );
                     },
@@ -121,7 +125,10 @@ readTime(timestamp)  {
                     InkWell(
                     onTap: () {
                         dynamic db = FirebaseFirestore.instance;
-                          db.collection("Notifications").doc(widget.child).delete();
+                        db.collection("Notifications").doc(widget.child).delete();
+                        deleted = true;
+                        Navigator.pop(context);
+                        setState(){};
                     },
                     child: Container(
                     height: 50,
@@ -172,8 +179,15 @@ readTime(timestamp)  {
                           snapshot.data!.data() as Map<String,dynamic>;
                           String time = readTime(data);
                           
-                 
-                          return Text(time);
+                      if (accepted) {
+                        return Icon(Icons.check, color: Colors.green);
+                      }
+                      else if (deleted) {
+                        return Icon(Icons.disabled_by_default_outlined, color: Colors.red);
+                      }
+                      else {
+                      return Text(time);
+                      }
                       }
                       return Text('loading...');
                     })) , 

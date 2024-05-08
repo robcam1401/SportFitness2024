@@ -111,8 +111,7 @@ class _DisplayProfileState extends State<DisplayProfile> with SingleTickerProvid
                 numPlayers: resourceData["PeopleAmount"],
                 bookDate: resourceData["Date"],
                 duration: resourceData["HoursAmount"],
-                priceHour: resourceData["PriceHour"],
-                pricePerson: resourceData["PricePerson"],
+                price: resourceData["Price"]
               ),
             ),
           );

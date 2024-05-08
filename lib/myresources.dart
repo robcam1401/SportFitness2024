@@ -50,7 +50,6 @@ class _MyResourcesScreenState extends State<MyResourcesScreen> {
         builder: ((BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             List<Map<String,dynamic>> _bookedResources = snapshot.data; 
-            print(_bookedResources);
             if (_bookedResources.isEmpty) {
               return Center(child: Text('No Resources Booked'));
             }
@@ -59,10 +58,11 @@ class _MyResourcesScreenState extends State<MyResourcesScreen> {
                 itemCount: _bookedResources.length,
                 itemBuilder: (context, index) {
                 Map<String, dynamic> resource = _bookedResources[index];
+                print(resource);
                 return ListTile(
-                  title: Text(resource['Name']),
-                  subtitle: Text(resource['Description']),
-                  trailing: Text('Date: ${resource['Date']}'),
+                  title: Text(resource["Name"]),
+                  subtitle: Text(resource["Description"]),
+                  trailing: Text("Date: ${resource["Date"].toDate()}"),
                   // Add more details or customize the ListTile as needed
                 );
                 },

@@ -289,7 +289,7 @@ class _RegScreenState extends State<regScreen> {
                             // check if the new account is inserted
                             if (inserted) {
                               //check if the email has not aldready been sent and checks for valid gamial address
-                              if (_showGmailCheck && !isSendingEmail) {
+                              if (!isSendingEmail) {
                                 // calling sendVerificationCode
                                 sendVerificationCode(_gmailController.text);
                               } else {
