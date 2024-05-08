@@ -198,10 +198,11 @@ class _Chatscreen extends State<ChatScreen> {
             ),
             MessageBar(
               onSend: (_) => {
+                print(_),
                 FirebaseFirestore.instance.collection("GroupMessages").add(
                   {
-                    "MessageBody" : _, 
-                  "PairID" : widget.pairID, 
+                  "MessageBody" : _, 
+                  "GroupID" : widget.pairID, 
                   "SentUser" : widget.UserID, 
                   "SentStamp" : DateTime.timestamp()
                   }

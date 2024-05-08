@@ -9,6 +9,7 @@ import 'package:mailer/smtp_server.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AlwaysDisabledFocusNode extends FocusNode {
   @override
@@ -262,41 +263,66 @@ class _RegScreenState extends State<regScreen> {
                       height: 70,
                     ),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         // check to see the passwords match
                         // create the account_info map and pass into new_account
-                          Map accountInfo = <String, dynamic>{
-                            'Username' : _usernameController.text,
-                            'Email' : _gmailController.text,
-                            'FullName' : _fullNameController.text,
-                            'PasswordHash' : _passwordController.text,
-                            'Following' : 0,
-                            'Followers' : 0,
-                            'ProfilePicture' : '',
-                          };
-                          newAccount(accountInfo);
-                          // check if the new account is inserted
-                          if (inserted) {
-                            //check if the email has not aldready been sent and checks for valid gamial address
-                            if (_showGmailCheck && !isSendingEmail) {
-                              // calling sendVerificationCode
-                              sendVerificationCode(_gmailController.text);
-                            } else {
-                              //showing toast message if the Gmail address is not valid
-                              Fluttertoast.showToast(
-                                msg: "Please enter a valid Gmail address",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                              );
+                        try {
+                          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                            email: _gmailController.text,
+                            password: _passwordController.text,
+                          ).then((credential) async {
+                            print(credential);
+                            final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _gmailController.text, password: _passwordController.text);
+                            print(cred);
+                            if (FirebaseAuth.instance.currentUser != null) {
+                              print(FirebaseAuth.instance.currentUser?.uid);
                             }
+                            Map accountInfo = <String, dynamic>{
+                              'Username' : _usernameController.text,
+                              'FullName' : _fullNameController.text,
+                              'Following' : 0,
+                              'Followers' : 0,
+                              'ProfilePicture' : '',
+                              'PhoneNumber' : '0',
+                            };
+                            newAccount(accountInfo, FirebaseAuth.instance.currentUser?.uid);
+                            // check if the new account is inserted
+                            if (inserted) {
+                              //check if the email has not aldready been sent and checks for valid gamial address
+                              if (_showGmailCheck && !isSendingEmail) {
+                                // calling sendVerificationCode
+                                sendVerificationCode(_gmailController.text);
+                              } else {
+                                //showing toast message if the Gmail address is not valid
+                                Fluttertoast.showToast(
+                                  msg: "Please enter a valid Gmail address",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.CENTER,
+                                );
+                              }
+                            }
+                            else {
+                              Fluttertoast.showToast(
+                              msg : "Please try again later",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                            );
+                            }
+                            },
+                            );
+                            
+                          
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'email-already-in-use') {
+                            print('The account already exists for that email.');
                           }
-                          else {
-                            Fluttertoast.showToast(
-                            msg : "Please try again later",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                          );
-                          }
+                        } catch (e) {
+                          print(e);
+                        }
+
+
+
+                          
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -343,19 +369,12 @@ class _RegScreenState extends State<regScreen> {
     super.dispose();
   }
   
-  void newAccount(userInfo) async {
+  void newAccount(userInfo, userID) async {
     dynamic db = FirebaseFirestore.instance;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // get the password hash with sha-256
-    var bytes = utf8.encode(userInfo['PasswordHash']);
-    String digest = sha256.convert(bytes).toString();
-    print('Password Digest: $digest');
-    userInfo['PasswordHash'] = digest;
-    db.collection("UserAccount").add(userInfo).then((DocumentReference doc) =>
+    db.collection("UserAccount").doc(userID).set(userInfo);
     //print('DocumentSnapshot added with ID: ${doc.id}'));
-    prefs.setString('UserID', doc.id), 
-    onError: (e) => print('Error Registering: $e'),
-    );
+    prefs.setString('UserID', userID); 
     inserted = true;
   }
 }

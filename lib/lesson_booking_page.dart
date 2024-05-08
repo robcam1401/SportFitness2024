@@ -192,7 +192,7 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
                         booked = {
                           "Resource" : widget.resourceID,
                           "UserID" : UserID,
-                          "Accepted" : false,
+                          "Accepted" : true,
                           "Date" : _selectedDate
                         };
                       }
@@ -200,7 +200,7 @@ class _LessonBookingFormState extends State<LessonBookingForm> {
                         booked = {
                           "Resource" : widget.resourceID,
                           "UserID" : UserID,
-                          "Accepted" : false,
+                          "Accepted" : true,
                         };
                       }
                       // return to the profile page

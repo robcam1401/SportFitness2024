@@ -7,6 +7,7 @@ import 'package:exercise_app/feed.dart';
 import 'package:exercise_app/main.dart';
 import 'package:exercise_app/forgotScreen.dart';
 import 'package:exercise_app/regScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dbInterface.dart';
@@ -152,32 +153,59 @@ class _LoginScreenState extends State<loginScreen> {
                       height: 70,
                     ),
                     InkWell(
-                      onTap: () {
-                        Map loginInfo = <String, dynamic>{
-                          'Email' : _gmailController.text,
-                          'PasswordHash' : sha256.convert(utf8.encode(_passwordController.text)).toString()
-                        };
+                      onTap: () async {
+                        try {
+                        final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _gmailController.text, password: _passwordController.text);
+                        if (cred.user?.uid != null) {
+                          String UserID = cred.user!.uid;
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          prefs.setString("UserID", UserID);
+                          Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                        }
+                        else {
+                          Fluttertoast.showToast(
+                            msg: "Invalid Email or Password",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                          print("Invalid email or password");
+                        }
+                        } catch (e) {
+                          Fluttertoast.showToast(
+                            msg: "Invalid Email or Password",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                          print("Invalid email or password");
+                          print(e);
+                        }
 
-                        dynamic db = FirebaseFirestore.instance; 
-                        bool login = false;
-                        db.collection('UserAccount').where('Email', isEqualTo: loginInfo['Email']).where('PasswordHash', isEqualTo: loginInfo['PasswordHash']).get().then(
-                          (querySnapshot) {
-                            print("Completed");
-                            for (var doc in querySnapshot.docs) {
-                              loginUser(doc.id);
-                              login = true;
-                              Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
-                            }
-                            if (!login){
-                              Fluttertoast.showToast(
-                                msg: "Invalid Email or Password",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                              );
-                              print("Invalid email or password");
-                            }
-                          }
-                        );       
+
+                        // Map loginInfo = <String, dynamic>{
+                        //   'Email' : _gmailController.text,
+                        //   'PasswordHash' : sha256.convert(utf8.encode(_passwordController.text)).toString()
+                        // };
+
+                        // dynamic db = FirebaseFirestore.instance; 
+                        // bool login = false;
+                        // db.collection('UserAccount').where('Email', isEqualTo: loginInfo['Email']).where('PasswordHash', isEqualTo: loginInfo['PasswordHash']).get().then(
+                        //   (querySnapshot) {
+                        //     print("Completed");
+                        //     for (var doc in querySnapshot.docs) {
+                        //       loginUser(doc.id);
+                        //       login = true;
+                        //       Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                        //     }
+                        //     if (!login){
+                        //       Fluttertoast.showToast(
+                        //         msg: "Invalid Email or Password",
+                        //         toastLength: Toast.LENGTH_SHORT,
+                        //         gravity: ToastGravity.CENTER,
+                        //       );
+                        //       print("Invalid email or password");
+                        //     }
+                        //   }
+                        // );       
                         // FutureBuilder(
                         //   future: db.collection('UserAccount').where("Email", isEqualTo: loginInfo["Email"]).where("PasswordHash", isEqualTo: loginInfo['PasswordHash']).get(),
                         //   builder:

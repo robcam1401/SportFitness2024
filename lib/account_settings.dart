@@ -151,6 +151,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
               onPressed: () {
                 // Implement logic to update account settings
                 _isButtonEnabled ? _updateAccountSettings() : null;
+                Navigator.pop(context);
               },
               child: Text('Save Changes'),
             ),

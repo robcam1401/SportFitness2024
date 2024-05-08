@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "331456193574",
+    "firebase_url": "https://exerciseapp-e8a0e-default-rtdb.firebaseio.com",
+    "project_id": "exerciseapp-e8a0e",
+    "storage_bucket": "exerciseapp-e8a0e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:331456193574:android:f66dcec807b7993ebff2e7",
+        "android_client_info": {
+          "package_name": "com.example.exercise_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "331456193574-l831qjids1s95imfk27mp178avpgdkgg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8PWo0sLVM02YNdXrfgk9UCbvsyNrvz_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "331456193574-l831qjids1s95imfk27mp178avpgdkgg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "331456193574-bb6cpel5gb2assvapsshis1jog47f0ek.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.exerciseApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

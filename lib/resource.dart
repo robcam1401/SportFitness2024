@@ -16,8 +16,6 @@ class _ResourceCreationScreenState extends State<ResourceCreationScreen> {
     'Number of People',
     'Number of Hours',
     'Date of Booking',
-    'Payment Option',
-    'File Upload',
     'Calendar'
   ];
   // disables the submit button until all forms have been filled
