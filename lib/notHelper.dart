@@ -1,5 +1,6 @@
-import 'dart:async';
+// ignore_for_file: prefer_const_constructors
 
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/chat.dart';
 import 'package:exercise_app/other_profile.dart';
@@ -10,197 +11,207 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 
+class NotificationsBlock extends StatefulWidget {
+  final String child;
 
+  NotificationsBlock({required this.child});
 
-
-class NotificationsBlock extends StatefulWidget{
-
-@override
-_NotificationsBlock createState() => _NotificationsBlock();
-final String child;
-
-NotificationsBlock({required this.child});
+  @override
+  _NotificationsBlockState createState() => _NotificationsBlockState();
 }
 
-class _NotificationsBlock extends State<NotificationsBlock> {
+class _NotificationsBlockState extends State<NotificationsBlock> {
+  late Future<Map<String, String>> _userFuture; // Future to hold user data
 
-  String done = '';
-  bool accepted = false;
-  bool deleted = false;
-  String user = "";
-
-getNotification(id ,type) async {
-  await FirebaseFirestore.instance.collection("UserAccount").where(FieldPath.documentId ,isEqualTo: id).get().then(
-    (snapshot) => snapshot.docs.forEach(
-      (document) {
-        user = (document["Username"] + " sent a "+ type);
-      },
-    ),
-      );
-}
-
-acceptfriend(owner, sender) async {
-  dynamic db = FirebaseFirestore.instance.collection("Friends"); 
-  print(sender + owner);
-      await db.doc(sender + owner).update({"User2Accepted": "true"}); 
-
-}
-
-readTime(timestamp)  {
-  String time = "";
-    var now = DateTime.now();
-  DateTime dt = (timestamp['Time'] as Timestamp).toDate();
-
-  var diff = now.difference(dt);
-  var formated = DateFormat(" HH:MM a");
-
-  if( diff.inDays ==0) {
-    time = formated.format(dt);
-  }
-  else if (diff.inDays == 1){
-    time = diff.inDays.toString() + " Day Ago";
-  }
-  else{
-    time = diff.inDays.toString() + " Days Ago";
+  @override
+  void initState() {
+    super.initState();
+    _userFuture = _getNotificationData(); // Initialize the user data future
   }
 
+  Future<Map<String, String>> _getNotificationData() async {
+  try {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection("Notifications")
+        .doc(widget.child)
+        .get();
 
-  return time ;
+    if (snapshot.exists) {
+      var data = snapshot.data() as Map<String, dynamic>;
+      String senderId = data["Sender"];
+
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection("UserAccount")
+          .doc(senderId)
+          .get();
+
+      if (userSnapshot.exists) {
+        String senderUsername = userSnapshot["Username"];
+        String profilePicture = userSnapshot["ProfilePicture"];
+        return {
+          'username': senderUsername,
+          'profilePicture': profilePicture,
+        };
+      }
+    }
+
+    return {}; // Return an empty map if data retrieval fails
+  } catch (e) {
+    print("Error fetching notification data: $e");
+    return {}; // Return an empty map on failure
+  }
 }
 
 
 
+  Future<void> acceptFriend(String owner, String sender) async {
+    DocumentReference docRef = FirebaseFirestore.instance
+        .collection("Friends")
+        .doc(sender + owner);
 
+    await docRef.update({"User2Accepted": "true"});
 
+    // Remove notification after friend request accepted
+    await FirebaseFirestore.instance
+        .collection("Notifications")
+        .doc(widget.child)
+        .delete();
+  }
 
+  String readTime(Timestamp timestamp) {
+    DateTime dt = timestamp.toDate();
+    var diff = DateTime.now().difference(dt);
+    if (diff.inDays == 0) {
+      return DateFormat("HH:mm a").format(dt);
+    } else if (diff.inDays == 1) {
+      return "${diff.inDays} Day Ago";
+    } else {
+      return "${diff.inDays} Days Ago";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-        CollectionReference Notifications = FirebaseFirestore.instance.collection("Notifications");
-
-
-    return  Padding(
+    return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
-        
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          
-          
           Expanded(
-            flex:70,
-            child: InkWell(
-                // height: 75,
-                // padding: EdgeInsets.all(5),
-                onTap: (){
-                  showDialog(
-                    context: context,
-                    builder: (context) => Dialog(
-                    child: ListView(
-                    padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    ),
-                    shrinkWrap: true,
-                    children: <Widget>[
-                    InkWell(
-                      onTap: () {
-                        dynamic db = FirebaseFirestore.instance;
-                        db.collection("Notifications").doc(widget.child).get().then(
-                        (DocumentSnapshot doc) {
-                          Map data = doc.data() as Map<String, dynamic>;
-                          String sender = data["Sender"];
-                          String owner = data["Owner"];
-                          acceptfriend(owner, sender);  
-                          accepted = true;                      
-                          db.collection("Notifications").doc(widget.child).delete();
-                          Navigator.pop(context);
-                          setState(){};
-                        },
-                      );
-                    },
-                    child: Container(
-                    height: 50,
-                    child: const Center (child: Text('Add Friend'))
-                    ),
-                    ),
-                    InkWell(
-                    onTap: () {
-                        dynamic db = FirebaseFirestore.instance;
-                        db.collection("Notifications").doc(widget.child).delete();
-                        deleted = true;
-                        Navigator.pop(context);
-                        setState(){};
-                    },
-                    child: Container(
-                    height: 50,
-                    child: const Center (child: Text('Delete'))
-                    ),
-                    )
-                                
-                    ]
-                    ),
-                    ),
+            flex: 80,
+            child: FutureBuilder<Map<String, String>>(
+              future: _userFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    String senderUsername = snapshot.data!['username']!;
+                    String profilePicture = snapshot.data!['profilePicture']!;
+
+                    return Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(profilePicture),
+                          radius: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Flexible(
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: senderUsername,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     );
-                  ;},
-                child: Align(alignment: Alignment.centerLeft,
-                  child: 
-                    FutureBuilder<DocumentSnapshot>(
-                      future: Notifications.doc(widget.child).get(),
-                      builder: ((context, snapshot){
-                      if(snapshot.connectionState == ConnectionState.done) {
-                        Map<String, dynamic> data = 
-                          snapshot.data!.data() as Map<String,dynamic>;
-                          return FutureBuilder(
-                          future: getNotification(data["Sender"],data["Type"]) , 
-                          builder: (context, snapshot){
-                            return  Text("$user");
-                        }
-                        );
-                      }
-                      return Text('loading...');
-                    })) , 
-                    
-                    ),
-              
+                  } else {
+                    return Text('User data not available');
+                  }
+                }
+                return Text('Loading...');
+              },
             ),
           ),
           Expanded(
-            flex:30,
-            child: InkWell(
-              child: Container(
-                height: 75,
-                padding: EdgeInsets.all(5),
-                child: Align(alignment: Alignment.centerLeft,
-                  child: 
-                    FutureBuilder<DocumentSnapshot>(
-                      future: Notifications.doc(widget.child).get(),
-                      builder: ((context, snapshot){
-                      if(snapshot.connectionState == ConnectionState.done) {
-                        Map<String, dynamic> data = 
-                          snapshot.data!.data() as Map<String,dynamic>;
-                          String time = readTime(data);
-                          
-                      if (accepted) {
-                        return Icon(Icons.check, color: Colors.green);
-                      }
-                      else if (deleted) {
-                        return Icon(Icons.disabled_by_default_outlined, color: Colors.red);
-                      }
-                      else {
-                      return Text(time);
-                      }
-                      }
-                      return Text('loading...');
-                    })) , 
-                    
-                    ),
-              ),
+            flex: 30,
+            child: FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection("Notifications")
+                  .doc(widget.child)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  Map<String, dynamic> data =
+                      snapshot.data!.data() as Map<String, dynamic>;
+                  String time = readTime(data['Time']);
+                  return Text(time);
+                }
+                return Text('Loading...');
+              },
             ),
           ),
-          
-           
+          NotificationActions(
+            widget.child,
+            acceptCallback: acceptFriend,
+          ),
         ],
-        
       ),
+    );
+  }
+}
+
+class NotificationActions extends StatelessWidget {
+  final String notificationId;
+  final Function(String, String) acceptCallback;
+
+  NotificationActions(this.notificationId, {required this.acceptCallback});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        InkWell(
+          onTap: () {
+            FirebaseFirestore.instance
+                .collection("Notifications")
+                .doc(notificationId)
+                .get()
+                .then((DocumentSnapshot doc) {
+              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+              String sender = data["Sender"];
+              String owner = data["Owner"];
+              acceptCallback(owner, sender);
+            });
+          },
+          child: Container(
+            height: 50,
+            width: 50,
+            child: const Center(child: Icon(Icons.done)), // Tick icon for accepting
+          ),
+        ),
+        SizedBox(width: 3),
+        InkWell(
+          onTap: () {
+            FirebaseFirestore.instance
+                .collection("Notifications")
+                .doc(notificationId)
+                .delete();
+          },
+          child: Container(
+            height: 50,
+            width: 50,
+            child: const Center(child: Icon(Icons.close)), // X icon for declining
+          ),
+        ),
+      ],
     );
   }
 }
