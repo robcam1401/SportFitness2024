@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:exercise_app/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -126,13 +125,6 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
           centerTitle: true,
           backgroundColor: Colors.red,
           actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => Notifications()));
-            },
-            icon: Icon(Icons.add_alert_rounded),
-          ),
           IconButton(
             onPressed: () {
               setState((){});
@@ -460,7 +452,7 @@ class _ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                 description: resource["Description"],
                 available: true,
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name: resource["Name"], resourceID: doc.id, numPlayers: resource["PeopleAmount"], bookDate: resource["Date"], duration: resource["HoursAmount"], price: resource["Price"])));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => LessonBookingPage(name: resource["Name"], resourceID: doc.id, numPlayers: resource["PeopleAmount"], bookDate: resource["Date"], duration: resource["HoursAmount"], priceHour: resource["PriceHour"],pricePerson: resource["PricePerson"],)));
                 },
               );
             resources.add(rc);
