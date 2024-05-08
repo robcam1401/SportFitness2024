@@ -41,7 +41,7 @@ getId() async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: const Text('Friend Requests'),
         centerTitle: true,
         backgroundColor: Colors.red[600],
       ),
