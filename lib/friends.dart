@@ -1,6 +1,7 @@
 import 'package:exercise_app/groupcircle.dart';
 import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
+import 'package:exercise_app/notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,15 +13,43 @@ class Friends extends StatefulWidget{
 class _Friends extends State<Friends> {
   // account variables
   String UserID = '';
+  int friendRequestsCount = 0;
 
-  // void initState() {
-  //   super.initState();
-  //   getUserInfo();
-  // }
+  @override
+  void initState() {
+    super.initState();
+    getUserInfo(); // Get current user's ID when widget initializes
+    getFriendRequestsCount(); // Retrieve friend requests count
+  }
 
   void getUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    UserID = prefs.getString("UserID")!;
+    setState(() {
+      UserID = prefs.getString("UserID") ?? '';
+      print("User: $UserID");
+    });
+  }
+
+  void getFriendRequestsCount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userID = prefs.getString("UserID") ?? '';
+
+    if (userID.isNotEmpty) {
+      try {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection("Notifications")
+            .where("Owner", isEqualTo: userID)
+            .get();
+        
+        setState(() {
+          friendRequestsCount = querySnapshot.size;
+          print("Friend Requests Count: $friendRequestsCount");
+        });
+      } catch (e) {
+        // Handle Firestore query error
+        debugPrint("Error fetching friend requests count: $e");
+      }
+    }
   }
 
   // creates the list of widgets that populate the friends list
@@ -62,12 +91,7 @@ class _Friends extends State<Friends> {
     
     return _widgets;
   }
-  // Future<dynamic> addPeople2(friendPair) {
-  //   dynamic db = FirebaseFirestore.instance;
-
-
-  // }
-
+  
   // same logic as the addPeople, just with groupID and no user1/2
   Future<List<Widget>> addGroups() async {
       dynamic db = FirebaseFirestore.instance;
@@ -92,16 +116,51 @@ class _Friends extends State<Friends> {
   }
 
   @override
-// made an appbar to label the screen
-// followed by the list that is created with LiastView.builder
-// the list is populated by the custom class in the file 'square.dart'
-// this allows for the code to be condensed and allow for easy managment
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Friends"),
         centerTitle: true,
         backgroundColor: Colors.red,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Notifications()),
+              );
+            },
+            icon: Icon(Icons.person_add),
+          ),
+          if (friendRequestsCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(Icons.girl), // Use any icon you prefer
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        friendRequestsCount.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       body: 
       Column(
