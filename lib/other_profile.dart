@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'lesson_booking_page.dart';
@@ -180,7 +181,11 @@ class _otherProfile extends State<otherProfile> with SingleTickerProviderStateMi
                     db.collection("UserAccount").doc(doc3.id).update({"Followers" : data3["Followers"] + 1, "Following" : data3["Following"] + 1});
                   }
                 );
-              
+                Fluttertoast.showToast(
+                  msg: "Friend Request Sent",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.CENTER,
+                );
               }   
             },
             icon: Icon(

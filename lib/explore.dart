@@ -2,6 +2,7 @@ import 'package:exercise_app/other_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/other_profile.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
@@ -191,6 +192,11 @@ class _ExploreState extends State<Explore> {
               print("$UserID, $GroupID");
               dynamic db = FirebaseFirestore.instance;
               db.collection("GroupMembers").add({"GroupID" : GroupID, "UserID" : UserID}); // Extract user ID from userData map
+              Fluttertoast.showToast(
+                msg: "Joined Group ${userData['Name']}",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.CENTER,
+              );
               setState(){
                 isAdded = true;
               };

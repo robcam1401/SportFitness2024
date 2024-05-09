@@ -1,3 +1,4 @@
+import 'package:exercise_app/WelcomeScreen.dart';
 import 'package:exercise_app/main.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_application_1/loginScreen.dart';
@@ -90,7 +91,7 @@ class _NewPassScreenState extends State<NewPassScreen> {
                     InkWell(
                       onTap: () {
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Home()));
+                            MaterialPageRoute(builder: (context) => WelcomeScreen()));
                       },
                       child: Container(
                         height: 55,
