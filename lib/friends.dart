@@ -5,21 +5,22 @@ import 'package:exercise_app/notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Friends extends StatefulWidget{
+class Friends extends StatefulWidget {
   @override
-  State<Friends> createState() => _Friends();
+  State<Friends> createState() => _FriendsState();
 }
 
-class _Friends extends State<Friends> {
-  // account variables
+class _FriendsState extends State<Friends> with SingleTickerProviderStateMixin {
   String UserID = '';
   int friendRequestsCount = 0;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    getUserInfo(); // Get current user's ID when widget initializes
-    getFriendRequestsCount(); // Retrieve friend requests count
+    getUserInfo();
+    getFriendRequestsCount();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   void getUserInfo() async {
@@ -32,21 +33,20 @@ class _Friends extends State<Friends> {
 
   void getFriendRequestsCount() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String userID = prefs.getString("UserID") ?? '';
+    String UserID = prefs.getString("UserID") ?? '';
 
-    if (userID.isNotEmpty) {
+    if (UserID.isNotEmpty) {
       try {
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection("Notifications")
-            .where("Owner", isEqualTo: userID)
+            .where("Owner", isEqualTo: UserID)
             .get();
-        
+
         setState(() {
           friendRequestsCount = querySnapshot.size;
           print("Friend Requests Count: $friendRequestsCount");
         });
       } catch (e) {
-        // Handle Firestore query error
         debugPrint("Error fetching friend requests count: $e");
       }
     }
@@ -119,7 +119,7 @@ class _Friends extends State<Friends> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Friends"),
+        title: Text("Social"),
         centerTitle: true,
         backgroundColor: Colors.red,
         actions: [
@@ -138,7 +138,7 @@ class _Friends extends State<Friends> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Icon(Icons.girl), // Use any icon you prefer
+                  Icon(Icons.girl),
                   Positioned(
                     top: 0,
                     right: 0,
@@ -162,72 +162,80 @@ class _Friends extends State<Friends> {
             ),
         ],
       ),
-      body: 
-      Column(
-        children: [
-          // future builder for the friends
-          FutureBuilder(
-            future: addPeople(),
-            builder: ((BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.connectionState == ConnectionState.done){
-                if (snapshot.hasData) {
-                  List<Widget> _widgets = snapshot.data;
-                  if (!_widgets.isEmpty) {
-                    return Expanded(
-                      flex: 80,
-                      child: ListView(
-                        children: _widgets
-                      )
-                    );
-                  }
-                  else {
-                    return const Expanded(child: Center(child: Text("No friends? :(")));
-                  }
-                }
-                else {
-                  return Text("Loading Friends");
-                }
-              }
-              else {
-                return const Expanded(child: Center(child: CircularProgressIndicator()));
-              }
-            })
-          ),
-          // future builder for the groups
-          FutureBuilder<dynamic>(
-            future: addGroups(),
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot){
-              if (snapshot.connectionState == ConnectionState.done){
-                if (snapshot.hasData) {
-                  List<Widget> _widgets = snapshot.data;
-                  if (!_widgets.isEmpty) {
-                    return Expanded(
-                      flex: 20,
-                      child: Container(
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _widgets
-                        )
-                      )
-                    );
-                  }
-                  else {
-                    return const Expanded(child: Center(child: Text("No Groups? :(")));
-                  }
-                }
-                else {
-                  return Text("Groups Loading");
-                }
-              }
-              else {
-                return const Expanded(child: Center(child: CircularProgressIndicator()));
-              }
-            }
-          ),
-        ],
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: 'Friends'),
+                Tab(text: 'Groups'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Future builder for the friends
+                  FutureBuilder(
+                    future: addPeople(),
+                    builder: ((BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasData) {
+                          List<Widget> _widgets = snapshot.data;
+                          if (!_widgets.isEmpty) {
+                            return Expanded(
+                              flex: 80,
+                              child: ListView(
+                                children: _widgets,
+                              ),
+                            );
+                          } else {
+                            return const Center(child: Text("No friends? :("));
+                          }
+                        } else {
+                          return Text("Loading Friends");
+                        }
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    }),
+                  ),
+                  // Future builder for the groups
+                  FutureBuilder<dynamic>(
+                    future: addGroups(),
+                    builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasData) {
+                          List<Widget> _widgets = snapshot.data;
+                          if (!_widgets.isEmpty) {
+                            return Expanded(
+                              flex: 20,
+                              child: Container(
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: _widgets,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return const Center(child: Text("No Groups? :("));
+                          }
+                        } else {
+                          return Text("Groups Loading");
+                        }
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-
     );
   }
-
-}
+  }
