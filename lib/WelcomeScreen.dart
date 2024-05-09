@@ -6,6 +6,7 @@ import 'regScreen.dart';
 import 'loginScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -85,60 +86,69 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // SizedBox(
-            //   height: 30,
-            // ),
-            // GestureDetector(
-            //   onTap: () async {
-            //     try {
-            //       // Trigger the authentication flow
-            //       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+            SizedBox(
+              height: 30,
+            ),
+            SignInButton(
+                Buttons.Google,
+                text: "Sign up with Google",
+                onPressed: () async {
+                try {
+                  // set the scope of the sign in
+                  const List<String> scopes = <String>[
+                    'email',
+                  ];
 
-            //       // Obtain the auth details from the request
-            //       final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+                  GoogleSignIn _googleSignIn = GoogleSignIn(
+                    // Optional clientId
+                    // clientId: 'your-client_id.apps.googleusercontent.com',
+                    scopes: scopes,
+                  );
+                  // Trigger the authentication flow
+                  final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-            //       // Create a new credential
-            //       final credential = GoogleAuthProvider.credential(
-            //         accessToken: googleAuth?.accessToken,
-            //         idToken: googleAuth?.idToken,
-            //       );
+                  // Obtain the auth details from the request
+                  final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
-            //       // Once signed in, return the UserCredential
-            //       final cred = await FirebaseAuth.instance.signInWithCredential(credential);
-            //       if (cred.user?.uid != null) {
-            //         String UserID = cred.user!.uid;
-            //         SharedPreferences prefs = await SharedPreferences.getInstance();
-            //         prefs.setString("UserID", UserID);
-            //         Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
-            //       }
-            //     } catch(e) {
-            //       Fluttertoast.showToast(
-            //         msg: "Error Signing In With Google",
-            //         toastLength: Toast.LENGTH_SHORT,
-            //         gravity: ToastGravity.CENTER,
-            //       );
-            //       print("Error: $e");
-            //     }
-            //   },
-            //   child: Container(
-            //     height: 53,
-            //     width: 320,
-            //     decoration: BoxDecoration(
-            //       color: Colors.white,
-            //       borderRadius: BorderRadius.circular(30),
-            //       border: Border.all(color: Colors.white),
-            //     ),
-            //     child: const Center(
-            //       child: Text(
-            //         'SIGN IN WITH GOOGLE',
-            //         style: TextStyle(
-            //             fontSize: 20,
-            //             fontWeight: FontWeight.bold,
-            //             color: Colors.black),
-            //       ),
-            //     ),
-            //   ),
-            // ),
+                  // Create a new credential
+                  final credential = GoogleAuthProvider.credential(
+                    accessToken: googleAuth?.accessToken,
+                    idToken: googleAuth?.idToken,
+                  );
+                  // Once signed in, return the UserCredential
+                  String UserID = FirebaseAuth.instance.currentUser!.uid;
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  prefs.setString("UserID", UserID);
+                  Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                } catch(e) {
+                  Fluttertoast.showToast(
+                    msg: "Error Signing In With Google",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.CENTER,
+                  );
+                  print("Error: $e");
+                }
+              },
+              ),
+              // child: Container(
+              //   height: 53,
+              //   width: 320,
+              //   decoration: BoxDecoration(
+              //     color: Colors.white,
+              //     borderRadius: BorderRadius.circular(30),
+              //     border: Border.all(color: Colors.white),
+              //   ),
+              //   child: const Center(
+              //     child: Text(
+              //       'SIGN IN WITH GOOGLE',
+              //       style: TextStyle(
+              //           fontSize: 20,
+              //           fontWeight: FontWeight.bold,
+              //           color: Colors.black),
+              //     ),
+              //   ),
+              // ),
+
             Spacer(),
           ],
         ),

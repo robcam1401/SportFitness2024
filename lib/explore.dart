@@ -158,7 +158,6 @@ class _ExploreState extends State<Explore> {
       itemBuilder: (context, index) {
         Map<String, dynamic> userData = searchResults[index];
         if (userData["type"] == 'U') {  
-          if (!userData["Private"]) {
           return ListTile(
             leading: CircleAvatar(
               backgroundImage: NetworkImage(userData['ProfilePicture']),
@@ -176,10 +175,6 @@ class _ExploreState extends State<Explore> {
               );
             },
           );
-        }
-        else {
-          return Text("");
-        }
         }
         else {
           print(userData);  

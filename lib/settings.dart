@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/WelcomeScreen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'faq_page.dart';
@@ -185,6 +186,7 @@ class Settings extends StatelessWidget {
                           // remove the user id from the shared preferences cache
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           prefs.remove("UserID");
+                          GoogleSignIn().signOut();
                           Navigator.of(context).pop(); //Dismissing the dialog
                           Navigator.pushAndRemoveUntil(
                             context,

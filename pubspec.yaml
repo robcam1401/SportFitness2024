@@ -33,6 +33,7 @@ dependencies:
   intl: ^0.19.0
   firebase_auth: ^4.19.5
   google_sign_in: ^6.2.1
+  flutter_signin_button: ^2.0.0
 
 dev_dependencies:
   flutter_test:
