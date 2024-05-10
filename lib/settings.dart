@@ -186,7 +186,9 @@ class Settings extends StatelessWidget {
                           // remove the user id from the shared preferences cache
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           prefs.remove("UserID");
-                          GoogleSignIn().signOut();
+                          if (await GoogleSignIn().isSignedIn()) {
+                            GoogleSignIn().signOut();
+                          }
                           Navigator.of(context).pop(); //Dismissing the dialog
                           Navigator.pushAndRemoveUntil(
                             context,

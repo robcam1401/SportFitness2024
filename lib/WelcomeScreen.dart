@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,6 +8,7 @@ import 'loginScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'googleSignIn.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -94,6 +96,9 @@ class WelcomeScreen extends StatelessWidget {
                 text: "Sign up with Google",
                 onPressed: () async {
                 try {
+                  if (await GoogleSignIn().isSignedIn()) {
+                    GoogleSignIn().signOut();
+                  }
                   // set the scope of the sign in
                   const List<String> scopes = <String>[
                     'email',
@@ -106,6 +111,7 @@ class WelcomeScreen extends StatelessWidget {
                   );
                   // Trigger the authentication flow
                   final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+                  print("Here: ${await _googleSignIn.isSignedIn()}");
 
                   // Obtain the auth details from the request
                   final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
@@ -115,11 +121,24 @@ class WelcomeScreen extends StatelessWidget {
                     accessToken: googleAuth?.accessToken,
                     idToken: googleAuth?.idToken,
                   );
+                  await FirebaseAuth.instance.signInWithCredential(credential);
+
                   // Once signed in, return the UserCredential
                   String UserID = FirebaseAuth.instance.currentUser!.uid;
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  prefs.setString("UserID", UserID);
-                  Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                  await FirebaseFirestore.instance.collection("UserAccount").doc(UserID).get().then(
+                    (DocumentReference) async {
+                      if (DocumentReference.exists) {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        prefs.setString("UserID", UserID);
+                        Navigator.push(context, MaterialPageRoute(builder:(context) => Home()));
+                      }
+                      else {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        prefs.setString("UserID", UserID);
+                        Navigator.push(context, MaterialPageRoute(builder:(context) => googleRegScreen()));
+                      }
+                    }
+                  );
                 } catch(e) {
                   Fluttertoast.showToast(
                     msg: "Error Signing In With Google",
