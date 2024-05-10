@@ -1,270 +1,241 @@
-import 'package:exercise_app/other_profile.dart';
+import 'package:exercise_app/groupcircle.dart';
+import 'package:exercise_app/square.dart';
 import 'package:flutter/material.dart';
+import 'package:exercise_app/notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:exercise_app/other_profile.dart';
-import 'package:exercise_app/display_resource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UserService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  Future<List<Map<String, dynamic>>> searchUsers(String query) async {
-    List<Map<String, dynamic>> results = [];
-
-    try {
-      QuerySnapshot userSnapshot = await _firestore
-          .collection('UserAccount')
-          .where('Username', isGreaterThanOrEqualTo: query)
-          .where('Username', isLessThanOrEqualTo: query + '\uf8ff')
-          .orderBy('Username')
-          .get();
-
-      userSnapshot.docs.forEach((doc) {
-        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-        userData['id'] = doc.id; // Add the document ID as 'id' in the userData map
-        results.add(userData);
-      });
-    } catch (e) {
-      print('Error searching users: $e');
-    }
-
-    return results;
-  }
-}
-
-class GroupService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Future<List<Map<String,dynamic>>> searchGroups(String query) async {
-    List<Map<String,dynamic>> results = [];
-
-    try {
-      QuerySnapshot userSnapshot = await _firestore
-          .collection('Groups')
-          .where('Name', isGreaterThanOrEqualTo: query)
-          .where('Name', isLessThanOrEqualTo: query + '\uf8ff')
-          .orderBy('Name')
-          .get();
-
-      userSnapshot.docs.forEach((doc) {
-        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-        userData['id'] = doc.id; // Add the document ID as 'id' in the userData map
-        results.add(userData);
-      });
-    } catch (e) {
-      print('Error searching users: $e');
-    }
-
-    return results;
-
-  }
-}
-
-class ResourceService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  Future<List<Map<String, dynamic>>> searchResources(String query) async {
-    List<Map<String, dynamic>> results = [];
-
-    try {
-      QuerySnapshot resourceSnapshot = await _firestore
-          .collection('Resources')
-          .where('Name', isGreaterThanOrEqualTo: query)
-          .where('Name', isLessThanOrEqualTo: query + '\uf8ff')
-          .orderBy('Name')
-          .get();
-
-      resourceSnapshot.docs.forEach((doc) {
-        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-        userData['id'] = doc.id;
-        results.add(userData);
-      });
-    } catch (e) {
-      print('Error searching resources: $e');
-    }
-
-    return results;
-  }
-}
-
-class Explore extends StatefulWidget {
+class Friends extends StatefulWidget {
   @override
-  State<Explore> createState() => _ExploreState();
+  State<Friends> createState() => _FriendsState();
 }
 
-class _ExploreState extends State<Explore> {
-  final UserService _userService = UserService();
-  final GroupService _groupService = GroupService();
-  final ResourceService _resourceService = ResourceService();
-
-  List<Map<String, dynamic>> _searchResults = [];
-  TextEditingController _searchController = TextEditingController();
+class _FriendsState extends State<Friends> with SingleTickerProviderStateMixin {
+  String UserID = '';
+  int friendRequestsCount = 0;
+  late TabController _tabController;
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    getUserInfo();
+    getFriendRequestsCount();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
-  void _performSearch(String query) {
-    if (query.isNotEmpty) {
-      List<Map<String,dynamic>> docsU = [];
-      _userService.searchUsers(query).then((results) {
-        setState(() async {
-          // _searchResults = results;
-          for (var doc in results) {
-            doc["type"] = "U";
-            docsU.add(doc);
-          }
-          _searchResults = _searchResults + docsU;
-        });
-      }).catchError((error) {
-        print('Error searching users: $error');
-      });
+  void getUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      UserID = prefs.getString("UserID") ?? '';
+      print("User: $UserID");
+    });
+  }
 
-      List<Map<String,dynamic>> docsG = [];
-      _groupService.searchGroups(query).then((results) {
+  void getFriendRequestsCount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String UserID = prefs.getString("UserID") ?? '';
+
+    if (UserID.isNotEmpty) {
+      try {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection("Notifications")
+            .where("Owner", isEqualTo: UserID)
+            .get();
+
         setState(() {
-          print(results);
-          for (var doc in results) {
-            doc["type"] = "G";
-            docsG.add(doc);
-          }
-          _searchResults = _searchResults + docsG;
+          friendRequestsCount = querySnapshot.size;
+          print("Friend Requests Count: $friendRequestsCount");
+        });
+      } catch (e) {
+        debugPrint("Error fetching friend requests count: $e");
+      }
+    }
+  }
+
+  // creates the list of widgets that populate the friends list
+  Future<List<Widget>> addPeople() async {
+    dynamic db = FirebaseFirestore.instance;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UserID = prefs.getString("UserID")!;
+    List<Widget> _widgets = [];
+    // find the pairs of friends where the active user is user2 and create the widgets
+    await db.collection("Friends").where("User2ID", isEqualTo: UserID).where("User1Accepted", isEqualTo: 'true').where("User2Accepted", isEqualTo: "true").get().then(
+      (querySnapshot) async {
+        for (var doc in querySnapshot.docs) {
+          Map friend = doc.data() as Map<String, dynamic>;
+          // grab the user info of the friend
+          await db.collection("UserAccount").doc(friend["User1ID"]).get().then(
+            (DocumentSnapshot doc2) {
+              Map user = doc2.data() as Map<String, dynamic>;
+              _widgets.add(MySquare(username: user["Username"],friendID: friend["User1ID"], profilePicture: user["ProfilePicture"],UserID : UserID, pairID : doc.id, posterID: friend["User1ID"]));
+            }
+          );
         }
-        );
-      });
-
-      List<Map<String, dynamic>> docsR = [];
-      _resourceService.searchResources(query).then((results) {
-        setState(() {
-          for (var doc in results) {
-            doc["type"] = "R";
-            docsR.add(doc);
+      }
+    );
+    // grab the pair info where the current user is user1
+    await db.collection("Friends").where("User1ID", isEqualTo: UserID).where("User1Accepted", isEqualTo: "true").where("User2Accepted", isEqualTo : 'true').get().then(
+      (querySnapshot) async {
+        for (var doc in querySnapshot.docs) {
+          Map friend = doc.data() as Map<String, dynamic>;
+          await db.collection("UserAccount").doc(friend["User2ID"]).get().then(
+            (DocumentSnapshot doc2) {
+              Map user = doc2.data() as Map<String, dynamic>;
+              _widgets.add(MySquare(username: user["Username"],friendID: friend["User2ID"], profilePicture: user["ProfilePicture"], UserID: UserID, pairID : doc.id,posterID: friend["User2ID"]));
+            }
+          );
+        }
+        return _widgets;
+      }
+    );
+    
+    return _widgets;
+  }
+  
+  // same logic as the addPeople, just with groupID and no user1/2
+  Future<List<Widget>> addGroups() async {
+      dynamic db = FirebaseFirestore.instance;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      UserID = prefs.getString("UserID")!;
+      List<Widget> _widgets = [];
+      await db.collection("GroupMembers").where("UserID", isEqualTo: UserID).get().then(
+        (querySnapshot) async {
+          for (var doc in querySnapshot.docs) {
+            Map member = doc.data() as Map<String, dynamic>;
+            await db.collection("Groups").doc(member["GroupID"]).get().then(
+              (DocumentSnapshot doc2) {
+                Map group = doc2.data() as Map<String, dynamic>;
+                 _widgets.add(MyCircle(name: group["Name"], groupPicture: group["GroupPicture"],UserID: UserID, groupID: member["GroupID"],));
+              }
+            );
+           
           }
-          _searchResults = _searchResults + docsR;
-        });
-      }).catchError((error) {
-        print('Error searching resources: $error');
-      });
-    } else {
-      setState(() {
-        _searchResults = [];
-      });
-    }
+        }
+      );
+    return _widgets;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore'),
+        title: Text("Social"),
         centerTitle: true,
-        backgroundColor: Colors.red[600],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search by name...',
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _performSearch('');
-                  },
-                ),
+        backgroundColor: Colors.red,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Notifications()),
+              );
+            },
+            icon: Icon(Icons.person_add),
+          ),
+          if (friendRequestsCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(Icons.girl),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        friendRequestsCount.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              onChanged: _performSearch,
             ),
-          ),
-          Expanded(
-            child: _buildSearchResults(),
-          ),
         ],
       ),
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: 'Friends'),
+                Tab(text: 'Groups'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Future builder for the friends
+                  FutureBuilder(
+                    future: addPeople(),
+                    builder: ((BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasData) {
+                          List<Widget> _widgets = snapshot.data;
+                          if (!_widgets.isEmpty) {
+                            return Expanded(
+                              flex: 80,
+                              child: ListView(
+                                children: _widgets,
+                              ),
+                            );
+                          } else {
+                            return const Center(child: Text("No friends? :("));
+                          }
+                        } else {
+                          return Text("Loading Friends");
+                        }
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    }),
+                  ),
+                  // Future builder for the groups
+                  FutureBuilder<dynamic>(
+                    future: addGroups(),
+                    builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasData) {
+                          List<Widget> _widgets = snapshot.data;
+                          if (!_widgets.isEmpty) {
+                            return Expanded(
+                              flex: 20,
+                              child: Container(
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: _widgets,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return const Center(child: Text("No Groups? :("));
+                          }
+                        } else {
+                          return Text("Groups Loading");
+                        }
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
-
-  Widget _buildSearchResults() {
-    if (_searchResults.isEmpty) {
-      return Center(
-        child: Text('No results found.'),
-      );
-    }
-    List searchResults = _searchResults;
-    _searchResults = [];
-    bool isAdded = false;
-    return ListView.builder(
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        Map<String, dynamic> userData = searchResults[index];
-        if (userData["type"] == 'U') {  
-          if (!userData["Private"]) {
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(userData['ProfilePicture']),
-            ),
-            title: Text(userData['Username']),
-            subtitle: Text(userData['FullName']),
-            onTap: () {
-              String userId = userData['id']; // Extract user ID from userData map
-              print('UserID: $userId'); // Print userID before navigation
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => otherProfile(posterID: userId),
-                ),
-              );
-            },
-          );
-        }
-        else {
-          return Text("");
-        }
-        }
-        else if (userData["type"] == 'G'){
-          print(userData);  
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(userData['GroupPicture']),
-            ),
-            title: Text(userData['Name']),
-            trailing: Icon(Icons.add_reaction_outlined, color: Colors.black),
-            onTap: () async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              String UserID = prefs.getString("UserID")!;
-              String GroupID = userData['id'];
-              print("$UserID, $GroupID");
-              dynamic db = FirebaseFirestore.instance;
-              db.collection("GroupMembers").add({"GroupID" : GroupID, "UserID" : UserID}); // Extract user ID from userData map
-              setState(){
-                isAdded = true;
-              };
-              
-            },
-          );
-        }
-        else if (userData["type"] == 'R'){
-          return ListTile(
-          title: Text(userData['Name']),
-          onTap: () {
-            String resourceId = userData['id']; // Extract user ID from userData map
-              print('resourceID: $resourceId'); // Print userID before navigation
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DisplayResource(resourceID: resourceId),
-                ),
-              );
-          },
-        );
-      } else {
-        return SizedBox.shrink(); // Placeholder for unknown type
-        }
-      },
-    );
   }
-}
