@@ -2,7 +2,7 @@ import 'package:exercise_app/other_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exercise_app/other_profile.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:exercise_app/display_resource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
@@ -59,6 +59,33 @@ class GroupService {
   }
 }
 
+class ResourceService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<List<Map<String, dynamic>>> searchResources(String query) async {
+    List<Map<String, dynamic>> results = [];
+
+    try {
+      QuerySnapshot resourceSnapshot = await _firestore
+          .collection('Resources')
+          .where('Name', isGreaterThanOrEqualTo: query)
+          .where('Name', isLessThanOrEqualTo: query + '\uf8ff')
+          .orderBy('Name')
+          .get();
+
+      resourceSnapshot.docs.forEach((doc) {
+        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+        userData['id'] = doc.id;
+        results.add(userData);
+      });
+    } catch (e) {
+      print('Error searching resources: $e');
+    }
+
+    return results;
+  }
+}
+
 class Explore extends StatefulWidget {
   @override
   State<Explore> createState() => _ExploreState();
@@ -67,6 +94,8 @@ class Explore extends StatefulWidget {
 class _ExploreState extends State<Explore> {
   final UserService _userService = UserService();
   final GroupService _groupService = GroupService();
+  final ResourceService _resourceService = ResourceService();
+
   List<Map<String, dynamic>> _searchResults = [];
   TextEditingController _searchController = TextEditingController();
 
@@ -91,6 +120,7 @@ class _ExploreState extends State<Explore> {
       }).catchError((error) {
         print('Error searching users: $error');
       });
+
       List<Map<String,dynamic>> docsG = [];
       _groupService.searchGroups(query).then((results) {
         setState(() {
@@ -102,6 +132,19 @@ class _ExploreState extends State<Explore> {
           _searchResults = _searchResults + docsG;
         }
         );
+      });
+
+      List<Map<String, dynamic>> docsR = [];
+      _resourceService.searchResources(query).then((results) {
+        setState(() {
+          for (var doc in results) {
+            doc["type"] = "R";
+            docsR.add(doc);
+          }
+          _searchResults = _searchResults + docsR;
+        });
+      }).catchError((error) {
+        print('Error searching resources: $error');
       });
     } else {
       setState(() {
@@ -148,7 +191,7 @@ class _ExploreState extends State<Explore> {
   Widget _buildSearchResults() {
     if (_searchResults.isEmpty) {
       return Center(
-        child: Text('No users found.'),
+        child: Text('No results found.'),
       );
     }
     List searchResults = _searchResults;
@@ -159,6 +202,7 @@ class _ExploreState extends State<Explore> {
       itemBuilder: (context, index) {
         Map<String, dynamic> userData = searchResults[index];
         if (userData["type"] == 'U') {  
+          if (!userData["Private"]) {
           return ListTile(
             leading: CircleAvatar(
               backgroundImage: NetworkImage(userData['ProfilePicture']),
@@ -178,6 +222,10 @@ class _ExploreState extends State<Explore> {
           );
         }
         else {
+          return Text("");
+        }
+        }
+        else if (userData["type"] == 'G'){
           print(userData);  
           return ListTile(
             leading: CircleAvatar(
@@ -192,17 +240,29 @@ class _ExploreState extends State<Explore> {
               print("$UserID, $GroupID");
               dynamic db = FirebaseFirestore.instance;
               db.collection("GroupMembers").add({"GroupID" : GroupID, "UserID" : UserID}); // Extract user ID from userData map
-              Fluttertoast.showToast(
-                msg: "Joined Group ${userData['Name']}",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.CENTER,
-              );
               setState(){
                 isAdded = true;
               };
               
             },
           );
+        }
+        else if (userData["type"] == 'R'){
+          return ListTile(
+          title: Text(userData['Name']),
+          onTap: () {
+            String resourceId = userData['id']; // Extract user ID from userData map
+              print('resourceID: $resourceId'); // Print userID before navigation
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DisplayResource(resourceID: resourceId),
+                ),
+              );
+          },
+        );
+      } else {
+        return SizedBox.shrink(); // Placeholder for unknown type
         }
       },
     );
